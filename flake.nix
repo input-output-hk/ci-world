@@ -1,0 +1,76 @@
+{
+  description = "CI World";
+  inputs.std.url = "github:divnix/std";
+  inputs.std.inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+  inputs.n2c.url = "github:nlewo/nix2container";
+  inputs.data-merge.url = "github:divnix/data-merge";
+  inputs = {
+    # --- Bitte Stack ----------------------------------------------
+    bitte.url = "github:input-output-hk/bitte";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/bitte";
+    bitte-cells.url = "github:input-output-hk/bitte-cells";
+    bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
+    # --------------------------------------------------------------
+    # --- Auxiliary Nixpkgs ----------------------------------------
+    nixpkgs.follows = "std/nixpkgs";
+    nix-inclusive.url = "github:input-output-hk/nix-inclusive";
+    nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
+    nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
+    spongix.url = "github:input-output-hk/spongix";
+    # --------------------------------------------------------------
+  };
+
+  outputs = inputs: let
+    inherit (inputs) bitte;
+    inherit (inputs.self.x86_64-linux.cloud) nomadEnvs;
+  in
+    inputs.std.growOn
+    {
+      inherit inputs;
+      as-nix-cli-epiphyte = false;
+      cellsFrom = ./nix;
+      # debug = ["cells" "cloud" "nomadEnvs"];
+      organelles = [
+        (inputs.std.data "nomadEnvs")
+        (inputs.std.data "constants")
+        (inputs.std.runnables "entrypoints")
+        (inputs.std.functions "bitteProfile")
+        (inputs.std.functions "oci-images")
+        (inputs.std.installables "packages")
+        (inputs.std.functions "hydrationProfile")
+        # just repo automation; std - just integration pending
+        (inputs.std.runnables "justTasks")
+      ];
+    }
+    # soil (TODO: eat up soil)
+    (
+      let
+        system = "x86_64-linux";
+        overlays = [(import ./overlay.nix inputs)];
+      in
+        bitte.lib.mkBitteStack {
+          inherit inputs;
+          inherit (inputs) self;
+          inherit overlays;
+          domain = "ci.iog.io";
+          bitteProfile = inputs.self.${system}.metal.bitteProfile.default;
+          hydrationProfile = inputs.self.${system}.cloud.hydrationProfile.default;
+          deploySshKey = "./secrets/ssh-ci-prod";
+        }
+    )
+    {
+      prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
+    };
+  # --- Flake Local Nix Configuration ----------------------------
+  nixConfig = {
+    extra-substituters = [
+      "https://hydra.iohk.io"
+    ];
+    extra-trusted-public-keys = [
+      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+    ];
+    # post-build-hook = "./upload-to-cache.sh";
+    allow-import-from-derivation = "true";
+  };
+  # --------------------------------------------------------------
+}
