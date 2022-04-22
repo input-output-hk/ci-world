@@ -218,6 +218,7 @@ in {
           volumeSize = 600;
 
           modules = [
+            (bitte + /profiles/auxiliaries/telegraf.nix)
             ./builder.nix
             ./spongix-user.nix
           ];

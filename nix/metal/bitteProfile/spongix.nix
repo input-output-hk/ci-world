@@ -27,14 +27,13 @@ in {
     ];
   };
 
-  services.telegraf.extraConfig.inputs.prometheus = {
+  services.telegraf.overrides.inputs.prometheus = {
     urls = [
       "http://127.0.0.1:${
         toString config.services.promtail.server.http_listen_port
       }/metrics"
       "http://127.0.0.1:${toString config.services.spongix.port}/metrics"
     ];
-    metric_version = 1;
   };
 
   systemd.services.spongix-service =
