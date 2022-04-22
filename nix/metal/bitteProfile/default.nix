@@ -31,20 +31,15 @@ in {
           bitte.profiles.client
           bitte.profiles.nomad-follower
           "${self.inputs.nixpkgs}/nixos/modules/profiles/headless.nix"
-          ./client.nix
           ./spongix-user.nix
           ({lib, ...}: {
             services.glusterfs.enable = lib.mkForce false;
 
-            # ToDo: why isn't this being pulled in by bitte:profiles/nomad/client.nix
-            services.nomad.client = {
-              chroot_env = {
-                "/etc/passwd" = "/etc/passwd";
-                "/etc/resolv.conf" = "/etc/resolv.conf";
-                "/etc/services" = "/etc/services";
-                "/etc/ssl/certs/ca-bundle.crt" = "/etc/ssl/certs/ca-bundle.crt";
-                "/etc/ssl/certs/ca-certificates.crt" = "/etc/ssl/certs/ca-certificates.crt";
-              };
+            profiles.auxiliaries.builder.remoteBuilder.buildMachine.supportedFeatures = ["big-parallel"];
+
+            systemd.services.nomad.serviceConfig = {
+              JobTimeoutSec = "600s";
+              JobRunningTimeoutSec = "600s";
             };
           })
         ];
