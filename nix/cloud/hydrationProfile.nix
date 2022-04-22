@@ -2,10 +2,13 @@
   inputs,
   cell,
 }: let
+  inherit (inputs.bitte-cells) patroni;
   namespaces = [
     "prod"
   ];
   components = [
+    # Patroni bitte-cell
+    "database"
   ];
 in {
   default = {
@@ -30,6 +33,10 @@ in {
     starttimeSecretsPath = "kv/nomad-cluster";
     runtimeSecretsPath = "runtime";
   in {
+    imports = [
+      (patroni.hydrationProfiles.hydrate-cluster namespaces)
+    ];
+
     cluster = {
       name = "ci-prod";
 
@@ -44,7 +51,7 @@ in {
 
     services = {
       nomad.namespaces = {
-        ci-prod = {description = "CI Prod";};
+        prod = {description = "CI Prod";};
       };
 
       grafana.provision.dashboards = [

@@ -1,0 +1,24 @@
+patroniApi: ENC[AES256_GCM,data:62n+,iv:+642RH/U0nhvVPZb8MiJNAHJGzHJEfWGR5cAZWM3JnE=,tag:5jLoPHuVIFjzwlufUEmxsQ==,type:str]
+patroniApiPass: ENC[AES256_GCM,data:UOzKusiXvI9CVqkptGclCNe0MxYskhrA4kcMdZzHnVs=,iv:WhxZXGRte2f54EmHmedXGBq0Mqmwc0XAIlJMdfSMNPA=,tag:NGr2SUi7V6kCJQJ/s96FEA==,type:str]
+patroniRepl: ENC[AES256_GCM,data:GP7Eig==,iv:udgl3thizMeDZ8HZG+2EnqcE1W2VXS+FzFJqOUuWSVs=,tag:1558t1EZrfq2dSU3H/iNhw==,type:str]
+patroniReplPass: ENC[AES256_GCM,data:h+ykyvQtgHEDlT4WmAyIdQlIkN0S4hOwnhQNd2dzlcU=,iv:wNEXm5TvmXGZqGqiHITRaKmQOrROWpg6in3grk4VnbI=,tag:8zQQ3UAz01aYkxokVj3xAA==,type:str]
+patroniRewind: ENC[AES256_GCM,data:h1AXrWCd,iv:JSNXgsk3pe92yiUuq1jMYmCjogmuvZXTny2N2Lni7UY=,tag:AJ+B7l0mJuS3F6rd17L2LA==,type:str]
+patroniRewindPass: ENC[AES256_GCM,data:IPV+dRli9AeZPW8EvkPbj8kJFsV4ABmgzD0Ba367PI0=,iv:PL0IIgPHCoOsfRcNWDcP1ok9xuaurUfKuFREsRa6bqg=,tag:mz6JfISMr9ajfHMWJEt3PQ==,type:str]
+patroniSuper: ENC[AES256_GCM,data:p9W0,iv:HbYAt72BWbTDtCQuryXJEyrvo4u1SUjX9dbL4w6RO+k=,tag:1qpmk96W34pCCCLe8MJAcA==,type:str]
+patroniSuperPass: ENC[AES256_GCM,data:dn9So6jkwVcsR34zBAfgRYeLkpCBDN6h6qQ1wB2sfrA=,iv:aMB2isx3U9LsPo3zhIW0TY/uCKNBoiLAFHMFeZ+/o28=,tag:ulYDnuGWxliiYXSif0CFSw==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: ops
+          created_at: "2022-04-22T00:14:48Z"
+          enc: vault:v1:O7q9nmcUctdCSZrxk2iPMqrHjZYJx5mkx/x+t3yQ8zzdh6CwPCEd1qPiicxQJ+J4rN6XCN8bUeERXssT
+    age: []
+    lastmodified: "2022-04-22T00:15:48Z"
+    mac: ENC[AES256_GCM,data:TSlG7iYaAFwHtlOmuPk9SeT0wkCuqRlPR+fs0yPnU1ISduOcq7Vzm/0Fx31LHGcpimr2f/VPq0EPGrJ0trg6vABhLYMj6d0ks/6RGQad/yRfi53VLKa3pqb1gDJIvPQYns2aHoxt8nDnw4bE8Qk9wz7tFtk2s3ueHdOsrtz5iBs=,iv:sfLrKsqdHatQvp7m/j0TY9Sl3AOOHHLwPaB5Reo4inU=,tag:C6n4JxrkL9CmEeTgmoSoAA==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.2

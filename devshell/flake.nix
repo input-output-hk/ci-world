@@ -37,7 +37,7 @@
           bitte = {
             domain = "ci.iog.io";
             cluster = "ci-prod";
-            namespace = "ci-prod";
+            namespace = "prod";
             provider = "AWS";
             cert = null;
             aws_profile = "ci";
@@ -57,6 +57,7 @@
             capsules.metal
             capsules.integrations
             capsules.tools
+            bitte-cells.patroni.devshellProfiles.default
           ];
         };
       }

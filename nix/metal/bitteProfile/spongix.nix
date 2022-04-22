@@ -47,10 +47,17 @@ in {
           "spongix"
           "ingress"
           "traefik.enable=true"
-          "traefik.http.routers.spongix.rule=Host(`cache.ci.iog.io`) || Host(`cache.iog.io`) && Method(`GET`, `HEAD`)"
+          "traefik.http.routers.spongix.rule=Host(`cache.ci.iog.io`,`cache.iog.io`) && Method(`GET`, `HEAD`)"
           "traefik.http.routers.spongix.entrypoints=https"
           "traefik.http.routers.spongix.tls=true"
           "traefik.http.routers.spongix.tls.certresolver=acme"
+          "traefik.http.routers.spongix-auth.rule=Host(`cache.ci.iog.io`,`cache.iog.io`) && Method(`PUT`, `POST`, `PATCH`)"
+          "traefik.http.routers.spongix-auth.entrypoints=https"
+          "traefik.http.routers.spongix-auth.tls=true"
+          "traefik.http.routers.spongix-auth.tls.certresolver=acme"
+          "traefik.http.routers.spongix-auth.middlewares=spongix-auth"
+          "traefik.http.middlewares.spongix-auth.digestauth.usersfile=/var/lib/traefik/digest-auth"
+          "traefik.http.middlewares.spongix-auth.digestauth.removeheader=true"
         ];
 
         checks = {

@@ -392,15 +392,16 @@
         "vulnix": "vulnix_2"
       },
       "locked": {
-        "lastModified": 1649886949,
-        "narHash": "sha256-tvOo6cTtJGGCCzntAK8L7s6EmQ+PIAdN0wUvnpVFPCs=",
+        "lastModified": 1650580408,
+        "narHash": "sha256-aiA8W6MIIg8c1fVQEKuSwrkZmkroYkYXXChMoa6X0zg=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "5df2f7e2cac09f0755dc8615ea0bd3cbc8884cd5",
+        "rev": "1429498a550c749eab19d933568a414ed3ec7f4e",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "ci-world-mods",
         "repo": "bitte",
         "type": "github"
       }
@@ -630,11 +631,11 @@
         "ragenix": "ragenix_2"
       },
       "locked": {
-        "lastModified": 1649887998,
-        "narHash": "sha256-o7MRxZSzdDoNVn1K2uJtJwT/ltdld2Hr5b2sVxO7k1M=",
+        "lastModified": 1650486684,
+        "narHash": "sha256-1WwK09hSe/auqWO8EiOVco8FV4qoe6lqCqRMyQp7j4U=",
         "owner": "input-output-hk",
         "repo": "devshell-capsules",
-        "rev": "3200de496ffab7a0db4df2c808f29e258bea5a45",
+        "rev": "43640929d8a9806b5493a8feb6b6ebfefbde5b58",
         "type": "github"
       },
       "original": {
@@ -2970,7 +2971,7 @@
       },
       "locked": {
         "lastModified": 0,
-        "narHash": "sha256-7Vb0Ya91PFDWopgMH2Ny27+39DWExYTvzm4BNl6VqJM=",
+        "narHash": "sha256-25zI9VnZsB64QGCvUR9H7OwMwEhPrOzrPukmohiEFmI=",
         "path": "../.",
         "type": "path"
       },
@@ -4536,11 +4537,11 @@
     },
     "nixpkgs_51": {
       "locked": {
-        "lastModified": 1650469885,
-        "narHash": "sha256-BuILRZ6pzMnGey8/irbjGq1oo3vIvZa1pitSdZCmIXA=",
+        "lastModified": 1650555608,
+        "narHash": "sha256-e34oMPWPwRWhF1K6NZnF0mNle7qDADJzjWujp8UupGo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "df78cc4e2a46fca75d14508a5d2ed3494add28ff",
+        "rev": "c11ee1c598b15a24d18f142f85ee3d438afc39e6",
         "type": "github"
       },
       "original": {

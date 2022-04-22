@@ -216,15 +216,16 @@
         "vulnix": "vulnix"
       },
       "locked": {
-        "lastModified": 1649886949,
-        "narHash": "sha256-tvOo6cTtJGGCCzntAK8L7s6EmQ+PIAdN0wUvnpVFPCs=",
+        "lastModified": 1650580408,
+        "narHash": "sha256-aiA8W6MIIg8c1fVQEKuSwrkZmkroYkYXXChMoa6X0zg=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "5df2f7e2cac09f0755dc8615ea0bd3cbc8884cd5",
+        "rev": "1429498a550c749eab19d933568a414ed3ec7f4e",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "ci-world-mods",
         "repo": "bitte",
         "type": "github"
       }
@@ -3533,11 +3534,11 @@
     },
     "nixpkgs_36": {
       "locked": {
-        "lastModified": 1650469885,
-        "narHash": "sha256-BuILRZ6pzMnGey8/irbjGq1oo3vIvZa1pitSdZCmIXA=",
+        "lastModified": 1650555608,
+        "narHash": "sha256-e34oMPWPwRWhF1K6NZnF0mNle7qDADJzjWujp8UupGo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "df78cc4e2a46fca75d14508a5d2ed3494add28ff",
+        "rev": "c11ee1c598b15a24d18f142f85ee3d438afc39e6",
         "type": "github"
       },
       "original": {

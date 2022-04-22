@@ -3,6 +3,7 @@
   cell,
 }: let
   inherit (inputs) nixpkgs;
+  inherit (inputs.bitte-cells) patroni;
 in {
   default = {
     self,
@@ -32,16 +33,30 @@ in {
           "${self.inputs.nixpkgs}/nixos/modules/profiles/headless.nix"
           ./client.nix
           ./spongix-user.nix
-          # Once: bitte/develop/6a9cc76 is merged and if we still don't need gluster
-          # ({ lib, ... }: {
-          #   services.glusterfs.enable = lib.mkForce false;
-          # })
+          ({lib, ...}: {
+            services.glusterfs.enable = lib.mkForce false;
+
+            # ToDo: why isn't this being pulled in by bitte:profiles/nomad/client.nix
+            services.nomad.client = {
+              chroot_env = {
+                "/etc/passwd" = "/etc/passwd";
+                "/etc/resolv.conf" = "/etc/resolv.conf";
+                "/etc/services" = "/etc/services";
+                "/etc/ssl/certs/ca-bundle.crt" = "/etc/ssl/certs/ca-bundle.crt";
+                "/etc/ssl/certs/ca-certificates.crt" = "/etc/ssl/certs/ca-certificates.crt";
+              };
+            };
+          })
         ];
 
-        mkAsgs = region: desiredCapacity: instanceType: volumeSize: node_class: asgSuffix: opts: {
-          inherit region desiredCapacity instanceType volumeSize node_class asgSuffix;
-          modules = defaultModules;
-        };
+        mkAsgs = region: desiredCapacity: instanceType: volumeSize: node_class: asgSuffix: opts: extraConfig:
+          {
+            inherit region desiredCapacity instanceType volumeSize node_class asgSuffix;
+            modules =
+              defaultModules
+              ++ lib.optional (opts ? withPatroni && opts.withPatroni == true) (patroni.nixosProfiles.client node_class);
+          }
+          // extraConfig;
         # -------------------------
         # For each list item below which represents an auto-scaler machine(s),
         # an autoscaling group name will be created in the form of:
@@ -61,7 +76,9 @@ in {
         #   client-$REGION-$INSTANCE_TYPE-$ASG_SUFFIX
       in
         lib.listToAttrs (lib.forEach [
-            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod" {})
+            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1a" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["a"];})
+            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1b" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["b"];})
+            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1c" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["c"];})
           ]
           (args: let
             attrs =
@@ -168,7 +185,7 @@ in {
 
           modules = [
             bitte.profiles.routing
-            {
+            ({etcEncrypted, ...}: {
               services.traefik = {
                 # Enables cert management via job tabs vs extraSANs
                 acmeDnsCertMgr = false;
@@ -179,7 +196,19 @@ in {
                 # Changing to a default of true soon
                 useVaultBackend = false;
               };
-            }
+
+              # For spongix digest-auth
+              secrets.install.digestAuth = {
+                inputType = "binary";
+                outputType = "binary";
+                source = "${etcEncrypted}/digest-auth";
+                target = /var/lib/traefik/digest-auth;
+                script = ''
+                  chown traefik:traefik /var/lib/traefik/digest-auth
+                  chmod 0600 /var/lib/traefik/digest-auth
+                '';
+              };
+            })
           ];
 
           securityGroupRules = {
