@@ -18,7 +18,7 @@ in {
     host = "";
     port = 7745;
     gcInterval = "1h";
-    secretKeyFiles.ci-prod = config.secrets.install.spongix-secret-key.target;
+    secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
     substituters = ["https://cache.nixos.org" "https://hydra.iohk.io"];
     trustedPublicKeys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="

@@ -38,7 +38,7 @@ in {
     ];
 
     cluster = {
-      name = "ci-prod";
+      name = "ci-world";
 
       adminNames = ["john.lotoski"];
       developerGithubNames = [];

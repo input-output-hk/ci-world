@@ -55,7 +55,7 @@
           domain = "ci.iog.io";
           bitteProfile = inputs.self.${system}.metal.bitteProfile.default;
           hydrationProfile = inputs.self.${system}.cloud.hydrationProfile.default;
-          deploySshKey = "./secrets/ssh-ci-prod";
+          deploySshKey = "./secrets/ssh-ci-world";
         }
     )
     {

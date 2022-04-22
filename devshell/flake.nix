@@ -22,7 +22,7 @@
           std
           ;
         inherit (devshell.legacyPackages) mkShell;
-        inherit (main.clusters.ci-prod) _proto;
+        inherit (main.clusters.ci-world) _proto;
 
         ciWorld = {
           extraModulesPath,
@@ -36,7 +36,7 @@
           ];
           bitte = {
             domain = "ci.iog.io";
-            cluster = "ci-prod";
+            cluster = "ci-world";
             namespace = "prod";
             provider = "AWS";
             cert = null;
