@@ -1,10 +1,10 @@
 {
   description = "CI World";
-  inputs.std.url = "github:divnix/std";
-  inputs.std.inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-  inputs.n2c.url = "github:nlewo/nix2container";
-  inputs.data-merge.url = "github:divnix/data-merge";
   inputs = {
+    std.url = "github:divnix/std";
+    std.inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    n2c.url = "github:nlewo/nix2container";
+    data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/ci-world-mods";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/bitte";
@@ -17,6 +17,11 @@
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix";
+    spongix.inputs.cicero.follows = "cicero";
+    cicero.url = "github:input-output-hk/cicero";
+    cicero.inputs.nixpkgs.follows = "nixpkgs";
+    cicero.inputs.spongix.follows = "spongix";
+    cicero.inputs.driver.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
   };
 

@@ -9,8 +9,6 @@
 in {
   imports = [inputs.spongix.nixosModules.spongix];
 
-  # systemd.tmpfiles.rules = [ "d /mnt/gv0/spongix 1777 root root -" ];
-
   services.spongix = {
     enable = true;
     cacheDir = "/var/lib/spongix";
@@ -41,7 +39,7 @@ in {
       pkiFiles.caCertFile = "/etc/ssl/certs/ca.pem";
       service = {
         name = "spongix";
-        port = 7745;
+        port = config.services.spongix.port;
         tags = [
           "spongix"
           "ingress"
@@ -63,7 +61,7 @@ in {
           spongix-tcp = {
             interval = "10s";
             timeout = "5s";
-            tcp = "127.0.0.1:7745";
+            tcp = "127.0.0.1:${toString config.services.spongix.port}";
           };
         };
       };

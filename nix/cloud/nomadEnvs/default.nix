@@ -29,5 +29,11 @@ in {
       job.database.group.database.task.patroni.env = {inherit WALG_S3_PREFIX;};
       job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};
     };
+
+    cicero = {
+      job.cicero =
+        import ./cicero {
+        };
+    };
   };
 }

@@ -189,7 +189,7 @@ in {
                 useDockerRegistry = false;
 
                 # Changing to a default of true soon
-                useVaultBackend = false;
+                useVaultBackend = true;
               };
 
               # For spongix digest-auth
