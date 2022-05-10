@@ -146,6 +146,7 @@ in {
           tags = [
             "cicero"
             "ingress"
+            "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
             "traefik.http.routers.cicero-internal.rule=Host(`cicero.infra.aws.iohkdev.io`) && HeadersRegexp(`Authorization`, `Basic`)"
             "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
@@ -172,6 +173,7 @@ in {
           tags = [
             "cicero"
             "ingress"
+            "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
             "traefik.http.routers.cicero.rule=Host(`cicero.infra.aws.iohkdev.io`)"
             "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
