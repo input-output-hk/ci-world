@@ -2,7 +2,7 @@
   description = "CI World";
   inputs = {
     std.url = "github:divnix/std";
-    std.inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    std.inputs.nixpkgs.follows = "nixpkgs";
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
@@ -12,7 +12,7 @@
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
-    nixpkgs.follows = "std/nixpkgs";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
