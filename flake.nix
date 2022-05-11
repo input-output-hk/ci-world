@@ -13,6 +13,7 @@
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    capsules.url = "github:input-output-hk/devshell-capsules";
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
@@ -32,7 +33,6 @@
     inputs.std.growOn
     {
       inherit inputs;
-      as-nix-cli-epiphyte = false;
       cellsFrom = ./nix;
       # debug = ["cells" "cloud" "nomadEnvs"];
       organelles = [
@@ -43,8 +43,8 @@
         (inputs.std.functions "oci-images")
         (inputs.std.installables "packages")
         (inputs.std.functions "hydrationProfile")
-        # just repo automation; std - just integration pending
-        (inputs.std.runnables "justTasks")
+        (inputs.std.runnables "jobs")
+        (inputs.std.devshells "devshells")
       ];
     }
     # soil (TODO: eat up soil)
