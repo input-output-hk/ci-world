@@ -1,6 +1,7 @@
-project: CI
+project: SRE
 custom-commands:
 - name: ls-sre
-  help: jira ls on 'Delivering Team = Resident SRE'
+  queryfields: labels
+  help: jira ls on 'project = SRE and labels = ci-world'
   script: |
-    jira ls -q 'resolution = unresolved AND "Delivering Team[Dropdown]" = "Resident SRE" AND project = CI ORDER BY priority ASC, created'
+    jira ls -q 'resolution = unresolved AND project = SRE AND labels = ci-world ORDER BY priority ASC, created'
