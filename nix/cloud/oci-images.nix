@@ -2,8 +2,8 @@
   inputs,
   cell,
 }: let
-  inherit (inputs.cicero.packages) cicero-entrypoint;
-  inherit (inputs.nixpkgs) symlinkJoin bash jq;
+  inherit (inputs.cicero.packages) cicero-entrypoint webhook-trigger;
+  inherit (inputs.nixpkgs) symlinkJoin bash jq coreutils curl dig;
   inherit (inputs.n2c.packages.nix2container) buildImage;
 in {
   cicero = buildImage {
@@ -25,5 +25,11 @@ in {
         ];
       })
     ];
+  };
+
+  webhook-trigger = buildImage {
+    name = "cache.iog.io/webhook-trigger";
+    config.Cmd = ["${webhook-trigger}/bin/trigger"];
+    maxLayers = 4;
   };
 }

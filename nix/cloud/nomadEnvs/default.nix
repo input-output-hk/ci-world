@@ -6,6 +6,7 @@
   inherit (inputs.bitte-cells) patroni vector;
   inherit (cell) constants;
   inherit (constants) args;
+  inherit (cell.library) pp;
 in {
   prod = let
     inherit
@@ -30,10 +31,15 @@ in {
       job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};
     };
 
-    cicero = {
-      job.cicero =
-        import ./cicero {
-        };
+    cicero = import ./cicero {
+      inherit inputs cell;
+      inherit (constants.args.prod) domain namespace;
+      inherit (constants.prod.cicero) databaseUrl;
+    };
+
+    webhooks = import ./webhooks {
+      inherit inputs cell;
+      inherit (constants.args.prod) domain namespace;
     };
   };
 }

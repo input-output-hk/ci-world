@@ -58,7 +58,6 @@ in {
       capsules.integrations
       capsules.tools
       bitte-cells.patroni.devshellProfiles.default
-      bitte-cells.cardano.devshellProfiles.default
     ];
     commands = let
       withCategory = category: attrset: attrset // {inherit category;};

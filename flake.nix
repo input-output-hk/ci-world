@@ -19,7 +19,7 @@
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix";
     spongix.inputs.cicero.follows = "cicero";
-    cicero.url = "github:input-output-hk/cicero";
+    cicero.url = "github:input-output-hk/cicero/new-trigger";
     cicero.inputs.nixpkgs.follows = "nixpkgs";
     cicero.inputs.spongix.follows = "spongix";
     cicero.inputs.driver.follows = "nomad-driver-nix";
@@ -41,6 +41,7 @@
         (inputs.std.runnables "entrypoints")
         (inputs.std.functions "bitteProfile")
         (inputs.std.functions "oci-images")
+        (inputs.std.functions "library")
         (inputs.std.installables "packages")
         (inputs.std.functions "hydrationProfile")
         (inputs.std.runnables "jobs")
