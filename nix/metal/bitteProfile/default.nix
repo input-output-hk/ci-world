@@ -32,6 +32,7 @@ in {
           bitte.profiles.nomad-follower
           "${self.inputs.nixpkgs}/nixos/modules/profiles/headless.nix"
           ./spongix-user.nix
+          ./podman.nix
           ({lib, ...}: {
             services.glusterfs.enable = lib.mkForce false;
 
@@ -192,15 +193,15 @@ in {
                 useVaultBackend = true;
               };
 
-              # For spongix digest-auth
-              secrets.install.digestAuth = {
+              # For spongix basic auth
+              secrets.install.basicAuth = {
                 inputType = "binary";
                 outputType = "binary";
-                source = "${etcEncrypted}/digest-auth";
-                target = /var/lib/traefik/digest-auth;
+                source = "${etcEncrypted}/basic-auth";
+                target = /var/lib/traefik/basic-auth;
                 script = ''
-                  chown traefik:traefik /var/lib/traefik/digest-auth
-                  chmod 0600 /var/lib/traefik/digest-auth
+                  chown traefik:traefik /var/lib/traefik/basic-auth
+                  chmod 0600 /var/lib/traefik/basic-auth
                 '';
               };
             })

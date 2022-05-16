@@ -26,7 +26,5 @@ in rec {
     patroniMods.scaling = 3;
     patroniMods.resources.cpu = 12000;
     patroniMods.resources.memory = 16 * 1024;
-
-    cicero.databaseUrl = "postgres://cicero:@master.prod-database.service.consul:5432/cicero?sslmode=disable";
   };
 }

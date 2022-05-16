@@ -34,7 +34,6 @@ in {
     cicero = import ./cicero {
       inherit inputs cell;
       inherit (constants.args.prod) domain namespace;
-      inherit (constants.prod.cicero) databaseUrl;
     };
 
     webhooks = import ./webhooks {

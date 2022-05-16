@@ -988,11 +988,11 @@
         "utils": "utils_18"
       },
       "locked": {
-        "lastModified": 1652375137,
-        "narHash": "sha256-PkMJ3jVQcxzPoDAeCOYp69Gz1szhWK3NkHtkgDG5co0=",
+        "lastModified": 1652471601,
+        "narHash": "sha256-3CQt9C3fAIgQC5c0zM/dELhBbC1V71grgaK8EBmGhYA=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "a3ba9c8fa41c967d6625301a4bfa3adc4b23e87a",
+        "rev": "5f37821e907bae94cc205bbb429b729753088b08",
         "type": "github"
       },
       "original": {
@@ -5451,11 +5451,11 @@
         "utils": "utils_20"
       },
       "locked": {
-        "lastModified": 1652194746,
-        "narHash": "sha256-v3foO7MNx3shNpkZmjk3m+f7mwagvuX2UyOJsk4hpkU=",
+        "lastModified": 1652474186,
+        "narHash": "sha256-PILVEX1e4ze0gxK60TDuX+E/umnwelHir/83dfXmTTU=",
         "owner": "input-output-hk",
         "repo": "spongix",
-        "rev": "d4c54db0a279e807795605977e611303aaaa6c56",
+        "rev": "a08bcc8f0bb63e372bf82abe5ad1f001e6b4d566",
         "type": "github"
       },
       "original": {

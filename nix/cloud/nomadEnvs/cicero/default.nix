@@ -4,7 +4,6 @@
   namespace,
   domain,
   datacenters ? ["eu-central-1"],
-  databaseUrl,
 }: let
   inherit (cell.library) ociNamer;
   inherit (cell) oci-images;
@@ -83,61 +82,6 @@
   ];
 
   commonGroup = {
-    service = [
-      {
-        name = "cicero-internal";
-        address_mode = "auto";
-        port = "http";
-        tags = [
-          "cicero"
-          "ingress"
-          "\${NOMAD_ALLOC_ID}"
-          "traefik.enable=true"
-          "traefik.http.routers.cicero-internal.rule=Host(`cicero.infra.aws.iohkdev.io`) && HeadersRegexp(`Authorization`, `Basic`)"
-          "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
-          "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
-          "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
-          "traefik.http.routers.cicero-internal.entrypoints=https"
-          "traefik.http.routers.cicero-internal.tls=true"
-          "traefik.http.routers.cicero-internal.tls.certresolver=acme"
-        ];
-        canary_tags = ["cicero"];
-        check = [
-          {
-            type = "tcp";
-            port = "http";
-            interval = "10s";
-            timeout = "2s";
-          }
-        ];
-      }
-      {
-        name = "cicero";
-        address_mode = "auto";
-        port = "http";
-        tags = [
-          "cicero"
-          "ingress"
-          "\${NOMAD_ALLOC_ID}"
-          "traefik.enable=true"
-          "traefik.http.routers.cicero.rule=Host(`cicero.infra.aws.iohkdev.io`)"
-          "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
-          "traefik.http.routers.cicero.entrypoints=https"
-          "traefik.http.routers.cicero.tls=true"
-          "traefik.http.routers.cicero.tls.certresolver=acme"
-        ];
-        canary_tags = ["cicero"];
-        check = [
-          {
-            type = "tcp";
-            port = "http";
-            interval = "10s";
-            timeout = "2s";
-          }
-        ];
-      }
-    ];
-
     restart = {
       attempts = 5;
       delay = "10s";
@@ -174,7 +118,6 @@
       };
 
       env = {
-        DATABASE_URL = databaseUrl;
         NOMAD_ADDR = "https://nomad.${domain}";
         VAULT_ADDR = "https://vault.${domain}";
       };
@@ -210,32 +153,97 @@
               	helper = netrc -vkf /secrets/netrc
             '';
           }
+
+          {
+            destination = "/secrets/db";
+            data = let
+              pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.value}}{{end}}'';
+            in ''
+              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?targetServerType=primary
+            '';
+            env = true;
+          }
         ];
     };
   };
 in {
   job.cicero = {
-    inherit namespace;
+    inherit datacenters namespace;
 
     group.cicero = merge commonGroup {
+      service = [
+        {
+          name = "cicero-internal";
+          address_mode = "auto";
+          port = "http";
+          tags = [
+            "cicero"
+            "ingress"
+            "\${NOMAD_ALLOC_ID}"
+            "traefik.enable=true"
+            "traefik.http.routers.cicero-internal.rule=Host(`cicero.infra.aws.iohkdev.io`) && HeadersRegexp(`Authorization`, `Basic`)"
+            "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
+            "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
+            "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
+            "traefik.http.routers.cicero-internal.entrypoints=https"
+            "traefik.http.routers.cicero-internal.tls=true"
+            "traefik.http.routers.cicero-internal.tls.certresolver=acme"
+          ];
+          canary_tags = ["cicero"];
+          check = [
+            {
+              type = "tcp";
+              port = "http";
+              interval = "10s";
+              timeout = "2s";
+            }
+          ];
+        }
+        {
+          name = "cicero";
+          address_mode = "auto";
+          port = "http";
+          tags = [
+            "cicero"
+            "ingress"
+            "\${NOMAD_ALLOC_ID}"
+            "traefik.enable=true"
+            "traefik.http.routers.cicero.rule=Host(`cicero.infra.aws.iohkdev.io`)"
+            "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
+            "traefik.http.routers.cicero.entrypoints=https"
+            "traefik.http.routers.cicero.tls=true"
+            "traefik.http.routers.cicero.tls.certresolver=acme"
+          ];
+          canary_tags = ["cicero"];
+          check = [
+            {
+              type = "tcp";
+              port = "http";
+              interval = "10s";
+              timeout = "2s";
+            }
+          ];
+        }
+      ];
+
       network.port.http = {};
 
-      task.cicero.config.command = lib.flatten [
+      task.cicero.config.command = lib.concatStringsSep " " (lib.flatten [
         "/bin/entrypoint"
         ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
         ["--prometheus-addr" "http://monitoring.node.consul:3100"]
         ["--web-listen" ":\${NOMAD_PORT_http}"]
         ["--transform" (map (t: t.destination) transformers)]
-      ];
+      ]);
     };
 
     group.cicero-nomad = merge commonGroup {
       count = 3;
 
-      task.cicero.config.command = lib.flatten [
+      task.cicero.config.command = lib.concatStringsSep " " (lib.flatten [
         ["/bin/entrypoint" "nomad"]
         ["--transform" (map (t: t.destination) transformers)]
-      ];
+      ]);
     };
   };
 }

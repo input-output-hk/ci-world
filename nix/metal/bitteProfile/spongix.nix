@@ -48,13 +48,22 @@ in {
           "traefik.http.routers.spongix.entrypoints=https"
           "traefik.http.routers.spongix.tls=true"
           "traefik.http.routers.spongix.tls.certresolver=acme"
+
+          "traefik.http.routers.spongix-oci.rule=Host(`oci.ci.iog.io`)"
+          "traefik.http.routers.spongix-oci.entrypoints=https"
+          "traefik.http.routers.spongix-oci.tls=true"
+          "traefik.http.routers.spongix-oci.tls.certresolver=acme"
+          "traefik.http.routers.spongix-oci.middlewares=spongix-auth"
+
           "traefik.http.routers.spongix-auth.rule=Host(`cache.ci.iog.io`,`cache.iog.io`) && Method(`PUT`, `POST`, `PATCH`)"
           "traefik.http.routers.spongix-auth.entrypoints=https"
           "traefik.http.routers.spongix-auth.tls=true"
           "traefik.http.routers.spongix-auth.tls.certresolver=acme"
           "traefik.http.routers.spongix-auth.middlewares=spongix-auth"
-          "traefik.http.middlewares.spongix-auth.digestauth.usersfile=/var/lib/traefik/digest-auth"
-          "traefik.http.middlewares.spongix-auth.digestauth.removeheader=true"
+
+          "traefik.http.middlewares.spongix-auth.basicauth.usersfile=/var/lib/traefik/basic-auth"
+          "traefik.http.middlewares.spongix-auth.basicauth.realm=Spongix"
+          "traefik.http.middlewares.spongix-auth.basicauth.removeheader=true"
         ];
 
         checks = {
