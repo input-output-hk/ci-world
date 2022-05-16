@@ -220,6 +220,7 @@ in {
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
+            (bitte + /profiles/auxiliaries/docker-registry.nix)
             ./builder.nix
             ./spongix-user.nix
           ];

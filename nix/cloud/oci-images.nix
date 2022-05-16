@@ -18,7 +18,7 @@ in {
     contents = [
       (symlinkJoin {
         name = "root";
-        paths = [bash jq];
+        paths = [bash jq cicero-entrypoint];
       })
     ];
   };

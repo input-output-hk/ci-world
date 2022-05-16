@@ -7,7 +7,7 @@
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/ci-world-mods";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/bitte";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/ci-world-mods";
     bitte-cells.url = "github:input-output-hk/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------

@@ -7,6 +7,7 @@
 }: let
   inherit (cell.library) ociNamer;
   inherit (cell) oci-images;
+  inherit (inputs.cicero.packages) cicero-entrypoint;
   inherit (inputs.data-merge) merge;
   inherit (inputs.nixpkgs) writeText lib;
 
@@ -36,11 +37,11 @@
       perms = "544";
       data = let
         args = writeText "args.json" (builtins.toJSON {
-          datacenters = ["eu-central-1" "us-east-2"];
-          ciceroWebUrl = "https://cicero.infra.aws.iohkdev.io";
+          datacenters = ["eu-central-1"];
+          ciceroWebUrl = "https://cicero.ci.iog.io";
           nixConfig = ''
             extra-substituters = http://spongix.service.consul:7745?compression=none
-            extra-trusted-public-keys = infra-production-0:T7ZxFWDaNjyEiiYDe6uZn0eq+77gORGkdec+kYwaB1M= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+            extra-trusted-public-keys = ci-world-0:fdT/Z5YK5dxaV/kROE4EqaxwTcQSpVpVCSTKuTyIXFY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
             post-build-hook = /local/post-build-hook
           '';
           postBuildHook = ''
@@ -181,7 +182,7 @@ in {
             "ingress"
             "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
-            "traefik.http.routers.cicero-internal.rule=Host(`cicero.infra.aws.iohkdev.io`) && HeadersRegexp(`Authorization`, `Basic`)"
+            "traefik.http.routers.cicero-internal.rule=Host(`cicero.ci.iog.io`,`cicero.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
             "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
             "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
             "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
@@ -208,7 +209,7 @@ in {
             "ingress"
             "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
-            "traefik.http.routers.cicero.rule=Host(`cicero.infra.aws.iohkdev.io`)"
+            "traefik.http.routers.cicero.rule=Host(`cicero.ci.iog.io`,`cicero.iog.io`)"
             "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
             "traefik.http.routers.cicero.entrypoints=https"
             "traefik.http.routers.cicero.tls=true"
@@ -228,22 +229,27 @@ in {
 
       network.port.http = {};
 
-      task.cicero.config.command = lib.concatStringsSep " " (lib.flatten [
-        "/bin/entrypoint"
-        ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
-        ["--prometheus-addr" "http://monitoring.node.consul:3100"]
-        ["--web-listen" ":\${NOMAD_PORT_http}"]
-        ["--transform" (map (t: t.destination) transformers)]
-      ]);
+      task.cicero.config = {
+        command = "/bin/entrypoint";
+        args = lib.flatten [
+          ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
+          ["--prometheus-addr" "http://monitoring.node.consul:3100"]
+          ["--web-listen" ":\${NOMAD_PORT_http}"]
+          ["--transform" (map (t: t.destination) transformers)]
+        ];
+      };
     };
 
     group.cicero-nomad = merge commonGroup {
       count = 3;
 
-      task.cicero.config.command = lib.concatStringsSep " " (lib.flatten [
-        ["/bin/entrypoint" "nomad"]
-        ["--transform" (map (t: t.destination) transformers)]
-      ]);
+      task.cicero.config = {
+        command = "/bin/entrypoint";
+        args = lib.flatten [
+          ["nomad"]
+          ["--transform" (map (t: t.destination) transformers)]
+        ];
+      };
     };
   };
 }
