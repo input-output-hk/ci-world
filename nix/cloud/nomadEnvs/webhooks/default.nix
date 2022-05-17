@@ -3,13 +3,14 @@
   inputs,
   domain,
   namespace,
+  datacenters ? ["eu-central-1"],
 }: let
   inherit (cell.library) ociNamer;
   inherit (cell) oci-images;
   inherit (inputs.nixpkgs) lib;
 in {
   job.webhooks = {
-    inherit namespace;
+    inherit datacenters namespace;
 
     group.webhooks = {
       restart = {
@@ -26,10 +27,7 @@ in {
         unlimited = true;
       };
 
-      network = {
-        mode = "host";
-        port.http = {};
-      };
+      network.port.http.to = "8080";
 
       service = [
         {
@@ -57,13 +55,15 @@ in {
       ];
 
       task.webhooks = {
-        driver = "podman";
+        driver = "docker";
 
         config = {
           image = ociNamer oci-images.webhook-trigger;
+          ports = ["http"];
+          command = "${inputs.cicero.packages.webhook-trigger}/bin/trigger";
           args = lib.flatten [
-            ["--port" "{{env \"NOMAD_PORT_http\"}}"]
-            ["--secret-file" "/secret/webhook"]
+            ["--port" "8080"]
+            ["--secret-file" "/secrets/webhook"]
           ];
         };
 

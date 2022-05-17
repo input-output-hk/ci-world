@@ -160,7 +160,7 @@
             data = let
               pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.data.value}}{{end}}'';
             in ''
-              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?targetServerType=primary
+              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?target_session_attrs=read-write
             '';
             env = true;
           }
@@ -179,9 +179,8 @@ in {
           port = "http";
           tags = [
             "ingress"
-            "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
-            "traefik.http.routers.cicero-internal.rule=Host(`cicero.ci.iog.io`,`cicero.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
+            "traefik.http.routers.cicero-internal.rule=Host(`cicero.ci.iog.io`, `cicero.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
             "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
             "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
             "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
@@ -205,9 +204,8 @@ in {
           port = "http";
           tags = [
             "ingress"
-            "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
-            "traefik.http.routers.cicero.rule=Host(`cicero.ci.iog.io`,`cicero.iog.io`)"
+            "traefik.http.routers.cicero.rule=Host(`cicero.ci.iog.io`, `cicero.iog.io`)"
             "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
             "traefik.http.routers.cicero.entrypoints=https"
             "traefik.http.routers.cicero.tls=true"
@@ -225,14 +223,15 @@ in {
         }
       ];
 
-      network.port.http = {};
+      network.port.http.to = 8080;
 
       task.cicero.config = {
+        ports = ["http"];
         command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
           ["--prometheus-addr" "http://monitoring.node.consul:3100"]
-          ["--web-listen" ":\${NOMAD_PORT_http}"]
+          ["--web-listen" ":8080"]
           ["--transform" (map (t: t.destination) transformers)]
         ];
       };
@@ -242,7 +241,7 @@ in {
       count = 3;
 
       task.cicero.config = {
-        command = "${inputs.cicero.packages.webhook-trigger}/bin/trigger";
+        command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["nomad"]
           ["--transform" (map (t: t.destination) transformers)]

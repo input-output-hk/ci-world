@@ -37,6 +37,7 @@ in {
             services.glusterfs.enable = lib.mkForce false;
 
             profiles.auxiliaries.builder.remoteBuilder.buildMachine.supportedFeatures = ["big-parallel"];
+            virtualisation.containers.ociSeccompBpfHook.enable = true;
 
             systemd.services.nomad.serviceConfig = {
               JobTimeoutSec = "600s";

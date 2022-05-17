@@ -8,11 +8,12 @@
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/ci-world-mods";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/ci-world-mods";
+    # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.follows = "bitte/nixpkgs";
     capsules.url = "github:input-output-hk/devshell-capsules";
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";

@@ -35,19 +35,25 @@ in {
   in
     buildImage {
       name = "registry.ci.iog.io/cicero";
-      config.Entrypoint = ["${cell.entrypoints.cicero}/bin/entrypoint"];
+      config.Cmd = ["${cell.entrypoints.cicero}/bin/entrypoint"];
       config.Env = lib.mapAttrsToList (n: v: "${n}=${v}") {
         NIX_CONFIG = ''
           sandbox = false
           experimental-features = nix-command flakes
         '';
+        PATH = lib.makeBinPath (with inputs.nixpkgs; [
+          bashInteractive
+          strace
+          nix
+          coreutils
+        ]);
         SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
       };
       maxLayers = 60;
       contents = [
         (symlinkJoin {
           name = "root";
-          paths = [global];
+          paths = [cell.entrypoints.cicero inputs.nixpkgs.bashInteractive global];
         })
         tmp
       ];
