@@ -2,7 +2,8 @@
   description = "CI World";
   inputs = {
     std.url = "github:divnix/std";
-    std.inputs.nixpkgs.follows = "nixpkgs";
+    # bitte/nixpkgs doesn't yet package adrgen, used by std
+    # std.inputs.nixpkgs.follows = "nixpkgs";
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
