@@ -104,7 +104,7 @@
     };
 
     task.cicero = {
-      driver = "podman";
+      driver = "docker";
 
       config.image = ociNamer oci-images.cicero;
 
@@ -158,7 +158,7 @@
           {
             destination = "/secrets/db";
             data = let
-              pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.value}}{{end}}'';
+              pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.data.value}}{{end}}'';
             in ''
               DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?targetServerType=primary
             '';
@@ -178,7 +178,6 @@ in {
           address_mode = "auto";
           port = "http";
           tags = [
-            "cicero"
             "ingress"
             "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
@@ -205,7 +204,6 @@ in {
           address_mode = "auto";
           port = "http";
           tags = [
-            "cicero"
             "ingress"
             "\${NOMAD_ALLOC_ID}"
             "traefik.enable=true"
@@ -230,7 +228,7 @@ in {
       network.port.http = {};
 
       task.cicero.config = {
-        command = "/bin/entrypoint";
+        command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
           ["--prometheus-addr" "http://monitoring.node.consul:3100"]
@@ -244,7 +242,7 @@ in {
       count = 3;
 
       task.cicero.config = {
-        command = "/bin/entrypoint";
+        command = "${inputs.cicero.packages.webhook-trigger}/bin/trigger";
         args = lib.flatten [
           ["nomad"]
           ["--transform" (map (t: t.destination) transformers)]
