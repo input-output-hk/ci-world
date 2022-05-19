@@ -365,11 +365,11 @@
         "vulnix": "vulnix"
       },
       "locked": {
-        "lastModified": 1652822092,
-        "narHash": "sha256-Z0L3Cul3QTEqZptnxb+ho803tr048hvc4aeyo+d0O9w=",
+        "lastModified": 1652928756,
+        "narHash": "sha256-TaMyWrVPxRVrSRn764rIkv2ZiOTTVwlp2bjZ1HyJ1uU=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "9f8ccf244c41c15111feb41f6db836015ff09277",
+        "rev": "90c5c4c358f413bdaa7c95d6a8196e762ed27477",
         "type": "github"
       },
       "original": {
@@ -4757,16 +4757,16 @@
     },
     "nixpkgs_5": {
       "locked": {
-        "lastModified": 1652559422,
-        "narHash": "sha256-jPVTNImBTUIFdtur+d4IVot6eXmsvtOcBm0TzxmhWPk=",
-        "owner": "nixos",
+        "lastModified": 1652918309,
+        "narHash": "sha256-YR75PjHvpAtiFjL7haThw53EhI5x/5Verci4U+METU8=",
+        "owner": "input-output-hk",
         "repo": "nixpkgs",
-        "rev": "8b3398bc7587ebb79f93dfeea1b8c574d3c6dba1",
+        "rev": "074ee8cdc2a4b048aa2442e88ee0634c5c65edc9",
         "type": "github"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixos-21.11",
+        "owner": "input-output-hk",
+        "ref": "21.11-patch",
         "repo": "nixpkgs",
         "type": "github"
       }
