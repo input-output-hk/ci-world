@@ -7,8 +7,8 @@
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
-    bitte.url = "github:input-output-hk/bitte/ci-world-mods";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/ci-world-mods";
+    bitte.url = "github:input-output-hk/bitte/ci-world-mods-rebase";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/ci-world-mods-rebase";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
