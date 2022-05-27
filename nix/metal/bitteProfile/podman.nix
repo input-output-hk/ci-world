@@ -6,6 +6,14 @@
   dockerAuth,
   ...
 }: {
+  # Avoid errors due to default overlay driver and zfs systemd execStart opt from showing in cli cmds.
+  # Ref: https://github.com/NixOS/nixpkgs/issues/145261#issuecomment-964855713
+  virtualisation.containers.storage.settings.storage = {
+    driver = "zfs";
+    graphroot = "/var/lib/containers/storage";
+    runroot = "/run/containers/storage";
+  };
+
   virtualisation.podman = {
     enable = true;
     defaultNetwork.dnsname.enable = true;
