@@ -485,11 +485,11 @@
         "vulnix": "vulnix_2"
       },
       "locked": {
-        "lastModified": 1653693611,
-        "narHash": "sha256-n1gjHNlZGWMBY+FeCF07g3nWPd7iRh3tvVzWeItb2S0=",
+        "lastModified": 1653694777,
+        "narHash": "sha256-5jX5mIoiw5UH8o6Q85qYIvoRkfKEUTKHsdUVHFDkPQ8=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "92e0573c8f1dcdbfb063ca1ce20c0f82177a95f2",
+        "rev": "d4d2208aace5c81d72b63f99b251ad909c1640d3",
         "type": "github"
       },
       "original": {

@@ -220,9 +220,10 @@ in {
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
-            (bitte + /profiles/auxiliaries/docker-registry.nix)
+            (bitte + /modules/docker-registry.nix)
             ./builder.nix
             ./spongix-user.nix
+            {services.docker-registry.enable = true;}
           ];
 
           securityGroupRules = {
