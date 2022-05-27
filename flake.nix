@@ -10,7 +10,7 @@
     bitte.url = "github:input-output-hk/bitte/ci-world-mods-rebase";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/ci-world-mods-rebase";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells";
+    bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-backup";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------

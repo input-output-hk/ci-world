@@ -73,9 +73,7 @@ in {
         #   client-$REGION-$INSTANCE_TYPE-$ASG_SUFFIX
       in
         lib.listToAttrs (lib.forEach [
-            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1a" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["a"];})
-            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1b" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["b"];})
-            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 500 "prod" "prod1c" {withPatroni = true;} {vpcZoneIdentifierSuffix = ["c"];})
+            (mkAsgs "eu-central-1" 3 "m5.8xlarge" 500 "prod" "prod" {withPatroni = true;} {})
             (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "test" "test" {} {})
           ]
           (args: let

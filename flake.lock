@@ -485,11 +485,11 @@
         "vulnix": "vulnix_2"
       },
       "locked": {
-        "lastModified": 1653611821,
-        "narHash": "sha256-PKKEa48rczq7+JaBJIn1MiKt4yJyOyUuWc266NOT39g=",
+        "lastModified": 1653693611,
+        "narHash": "sha256-n1gjHNlZGWMBY+FeCF07g3nWPd7iRh3tvVzWeItb2S0=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "12df91dbf4377196594f0fccab1bf4b1d6cdb4fd",
+        "rev": "92e0573c8f1dcdbfb063ca1ce20c0f82177a95f2",
         "type": "github"
       },
       "original": {
@@ -512,15 +512,16 @@
         "std": "std_2"
       },
       "locked": {
-        "lastModified": 1653597050,
-        "narHash": "sha256-tjrEP6cdGVK7HTrF2kWqRXOL4CEMa2XWUZNy4ojwGUI=",
+        "lastModified": 1653688376,
+        "narHash": "sha256-Y/jG/Poi1Q/pwP3ttn/cS4UQ2uA6inHHswo7Nbl9Xk8=",
         "owner": "input-output-hk",
         "repo": "bitte-cells",
-        "rev": "14971752e2fe63da0113389d8c0b52c85b1c47e1",
+        "rev": "29b52690a0e26eece49dfd9f0972ff77d26f8116",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "patroni-backup",
         "repo": "bitte-cells",
         "type": "github"
       }
