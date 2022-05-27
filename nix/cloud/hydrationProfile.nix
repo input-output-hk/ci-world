@@ -2,40 +2,22 @@
   inputs,
   cell,
 }: let
-  inherit (inputs.bitte-cells) patroni;
-  namespaces = [
-    "prod"
-  ];
-  components = [
-    # Patroni bitte-cell
-    "database"
-  ];
+  inherit (inputs) bitte-cells;
 in {
+  # Bitte Hydrate Module
+  # -----------------------------------------------------------------------
+
   default = {
     lib,
-    config,
-    terralib,
+    bittelib,
     ...
-  }: let
-    inherit (terralib) allowS3For;
-    bucketArn = "arn:aws:s3:::${config.cluster.s3Bucket}";
-    allowS3ForBucket = allowS3For bucketArn;
-
-    inherit (terralib) var id;
-    c = "create";
-    r = "read";
-    u = "update";
-    d = "delete";
-    l = "list";
-    s = "sudo";
-
-    secretsFolder = "encrypted";
-    starttimeSecretsPath = "kv/nomad-cluster";
-    runtimeSecretsPath = "runtime";
-  in {
+  }: {
     imports = [
-      (patroni.hydrationProfiles.hydrate-cluster namespaces)
+      (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["prod"])
     ];
+
+    # NixOS-level hydration
+    # --------------
 
     cluster = {
       name = "ci-world";
@@ -62,7 +44,7 @@ in {
       ];
     };
 
-    # cluster level
+    # cluster level (terraform)
     # --------------
     tf.hydrate-cluster.configuration = {
       resource.vault_github_team.marlowe-devops = {
@@ -216,62 +198,25 @@ in {
       };
     };
 
-    # application secrets
-    # --------------
-    tf.hydrate-secrets.configuration = let
-      _componentsXNamespaces = lib.cartesianProductOfSets {
-        namespace = namespaces;
-        component = components;
-        stage = ["starttime"];
-      };
-
-      secretFile = g: ./. + "/${secretsFolder}/${g.namespace}/${g.component}-${g.namespace}-${g.stage}.enc.yaml";
-      hasSecretFile = g: builtins.pathExists (secretFile g);
-
-      secretsData.sops_file =
-        builtins.foldl'
-        (old: g:
-          old
-          // (lib.optionalAttrs (hasSecretFile g) {
-            # Decrypting secrets from the files
-            "${g.component}-secrets-${g.namespace}-${g.stage}".source_file = "${secretFile g}";
-          }))
-        {}
-        _componentsXNamespaces;
-
-      secretsResource.vault_generic_secret =
-        builtins.foldl'
-        (old: g:
-          old
-          // (
-            lib.optionalAttrs (hasSecretFile g) (
-              if g.stage == "starttime"
-              then {
-                # Loading secrets into the generic kv secrets resource
-                "${g.component}-${g.namespace}-${g.stage}" = {
-                  path = "${starttimeSecretsPath}/${g.namespace}/${g.component}";
-                  data_json = var "jsonencode(yamldecode(data.sops_file.${g.component}-secrets-${g.namespace}-${g.stage}.raw))";
-                };
-              }
-              else {
-                # Loading secrets into the generic kv secrets resource
-                "${g.component}-${g.namespace}-${g.stage}" = {
-                  path = "${runtimeSecretsPath}/${g.namespace}/${g.component}";
-                  data_json = var "jsonencode(yamldecode(data.sops_file.${g.component}-secrets-${g.namespace}-${g.stage}.raw))";
-                };
-              }
-            )
-          ))
-        {}
-        _componentsXNamespaces;
-    in {
-      data = secretsData;
-      resource = secretsResource;
-    };
-
-    # application state
+    # application state (terraform)
     # --------------
     tf.hydrate-app.configuration = let
-    in {};
+      vault' = {
+        dir = ./. + "/kv/vault";
+        prefix = "kv";
+      };
+      # consul' = {
+      #   dir = ./. + "/kv/consul";
+      #   prefix = "config";
+      # };
+      vault = bittelib.mkVaultResources {inherit (vault') dir prefix;};
+      # consul = bittelib.mkConsulResources {inherit (consul') dir prefix;};
+    in {
+      data = {inherit (vault) sops_file;};
+      resource = {
+        inherit (vault) vault_generic_secret;
+        # inherit (consul) consul_keys;
+      };
+    };
   };
 }
