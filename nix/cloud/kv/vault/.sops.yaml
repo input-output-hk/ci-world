@@ -1,3 +1,5 @@
 creation_rules:
+  - path_regex: cicero/*
+    hc_vault_transit_uri: "https://vault.ci.iog.io/v1/sops/keys/ops"
   - path_regex: patroni/prod*
     hc_vault_transit_uri: "https://vault.ci.iog.io/v1/sops/keys/ops"

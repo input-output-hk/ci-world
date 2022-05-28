@@ -1,0 +1,18 @@
+user: ENC[AES256_GCM,data:WgoVqoE1MzL/,iv:tPFQdvpjAaD1verqbw5Gx7HnDAMdE0BDXho/2YsynTo=,tag:Zpq5g3KKhl5xagrnvQUsNQ==,type:str]
+password: ENC[AES256_GCM,data:osYxQxcC0w6MIn98CcJjOJJ83SvXGKhLxk711TGhTgg=,iv:7DatN/CBXfFv+4X+yqQ/prb8G6ALymc9TGyuFrKqIgk=,tag:c4HcuzJKu2YRN+IcIGEcrg==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: ops
+          created_at: "2022-04-22T16:31:48Z"
+          enc: vault:v1:NKNt0+n8/ij6bjpHqxgMu+M4bsF+RasH1yzL2H7lBlnltXuQYFMPCvrfCsd/B+/LAw4Nc3N7sTHBlSlO
+    age: []
+    lastmodified: "2022-05-28T00:07:51Z"
+    mac: ENC[AES256_GCM,data:gnn/X9oy7/k7a81hE392Xz4Dh0undomHqCLKNb6cxkqj17YYAczyqgBBopBhbi3h94v+P4o22O5XWwpCmOjv1UmEfLphBAXltkDoWHMbfWzNVP4gZdtAg5ntI1bb2KOUGl9OB2EVm3MDX2kDksgvb9VbGJegZfnjMFGPqK3jXrE=,iv:3U2m2/D6R8OrqMaycfDxpzduhb8946MXRVeWSqILcbk=,tag:pdpoFZ/LfrFX09KKr5VYxA==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.2

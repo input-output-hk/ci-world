@@ -1,0 +1,17 @@
+basic: ENC[AES256_GCM,data:BbwpO4gywlvSapmv/D7+0A==,iv:oZKpfZvhPFwu6FoVFmT0vlKKW2pdIm/xdkhVFIWqX5I=,tag:kguzXNjwx3SCy2lTeeU93g==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: ops
+          created_at: "2022-04-22T16:31:48Z"
+          enc: vault:v1:NKNt0+n8/ij6bjpHqxgMu+M4bsF+RasH1yzL2H7lBlnltXuQYFMPCvrfCsd/B+/LAw4Nc3N7sTHBlSlO
+    age: []
+    lastmodified: "2022-05-28T00:06:21Z"
+    mac: ENC[AES256_GCM,data:j/sWcRxwcVB/rKPDRiJzgTcnEZfilzs635ZMqpx84KwDQWLxNnckFa3U50f5dm8O/Ki+7/ZDRiU/72QFJ0zYbFvZcPRn4ZZ+eLQey6lVkJ0PWTeR9QFpK61rcIIGMdgHQmV12y9prehJaIRozrVUdrKM7hJ2iw3CST9G20Eeiag=,iv:dshyG2NFsHM1UGUhM+Fo6GgZosrYPA6dGRB/ueLFnmc=,tag:+hwC/4vt7yCAs2eI2pZ3Jw==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.2
