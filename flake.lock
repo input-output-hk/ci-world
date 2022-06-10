@@ -485,16 +485,16 @@
         "vulnix": "vulnix_2"
       },
       "locked": {
-        "lastModified": 1653694777,
-        "narHash": "sha256-5jX5mIoiw5UH8o6Q85qYIvoRkfKEUTKHsdUVHFDkPQ8=",
+        "lastModified": 1654863499,
+        "narHash": "sha256-SZ2y10Vz/DSk9bGAxl1HPrzRnpemNqYXI/KmLxYVBQ8=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "d4d2208aace5c81d72b63f99b251ad909c1640d3",
+        "rev": "e690906c1fd84c362b467a3144b89bab8ebdb331",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "ci-world-mods-rebase",
+        "ref": "bump-docker-distribution",
         "repo": "bitte",
         "type": "github"
       }
