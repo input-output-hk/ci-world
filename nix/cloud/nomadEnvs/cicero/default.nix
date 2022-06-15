@@ -11,32 +11,14 @@
   inherit (inputs.data-merge) merge;
   inherit (inputs.nixpkgs) writeText lib;
 
-  # arbitrary revision from nixpkgs-unstable
-  nixpkgsRev = "19574af0af3ffaf7c9e359744ed32556f34536bd";
-
   transformers = [
     {
-      destination = "local/transformer.sh";
-      perms = "544";
-      data = ''
-        #! /bin/bash
-        /bin/jq '
-        	.job[]?.datacenters |= . + ["dc1"] |
-        	.job[]?.group[]?.restart.attempts = 0 |
-        	.job[]?.group[]?.task[]?.env |= . + {
-        		NOMAD_ADDR: env.NOMAD_ADDR,
-        		NOMAD_TOKEN: env.NOMAD_TOKEN,
-        	} |
-        	.job[]?.group[]?.task[]?.vault.policies |= . + ["cicero"]
-        '
-      '';
-    }
-
-    {
-      destination = "local/transformer-prod.sh";
+      destination = "/local/transformer-prod.sh";
       perms = "544";
       data = let
-        args = writeText "args.json" (builtins.toJSON {
+        args = {
+          # arbitrary revision from nixpkgs-unstable
+          nixpkgsRev = "19574af0af3ffaf7c9e359744ed32556f34536bd";
           datacenters = ["eu-central-1"];
           ciceroWebUrl = "https://cicero.ci.iog.io";
           nixConfig = ''
@@ -53,31 +35,36 @@
               exec nix copy --to "http://spongix.service.consul:7745?compression=none" $OUT_PATHS
             fi
           '';
-        });
+        };
       in ''
         #! /bin/bash
-        /bin/jq \
-          --argjson args "$(< ${args})" \
+        /bin/jq --compact-output \
+          --argjson args ${lib.escapeShellArg (builtins.toJSON args)} \
           '
-        	.job[]?.datacenters |= . + $args.datacenters |
-        	.job[]?.group[]?.task[]? |= if .config?.nix then (
-        		.env |= . + {
-        			CICERO_WEB_URL: $args.ciceroWebUrl,
-        			NIX_CONFIG: $.args.nixConfig + .NIX_CONFIG,
-        		} |
-        		.config.packages |=
-        			# only add bash if needed to avoid conflicts in profile
-        			if any(endswith("#bash") or endswith("#bashInteractive"))
-        			then .
-        			else . + ["github:NixOS/nixpkgs/${nixpkgsRev}#bash"]
-        			end |
-        		.template |= . + [{
-        			destination: "local/post-build-hook",
-        			perms: "544",
-        			data: $args.postBuildHook
-        		}]
-        	) else . end
-        '
+            .job[]?.datacenters |= . + $args.datacenters |
+            .job[]?.group[]?.task[]? |= (
+              .vault.policies |= . + ["cicero"] |
+              .env |= . + {
+                NOMAD_ADDR: env.NOMAD_ADDR,
+                NOMAD_TOKEN: env.NOMAD_TOKEN,
+                CICERO_WEB_URL: $args.ciceroWebUrl,
+                NIX_CONFIG: ($args.nixConfig + .NIX_CONFIG),
+              } |
+              .template |= . + [{
+                destination: "local/post-build-hook",
+                perms: "544",
+                data: $args.postBuildHook,
+              }] |
+              if .driver != "nix" or .config?.nixos then . else
+                .config.packages |=
+                  # only add bash if needed to avoid conflicts in profile
+                  if any(endswith("#bash") or endswith("#bashInteractive"))
+                  then .
+                  else . + ["github:NixOS/nixpkgs/\($args.nixpkgsRev)#bash"]
+                  end
+              end
+            )
+          '
       '';
     }
   ];
@@ -106,7 +93,10 @@
     task.cicero = {
       driver = "docker";
 
-      config.image = ociNamer oci-images.cicero;
+      config = {
+        image = ociNamer oci-images.cicero;
+        command = "${cell.entrypoints.cicero}/bin/entrypoint";
+      };
 
       vault = {
         policies = ["cicero"];
@@ -227,7 +217,6 @@ in {
 
       task.cicero.config = {
         ports = ["http"];
-        command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
           ["--prometheus-addr" "http://monitoring.node.consul:3100"]
@@ -241,7 +230,6 @@ in {
       count = 3;
 
       task.cicero.config = {
-        command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["nomad"]
           ["--transform" (map (t: t.destination) transformers)]

@@ -10,7 +10,7 @@ in {
     runtimeInputs = with inputs.nixpkgs; [
       cicero
       cicero-evaluator-nix
-      nix
+      inputs.cicero.inputs.nix.packages.${cicero.system}.nix
       bashInteractive
       coreutils
       gitMinimal

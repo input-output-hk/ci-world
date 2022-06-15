@@ -29,6 +29,14 @@ in {
       echo 'nixbld1:!:30001:30000:Nix build user 1:/var/empty:/bin/nologin' >> $out/etc/passwd
     '';
 
+    nixConf = runCommandNoCC "nix.conf" {} ''
+      mkdir -p $out/etc/nix
+      cat > $out/etc/nix/nix.conf <<'EOF'
+      sandbox = false
+      experimental-features = nix-command flakes
+      EOF
+    '';
+
     tmp = runCommandNoCC "tmp" {} ''
       mkdir -p $out/tmp
     '';
@@ -37,24 +45,26 @@ in {
       name = "registry.ci.iog.io/cicero";
       config.Cmd = ["${cell.entrypoints.cicero}/bin/entrypoint"];
       config.Env = lib.mapAttrsToList (n: v: "${n}=${v}") {
-        NIX_CONFIG = ''
-          sandbox = false
-          experimental-features = nix-command flakes
-        '';
-        PATH = lib.makeBinPath (with inputs.nixpkgs; [
-          bashInteractive
-          strace
-          nix
-          coreutils
-        ]);
         SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
       };
       maxLayers = 60;
       contents = [
         (symlinkJoin {
           name = "root";
-          paths = [cell.entrypoints.cicero inputs.nixpkgs.bashInteractive global];
+          paths = with inputs.nixpkgs; [
+            # for transformers
+            jq
+            # `bash` would also be ok for transformers
+            # but we may as well get the interactive version
+            # for manual debugging
+            bashInteractive
+
+            coreutils
+            strace
+          ];
         })
+        global
+        nixConf
         tmp
       ];
       perms = [
