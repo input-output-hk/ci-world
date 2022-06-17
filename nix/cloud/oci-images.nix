@@ -43,6 +43,7 @@ in {
   in
     buildImage {
       name = "registry.ci.iog.io/cicero";
+      tag = "latest";
       config.Cmd = ["${cell.entrypoints.cicero}/bin/entrypoint"];
       config.Env = lib.mapAttrsToList (n: v: "${n}=${v}") {
         SSL_CERT_FILE = "${cacert}/etc/ssl/certs/ca-bundle.crt";
