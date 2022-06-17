@@ -23,7 +23,7 @@ in {
     cluster = {
       s3CachePubKey = lib.fileContents ./encrypted/nix-public-key-file;
       flakePath = "${inputs.self}";
-
+      vbkBackend = "local";
       builder = "cache";
 
       autoscalingGroups = let

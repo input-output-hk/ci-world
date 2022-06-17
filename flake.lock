@@ -485,16 +485,15 @@
         "vulnix": "vulnix_2"
       },
       "locked": {
-        "lastModified": 1654863499,
-        "narHash": "sha256-SZ2y10Vz/DSk9bGAxl1HPrzRnpemNqYXI/KmLxYVBQ8=",
+        "lastModified": 1655508682,
+        "narHash": "sha256-p5KZoiRbpsPEgyqW27KK5B3GYmJlZOOlVNAbCNH0RKQ=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "e690906c1fd84c362b467a3144b89bab8ebdb331",
+        "rev": "150793e950d1ef8c1cc5c101c117ed2bc5f0a09a",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "bump-docker-distribution",
         "repo": "bitte",
         "type": "github"
       }
