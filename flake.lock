@@ -906,11 +906,11 @@
         "ragenix": "ragenix_5"
       },
       "locked": {
-        "lastModified": 1651520937,
-        "narHash": "sha256-haHi0jHktwP2w3U7I6a8Umct4DvBc6RImIYyrsV5Id4=",
+        "lastModified": 1654726516,
+        "narHash": "sha256-kIMAjXmKVfBvfXeb5rh4KuPopZR7fpNDbDAVrFPp9zE=",
         "owner": "input-output-hk",
         "repo": "devshell-capsules",
-        "rev": "1f3fc7513bb421647b791382cc042f9abd8f1a35",
+        "rev": "c41ccfdcb5e6b2d36d1cc55c59ae875724ce8567",
         "type": "github"
       },
       "original": {
@@ -3478,11 +3478,11 @@
         "utils": "utils_22"
       },
       "locked": {
-        "lastModified": 1651520712,
-        "narHash": "sha256-ocwT2h/TnvNgHhdcRPPuGEGzFPODxAN4ffHwmYKiKMM=",
+        "lastModified": 1652212694,
+        "narHash": "sha256-baAY5wKzccNsm7OCEYuySrkXRmlshokCHQjs4EdYShM=",
         "owner": "input-output-hk",
         "repo": "bitte-iogo",
-        "rev": "e440f111b4558833f25480dcbe8d96ec224679fa",
+        "rev": "e465975aa368b2d919e865f71eeed02828e55471",
         "type": "github"
       },
       "original": {
