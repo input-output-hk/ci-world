@@ -13,6 +13,7 @@ in rec {
       namespace = "prod";
       domain = "${baseDomain}";
       nodeClass = "prod";
+      datacenters = ["eu-central-1"];
     };
   };
 

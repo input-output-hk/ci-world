@@ -8,7 +8,7 @@
     bitte.url = "github:input-output-hk/bitte";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/vbk-fixups";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-backup";
+    bitte-cells.url = "github:input-output-hk/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
