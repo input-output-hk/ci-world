@@ -111,9 +111,7 @@
       env = {
         NOMAD_ADDR = "https://nomad.${domain}";
         VAULT_ADDR = "https://vault.${domain}";
-      };
 
-      env = {
         NIX_CONFIG = "netrc-file = /secrets/netrc";
 
         # go-getter reads from the NETRC env var or $HOME/.netrc
