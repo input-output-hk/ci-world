@@ -117,6 +117,9 @@
         # go-getter reads from the NETRC env var or $HOME/.netrc
         # https://github.com/hashicorp/go-getter/blob/4553965d9c4a8d99bd0d381c1180c08e07eff5fd/netrc.go#L24
         NETRC = "/secrets/netrc";
+
+        CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.ci.iog.io";
+        REGISTRY_AUTH_FILE = "/secrets/docker";
       };
 
       template =
@@ -151,6 +154,17 @@
               DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?target_session_attrs=read-write
             '';
             env = true;
+          }
+
+          {
+            destination = "/secrets/docker";
+            data = ''{
+              "auths": {
+                "registry.ci.iog.io": {
+                  "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{print .user ":" .password | base64Encode}}{{end}}{{end}}"
+                }
+              }
+            }'';
           }
         ];
     };
