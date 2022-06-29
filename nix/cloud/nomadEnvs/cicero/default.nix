@@ -11,6 +11,22 @@
   inherit (inputs.data-merge) merge;
   inherit (inputs.nixpkgs) writeText lib;
 
+  nixConfig = ''
+    extra-substituters = http://spongix.service.consul:7745?compression=none
+    extra-trusted-public-keys = ci-world-0:fdT/Z5YK5dxaV/kROE4EqaxwTcQSpVpVCSTKuTyIXFY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+    post-build-hook = /local/post-build-hook
+  '';
+
+  postBuildHook = ''
+    #! /bin/bash
+    set -euf
+    export IFS=" "
+    if [[ -n "$OUT_PATHS" ]]; then
+      echo "Uploading to cache: $OUT_PATHS"
+      exec nix copy --to "http://spongix.service.consul:7745?compression=none" $OUT_PATHS
+    fi
+  '';
+
   transformers = [
     {
       destination = "/local/transformer-prod.sh";
@@ -21,20 +37,7 @@
           nixpkgsRev = "19574af0af3ffaf7c9e359744ed32556f34536bd";
           datacenters = ["eu-central-1"];
           ciceroWebUrl = "https://cicero.ci.iog.io";
-          nixConfig = ''
-            extra-substituters = http://spongix.service.consul:7745?compression=none
-            extra-trusted-public-keys = ci-world-0:fdT/Z5YK5dxaV/kROE4EqaxwTcQSpVpVCSTKuTyIXFY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-            post-build-hook = /local/post-build-hook
-          '';
-          postBuildHook = ''
-            #! /bin/bash
-            set -euf
-            export IFS=" "
-            if [[ -n "$OUT_PATHS" ]]; then
-              echo "Uploading to cache: $OUT_PATHS"
-              exec nix copy --to "http://spongix.service.consul:7745?compression=none" $OUT_PATHS
-            fi
-          '';
+          inherit nixConfig postBuildHook;
         };
       in ''
         #! /bin/bash
@@ -112,7 +115,10 @@
         NOMAD_ADDR = "https://nomad.${domain}";
         VAULT_ADDR = "https://vault.${domain}";
 
-        NIX_CONFIG = "netrc-file = /secrets/netrc";
+        NIX_CONFIG = ''
+          netrc-file = /secrets/netrc
+          ${nixConfig}
+        '';
 
         # go-getter reads from the NETRC env var or $HOME/.netrc
         # https://github.com/hashicorp/go-getter/blob/4553965d9c4a8d99bd0d381c1180c08e07eff5fd/netrc.go#L24
@@ -165,6 +171,12 @@
                 }
               }
             }'';
+          }
+
+          {
+            destination = "/local/post-build-hook";
+            perms = "544";
+            data = postBuildHook;
           }
         ];
     };
