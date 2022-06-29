@@ -164,13 +164,15 @@
 
           {
             destination = "/secrets/docker";
-            data = ''{
-              "auths": {
-                "registry.ci.iog.io": {
-                  "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{print .user ":" .password | base64Encode}}{{end}}{{end}}"
+            data = ''
+              {
+                "auths": {
+                  "registry.ci.iog.io": {
+                    "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{print .user ":" .password | base64Encode}}{{end}}{{end}}"
+                  }
                 }
               }
-            }'';
+            '';
           }
 
           {
