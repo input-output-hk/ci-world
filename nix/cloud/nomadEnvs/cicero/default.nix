@@ -180,6 +180,26 @@
             perms = "544";
             data = postBuildHook;
           }
+
+          {
+            destination = "/local/env";
+            data = ''
+              CICERO_EVALUATOR_NIX_EXTRA_ARGS=${builtins.toJSON ''
+                  {
+                    rootDir = let
+                      nixpkgs = builtins.getFlake "github:NixOS/nixpkgs/93950edf017d6a64479069fbf271aa92b7e44d7f";
+                      pkgs = nixpkgs.legacyPackages.''
+                + "'$'"
+                + builtins.toJSON ''
+                  {system};
+                    in
+                      # for transformers
+                      pkgs.bash;
+                  }
+                ''}
+            '';
+            env = true;
+          }
         ];
     };
   };
