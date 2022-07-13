@@ -5,10 +5,10 @@
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
-    bitte.url = "github:input-output-hk/bitte";
+    bitte.url = "github:input-output-hk/bitte/monitoring-update";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/vbk-fixups";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells";
+    bitte-cells.url = "github:input-output-hk/bitte-cells/monitoring-update";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
@@ -38,6 +38,8 @@
       organelles = [
         (inputs.std.data "nomadEnvs")
         (inputs.std.data "constants")
+        (inputs.std.data "alerts")
+        (inputs.std.data "dashboards")
         (inputs.std.runnables "entrypoints")
         (inputs.std.functions "bitteProfile")
         (inputs.std.functions "oci-images")
