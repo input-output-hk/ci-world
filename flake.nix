@@ -25,6 +25,7 @@
     cicero.inputs.nixpkgs.follows = "nixpkgs";
     cicero.inputs.spongix.follows = "spongix";
     cicero.inputs.driver.follows = "nomad-driver-nix";
+    tullia.url = "github:input-output-hk/tullia";
     # --------------------------------------------------------------
   };
 
@@ -50,6 +51,10 @@
         (inputs.std.functions "hydrationProfile")
         (inputs.std.runnables "jobs")
         (inputs.std.devshells "devshells")
+
+        # Tullia
+        (inputs.tullia.tasks "pipelines")
+        (inputs.std.functions "actions")
       ];
     }
     # soil (TODO: eat up soil)
@@ -70,7 +75,11 @@
     )
     {
       prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
-    };
+    }
+    (inputs.tullia.fromStd {
+      actions = inputs.std.harvest inputs.self ["cloud" "actions"];
+      tasks = inputs.std.harvest inputs.self ["automation" "pipelines"];
+    });
   # --- Flake Local Nix Configuration ----------------------------
   nixConfig = {
     extra-substituters = ["https://cache.iog.io"];
