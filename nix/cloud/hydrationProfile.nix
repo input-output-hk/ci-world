@@ -197,14 +197,18 @@ in {
       resource = inputs.bitte-cells._utils.library.mkMonitoring
       # Alert attrset
       {
+        # Organelle local declared dashboards
         inherit (cell.alerts)
-          # moe-world-alert-group-1
+          # ci-world-alert-group-1
           # Upstream alerts which may have downstream deps can be imported here
           ;
         # Upstream alerts not having downstream deps can be directly imported here
         inherit (inputs.bitte-cells.bitte.alerts)
+          bitte-consul
           bitte-deadmanssnitch
           bitte-loki
+          bitte-system
+          bitte-vault
           bitte-vm-health
           bitte-vm-standalone
           bitte-vmagent
