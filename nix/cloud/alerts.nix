@@ -1,24 +1,19 @@
 {
   inputs,
   cell,
-}:
-{
-  ci-world-alert-group-1 = {
+}: {
+  ci-world-spongix = {
     datasource = "vm";
-    # concurrency = 1;         # Can override top level alert group details if needed, ex: concurrency default = 1
-    # interval = "30s";        # Default = 1m
     rules = [
       {
-        alert = "ci-world-custom-vm-alert-1";
-        annotations = {
-          description =
-            "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes.";
-          summary =
-            "Service {{ $labels.job }} is down on {{ $labels.instance }}";
-        };
-        expr = ''up{job=~"fakeJob|anotherFakeJob"} == 0'';
+        alert = "SpongixRemoteCacheFailure";
+        expr = ''rate(prometheus_spongix_remote_cache_fail)[1h] > 0'';
         for = "2m";
-        labels = { severity = "critical"; };
+        labels.severity = "critical";
+        annotations = {
+          description = "Spongix service on {{ $labels.hostname }} has had {{ $value }} remote cache failure(s) in the past 1 hour.";
+          summary = "Spongix service on {{ $labels.hostname }} had a remote cache failure";
+        };
       }
     ];
   };
@@ -26,4 +21,3 @@
   # inherit (inputs.bitte-cells.bitte.alerts)
   # ;
 }
-
