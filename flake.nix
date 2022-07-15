@@ -5,11 +5,10 @@
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
+    bitte.url = "github:input-output-hk/bitte";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/monitoring-update";
-    bitte.url = "github:input-output-hk/bitte/monitoring-update";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/vbk-fixups";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells/monitoring-update";
+    bitte-cells.url = "github:input-output-hk/bitte-cells";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/monitoring-update";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------

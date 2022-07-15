@@ -484,16 +484,15 @@
         "utils": "utils_10"
       },
       "locked": {
-        "lastModified": 1657831128,
-        "narHash": "sha256-SOV2ObIdB5TuoRIBCI/Xb1+XuuAf5IWEg+3Eh19ezh8=",
+        "lastModified": 1657909022,
+        "narHash": "sha256-PJPMcLVIMu1jZFwLbZ0/+J4F1pZMzHvDJobhfVBMbxY=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "26ac843371e1037b6a194ddfce2aa5a6649c2aa2",
+        "rev": "49cc23f7785af0ab85eb2eb532adf978b3cbf4ad",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "monitoring-update",
         "repo": "bitte",
         "type": "github"
       }
@@ -511,16 +510,15 @@
         "std": "std_2"
       },
       "locked": {
-        "lastModified": 1657765557,
-        "narHash": "sha256-3XPxVHmx/TxYIW8kH/cQAo2/lRNPThBr2+u7bX0qcUI=",
+        "lastModified": 1657915975,
+        "narHash": "sha256-5bKdCVPNkoG0qQjKamx1i0Fa+WhgNP2KA9PcwD/KI/c=",
         "owner": "input-output-hk",
         "repo": "bitte-cells",
-        "rev": "4584a72f7592b27d135b0472052aa9bf97ea4201",
+        "rev": "0da52eba1de25c12a8aed0d56f026b7394d99cb5",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "monitoring-update",
         "repo": "bitte-cells",
         "type": "github"
       }
@@ -6936,11 +6934,11 @@
         "yants": "yants_5"
       },
       "locked": {
-        "lastModified": 1656296008,
-        "narHash": "sha256-bm/OzLLY9SQqFkm/MFoUnGTFlPz78d5a/UXGkz8qXoE=",
+        "lastModified": 1657780861,
+        "narHash": "sha256-FpSLfuWn/rgMDm+wGJWTkd1fXh9cVpINALuMQQOVpiA=",
         "owner": "divnix",
         "repo": "std",
-        "rev": "c421a6cd5e1851cf0c9b7a44c090ad9d133d6265",
+        "rev": "c7793310b545c605dcdc623caa37255b42085c64",
         "type": "github"
       },
       "original": {
