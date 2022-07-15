@@ -74,7 +74,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_inflated_size_local_gauge",
+          "expr": "prometheus_spongix_inflated_size_local",
           "interval": "",
           "legendFormat": "inflated",
           "queryType": "randomWalk",
@@ -82,7 +82,7 @@
         },
         {
           "exemplar": true,
-          "expr": "spongix_chunk_size_local_gauge",
+          "expr": "prometheus_spongix_chunk_size_local",
           "hide": false,
           "interval": "",
           "legendFormat": "chunks",
@@ -181,7 +181,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "1 - (spongix_chunk_size_local_gauge / spongix_inflated_size_local_gauge)",
+          "expr": "1 - (prometheus_spongix_chunk_size_local / prometheus_spongix_inflated_size_local)",
           "interval": "",
           "legendFormat": "{{host}}",
           "refId": "A"
@@ -236,7 +236,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_max_size_local_gauge - spongix_chunk_size_local_gauge",
+          "expr": "prometheus_spongix_max_size_local - prometheus_spongix_chunk_size_local",
           "interval": "",
           "legendFormat": "{{host}}",
           "refId": "A"
@@ -294,7 +294,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_index_count_local_gauge",
+          "expr": "prometheus_spongix_index_count_local",
           "interval": "",
           "legendFormat": "index",
           "queryType": "randomWalk",
@@ -302,7 +302,7 @@
         },
         {
           "exemplar": true,
-          "expr": "spongix_chunk_count_local_gauge",
+          "expr": "prometheus_spongix_chunk_count_local",
           "hide": false,
           "interval": "",
           "legendFormat": "chunks",
@@ -399,7 +399,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_chunk_gc_bytes_local_counter",
+          "expr": "prometheus_spongix_chunk_gc_bytes_local",
           "interval": "",
           "legendFormat": "bytes",
           "queryType": "randomWalk",
@@ -498,7 +498,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(spongix_index_walk_local_counter[$__rate_interval:1h])",
+          "expr": "rate(prometheus_spongix_index_walk_local[$__rate_interval:1h])",
           "interval": "",
           "legendFormat": "time",
           "queryType": "randomWalk",
@@ -597,7 +597,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(spongix_chunk_walk_local_counter[$__rate_interval:1h])",
+          "expr": "rate(prometheus_spongix_chunk_walk_local[$__rate_interval:1h])",
           "interval": "",
           "legendFormat": "time",
           "queryType": "randomWalk",
@@ -696,7 +696,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_index_gc_count_local_counter",
+          "expr": "prometheus_spongix_index_gc_count_local",
           "interval": "",
           "legendFormat": "index",
           "queryType": "randomWalk",
@@ -704,7 +704,7 @@
         },
         {
           "exemplar": true,
-          "expr": "spongix_chunk_gc_count_local_counter",
+          "expr": "prometheus_spongix_chunk_gc_count_local",
           "hide": false,
           "interval": "",
           "legendFormat": "chunks",
@@ -801,7 +801,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(spongix_gc_time_local_counter[$__rate_interval:1h])",
+          "expr": "rate(prometheus_spongix_gc_time_local[$__rate_interval:1h])",
           "interval": "",
           "legendFormat": "time",
           "queryType": "randomWalk",
@@ -898,7 +898,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_remote_cache_ok_counter",
+          "expr": "prometheus_spongix_remote_cache_ok",
           "interval": "",
           "legendFormat": "ok",
           "queryType": "randomWalk",
@@ -906,7 +906,7 @@
         },
         {
           "exemplar": true,
-          "expr": "spongix_remote_cache_fail_counter",
+          "expr": "prometheus_spongix_remote_cache_fail",
           "hide": false,
           "interval": "",
           "legendFormat": "fail",
@@ -1003,7 +1003,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(spongix_verify_time_local_counter[$__rate_interval:1h])",
+          "expr": "rate(prometheus_spongix_verify_time_local[$__rate_interval:1h])",
           "interval": "",
           "legendFormat": "time",
           "queryType": "randomWalk",
@@ -1100,7 +1100,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "spongix_chunk_dir_count_gauge",
+          "expr": "prometheus_spongix_chunk_dir_count",
           "interval": "",
           "legendFormat": "dirs",
           "queryType": "randomWalk",

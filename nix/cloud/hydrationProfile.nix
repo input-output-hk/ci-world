@@ -35,13 +35,6 @@ in {
       nomad.namespaces = {
         prod = {description = "CI Prod";};
       };
-
-      grafana.provision.dashboards = [
-        {
-          name = "provisioned-ci-world";
-          options.path = ./dashboards;
-        }
-      ];
     };
 
     # cluster level (terraform)
@@ -196,6 +189,59 @@ in {
           };
         };
       };
+    };
+
+    # Observability State
+    # --------------
+    tf.hydrate-monitoring.configuration = {
+      resource =
+        inputs.bitte-cells._utils.library.mkMonitoring
+        # Alert attrset
+        {
+          # Organelle local declared dashboards
+          inherit
+            (cell.alerts)
+            ci-world-spongix
+            # Upstream alerts which may have downstream deps can be imported here
+            
+            ;
+          # Upstream alerts not having downstream deps can be directly imported here
+          inherit
+            (inputs.bitte-cells.bitte.alerts)
+            bitte-consul
+            bitte-deadmanssnitch
+            bitte-loki
+            bitte-system
+            bitte-vault
+            bitte-vm-health
+            bitte-vm-standalone
+            bitte-vmagent
+            ;
+        }
+        # Dashboard attrset
+        {
+          # Organelle local declared dashboards
+          inherit
+            (cell.dashboards)
+            ci-world-spongix
+            ;
+
+          # Upstream dashboards not having downstream deps can be directly imported here
+          inherit
+            (inputs.bitte-cells.bitte.dashboards)
+            bitte-consul
+            bitte-log
+            bitte-loki
+            bitte-nomad
+            bitte-system
+            bitte-traefik
+            bitte-vault
+            bitte-vmagent
+            bitte-vmalert
+            bitte-vm
+            bitte-vulnix
+            ;
+        };
     };
 
     # application state (terraform)
