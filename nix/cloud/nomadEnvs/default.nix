@@ -26,6 +26,7 @@ in {
           attribute = "\${attr.platform.aws.placement.availability-zone}";
         }
       ];
+      job.database.update.min_healthy_time = "2m";
       job.database.group.database.task.patroni.resources = {inherit (patroniMods.resources) cpu memory;};
       job.database.group.database.task.patroni.env = {inherit WALG_S3_PREFIX;};
       job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};

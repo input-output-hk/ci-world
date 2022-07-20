@@ -484,18 +484,14 @@
         "utils": "utils_9"
       },
       "locked": {
-        "lastModified": 1658194145,
-        "narHash": "sha256-rECrIWHjKAUrqFgADwiMBdx6ELPYAS7R04fIjZ6WlYs=",
-        "owner": "input-output-hk",
-        "repo": "bitte",
-        "rev": "ae03bf3f4349ee78874c1f45e1c07a3a18a10a03",
-        "type": "github"
+        "lastModified": 1658268348,
+        "narHash": "sha256-iPDRVKivoEN+5zs4xnVnYL8nmykRpov+jVefLD8t1fE=",
+        "path": "/home/jlotoski/work/iohk/bitte-wt/vault-snap-fix",
+        "type": "path"
       },
       "original": {
-        "owner": "input-output-hk",
-        "ref": "nomad132-pkg",
-        "repo": "bitte",
-        "type": "github"
+        "path": "/home/jlotoski/work/iohk/bitte-wt/vault-snap-fix",
+        "type": "path"
       }
     },
     "bitte-cells": {
@@ -511,15 +507,16 @@
         "std": "std_2"
       },
       "locked": {
-        "lastModified": 1657915975,
-        "narHash": "sha256-5bKdCVPNkoG0qQjKamx1i0Fa+WhgNP2KA9PcwD/KI/c=",
+        "lastModified": 1658284965,
+        "narHash": "sha256-oIqCpKi03BOEjxb3xBf/YVcSS4p/G4BuYaoBuNc3SPw=",
         "owner": "input-output-hk",
         "repo": "bitte-cells",
-        "rev": "0da52eba1de25c12a8aed0d56f026b7394d99cb5",
+        "rev": "5b54e82eeb82d23e365a7d2b24fecfa26aa9bed6",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "patroni-metrics",
         "repo": "bitte-cells",
         "type": "github"
       }
