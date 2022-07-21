@@ -12,7 +12,7 @@
   inherit (inputs.nixpkgs) writeText lib;
 
   nixConfig = ''
-    extra-substituters = http://spongix.service.consul:7745?compression=none
+    substituters = http://spongix.service.consul:7745?compression=none
     extra-trusted-public-keys = ci-world-0:fdT/Z5YK5dxaV/kROE4EqaxwTcQSpVpVCSTKuTyIXFY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
     post-build-hook = /local/post-build-hook
   '';
