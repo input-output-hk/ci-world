@@ -21,8 +21,7 @@
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix";
     spongix.inputs.cicero.follows = "cicero";
-    cicero.url = "github:input-output-hk/cicero/new-trigger";
-    cicero.inputs.nixpkgs.follows = "nixpkgs";
+    cicero.url = "github:input-output-hk/cicero";
     cicero.inputs.spongix.follows = "spongix";
     cicero.inputs.driver.follows = "nomad-driver-nix";
     tullia.url = "github:input-output-hk/tullia";
