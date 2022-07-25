@@ -82,9 +82,7 @@ in {
         template = [
           {
             destination = "secrets/webhook";
-            data = ''
-              {{with secret "kv/data/cicero/github"}}{{.Data.data.webhooks}}{{end}}
-            '';
+            data = ''{{with secret "kv/data/cicero/github"}}{{.Data.data.webhooks}}{{end}}'';
           }
         ];
       };
