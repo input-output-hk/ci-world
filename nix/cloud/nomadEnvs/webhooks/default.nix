@@ -55,7 +55,7 @@ in {
       ];
 
       task.webhooks = {
-        driver = "docker";
+        driver = "podman";
 
         config = {
           image = ociNamer oci-images.webhook-trigger;
