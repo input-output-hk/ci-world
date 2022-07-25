@@ -13,8 +13,8 @@
     src = pkgs.fetchFromGitHub {
       owner = "dermetfan";
       repo = "nomad-driver-podman";
-      rev = "9207824392881669853254a185216473e2a9e194";
-      sha256 = "sha256-QB5e406AA5hAkmiFqv6fjDzrqNEIb0AWCS0jFQyyGLA=";
+      rev = "309618ce0839da6ec6b1d4d90a9666ff19c74151";
+      sha256 = "sha256-WvXyGspfFwcMPtpqhNDu//IMkN+P3xbZSmHVhXDdq0s=";
     };
 
     vendorSha256 = "sha256-5PQIWSGSR5vizWEsResBLd//yWs99o/bj5DVpRMBwhA=";
