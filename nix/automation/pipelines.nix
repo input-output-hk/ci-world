@@ -1,56 +1,46 @@
 {
   cell,
   inputs,
-}: {
-  "cicero/deploy" = {
+}: let
+  common = {
     config,
     lib,
-    pkgs,
     ...
   }: {
-    command.text = let
-      flakeUrl = lib.escapeShellArg (
-        if config.action.facts != {}
-        then "github:input-output-hk/ci-world/${inputs.self.rev}"
-        else "."
-      );
-    in ''
-      system=$(nix eval --raw --impure --expr __currentSystem)
-      nix run ${flakeUrl}#"$system".cloud.oci-images.cicero.copyToRegistry \
-        --override-input cicero github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "GitHub event" "HEAD"}
-      nix eval ${flakeUrl}#"$system".cloud.nomadEnvs.prod.cicero --json | nomad job run -
-    '';
-
-    dependencies = with pkgs; [nomad];
-
-    nomad.template = [
-      {
-        destination = "/secrets/auth.json";
-        data = ''
-          {
-            "auths": {
-              "registry.ci.iog.io": {
-                "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{base64Encode (print .user ":" .password)}}{{end}}{{end}}"
-              }
-            }
-          }
-        '';
-      }
-    ];
-
-    env.REGISTRY_AUTH_FILE = "/secrets/auth.json";
-
     preset = {
       nix.enable = true;
-      github-ci = {
+      github-ci = __mapAttrs (_: lib.mkDefault) {
         enable = config.action.facts != {};
-        repo = "input-output-hk/cicero";
+        repo = "input-output-hk/ci-world";
         sha = config.preset.github-ci.lib.getRevision "GitHub event" "HEAD";
         clone = false;
       };
     };
+  };
 
-    memory = 1024 * 10;
-    nomad.resources.cpu = 2000;
+  flakeUrl = {
+    config,
+    lib,
+    ...
+  }:
+    lib.escapeShellArg (
+      if config.action.facts != {}
+      then "github:input-output-hk/ci-world/${inputs.self.rev}"
+      else "."
+    );
+in {
+  "ci/build" = args: {
+    imports = [common];
+
+    config = {
+      command.text = ''
+        echo "Running flake check on ${flakeUrl args}"
+        nix flake check --allow-import-from-derivation ${flakeUrl args}
+      '';
+
+      preset.github-ci.clone = true;
+      memory = 1024 * 24;
+      nomad.resources.cpu = 9000;
+    };
   };
 }
