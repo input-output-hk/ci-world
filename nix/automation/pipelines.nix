@@ -34,8 +34,8 @@ in {
 
     config = {
       command.text = ''
-        echo "Running flake check on ${flakeUrl args}"
-        nix flake check --allow-import-from-derivation ${flakeUrl args}
+        nix flake show ${flakeUrl args} --allow-import-from-derivation --override-input flake-arch github:input-output-hk/flake-arch/x86_64-linux
+        nix flake check ${flakeUrl args} --allow-import-from-derivation --override-input flake-arch github:input-output-hk/flake-arch/x86_64-linux
       '';
 
       preset.github-ci.clone = true;

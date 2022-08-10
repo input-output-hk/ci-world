@@ -2028,6 +2028,21 @@
         "type": "github"
       }
     },
+    "flake-arch": {
+      "locked": {
+        "lastModified": 1660164544,
+        "narHash": "sha256-y9deIq3KCaUuuW63BXbajhwAG6l9z9UsJl0G1u9QtJc=",
+        "owner": "input-output-hk",
+        "repo": "flake-arch",
+        "rev": "51b2bb78365d5cee1a6a59a017602543f335a95e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "input-output-hk",
+        "repo": "flake-arch",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -6803,6 +6818,7 @@
         "capsules": "capsules_2",
         "cicero": "cicero_2",
         "data-merge": "data-merge_5",
+        "flake-arch": "flake-arch",
         "n2c": "n2c_3",
         "nix-inclusive": "nix-inclusive",
         "nixpkgs": [

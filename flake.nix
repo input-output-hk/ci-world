@@ -4,6 +4,7 @@
     std.url = "github:divnix/std";
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
+    flake-arch.url = "github:input-output-hk/flake-arch";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/bitte-tests";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/bitte-tests";
@@ -45,6 +46,7 @@
       (inputs.std.growOn
         {
           inherit inputs;
+          inherit (inputs.flake-arch) systems;
           cellsFrom = ./nix;
           # debug = ["cells" "cloud" "nomadEnvs"];
           organelles = [
