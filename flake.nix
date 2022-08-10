@@ -30,54 +30,74 @@
   outputs = inputs: let
     inherit (inputs) bitte;
     inherit (inputs.self.x86_64-linux.cloud) nomadEnvs;
-  in
-    inputs.std.growOn
-    {
-      inherit inputs;
-      cellsFrom = ./nix;
-      # debug = ["cells" "cloud" "nomadEnvs"];
-      organelles = [
-        (inputs.std.data "nomadEnvs")
-        (inputs.std.data "constants")
-        (inputs.std.data "alerts")
-        (inputs.std.data "dashboards")
-        (inputs.std.runnables "entrypoints")
-        (inputs.std.functions "bitteProfile")
-        (inputs.std.functions "oci-images")
-        (inputs.std.functions "library")
-        (inputs.std.installables "packages")
-        (inputs.std.functions "hydrationProfile")
-        (inputs.std.runnables "jobs")
-        (inputs.std.devshells "devshells")
 
-        # Tullia
-        (inputs.tullia.tasks "pipelines")
-        (inputs.std.functions "actions")
-      ];
-    }
-    # soil (TODO: eat up soil)
-    (
-      let
-        system = "x86_64-linux";
-        overlays = [(import ./overlay.nix inputs)];
-      in
-        bitte.lib.mkBitteStack {
-          inherit inputs;
-          inherit (inputs) self;
-          inherit overlays;
-          domain = "ci.iog.io";
-          bitteProfile = inputs.self.${system}.metal.bitteProfile.default;
-          hydrationProfile = inputs.self.${system}.cloud.hydrationProfile.default;
-          deploySshKey = "./secrets/ssh-ci-world";
+    dropAttrs = path: attrsToDrop: attrs:
+      inputs.nixpkgs.lib.updateManyAttrsByPath [
+        {
+          inherit path;
+          update = old: builtins.removeAttrs old attrsToDrop;
         }
-    )
-    {
-      prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
-    }
-    (inputs.tullia.fromStd {
-      actions = inputs.std.harvest inputs.self ["cloud" "actions"];
-      tasks = inputs.std.harvest inputs.self ["automation" "pipelines"];
-    });
+      ]
+      attrs;
+    mergeAttrs = newAttrs: attrs: inputs.nixpkgs.lib.recursiveUpdate attrs newAttrs;
+  in
+    inputs.nixpkgs.lib.pipe (
+      (inputs.std.growOn
+        {
+          inherit inputs;
+          cellsFrom = ./nix;
+          # debug = ["cells" "cloud" "nomadEnvs"];
+          organelles = [
+            (inputs.std.data "nomadEnvs")
+            (inputs.std.data "constants")
+            (inputs.std.data "alerts")
+            (inputs.std.data "dashboards")
+            (inputs.std.runnables "entrypoints")
+            (inputs.std.functions "bitteProfile")
+            (inputs.std.functions "oci-images")
+            (inputs.std.functions "library")
+            (inputs.std.installables "packages")
+            (inputs.std.functions "hydrationProfile")
+            (inputs.std.runnables "jobs")
+            (inputs.std.devshells "devshells")
+
+            # Tullia
+            (inputs.tullia.tasks "pipelines")
+            (inputs.std.functions "actions")
+          ];
+        }
+        # soil (TODO: eat up soil)
+        (
+          let
+            system = "x86_64-linux";
+            overlays = [(import ./overlay.nix inputs)];
+          in
+            bitte.lib.mkBitteStack {
+              inherit inputs;
+              inherit (inputs) self;
+              inherit overlays;
+              domain = "ci.iog.io";
+              bitteProfile = inputs.self.${system}.metal.bitteProfile.default;
+              hydrationProfile = inputs.self.${system}.cloud.hydrationProfile.default;
+              deploySshKey = "./secrets/ssh-ci-world";
+            }
+        )
+        {
+          prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
+        }
+        (inputs.tullia.fromStd {
+          actions = inputs.std.harvest inputs.self ["cloud" "actions"];
+          tasks = inputs.std.harvest inputs.self ["automation" "pipelines"];
+        })) {
+      }
+    ) [
+      (mergeAttrs {checks.x86_64-linux.devshell-dev = inputs.self.x86_64-linux.automation.devshells.dev;})
+      (mergeAttrs {checks.x86_64-linux.devshell-ops = inputs.self.x86_64-linux.automation.devshells.ops;})
+
+      # Drop attrs if needed to address other flake check/arch exclusions
+      # (dropAttrs [ ... ] [ ... ])
+    ];
+
   # --- Flake Local Nix Configuration ----------------------------
   nixConfig = {
     extra-substituters = ["https://cache.iog.io"];
