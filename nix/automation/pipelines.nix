@@ -34,6 +34,9 @@ in {
 
     config = {
       command.text = ''
+        # Avoid test failures with nixbld user writes to /tmp
+        chmod 1777 /tmp
+
         nix flake show ${flakeUrl args} --allow-import-from-derivation --override-input flake-arch github:input-output-hk/flake-arch/x86_64-linux
         nix flake check ${flakeUrl args} --allow-import-from-derivation --override-input flake-arch github:input-output-hk/flake-arch/x86_64-linux
       '';
