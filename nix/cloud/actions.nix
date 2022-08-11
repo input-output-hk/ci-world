@@ -5,12 +5,22 @@
   "ci-world/ci" = {
     task = "ci/build";
     io = ''
-      _lib: github: {
-        #repo: "input-output-hk/ci-world"
-
-        // pull_request: {}
-        push: #branch: "ci-world-tests"
+      let github = {
+        #input:  "Github event"
+        #repo:   "input-output-hk/ci-world"
+        #branch: "ci-world-tests"
       }
+
+      #lib: ios: [
+        {#lib.io.github_push, github},
+      ]
+
+      // _lib: github: {
+      //   #repo: "input-output-hk/ci-world"
+
+      // pull_request: {}
+      //   push: #branch: "ci-world-tests"
+      // }
       // inputs: bitte: match: {
       //   github_event: string
       //   github_body: {
