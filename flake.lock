@@ -488,15 +488,16 @@
         "utils": "utils_9"
       },
       "locked": {
-        "lastModified": 1660327419,
-        "narHash": "sha256-uTBnQT6sUWFJWjgmGLffkzKHfCSYpJ6N3uyUKzdFkrY=",
+        "lastModified": 1660743678,
+        "narHash": "sha256-NPTuZagGNJ33exw9hpg2beKdws4sWIx9D4026QrHTLI=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "cf6b88fbc0701fae838956f20b5908da7369c796",
+        "rev": "725469f99374af40807337a9ec80b4f24df88e6d",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "routing-token-fix",
         "repo": "bitte",
         "type": "github"
       }
