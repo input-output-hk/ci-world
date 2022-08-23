@@ -4,8 +4,8 @@
 }: {
   "cicero/cd" = {
     config,
-    options,
     lib,
+    ociRegistry,
     ...
   }: {
     io = ''
@@ -34,11 +34,11 @@
       }
     '';
 
-    prepare = [
-      rec {
+    prepare = with cell.oci-images.cicero; [
+      {
         type = "nix2container";
-        name = cell.library.ociNamer imageDrv;
-        imageDrv = cell.oci-images.cicero;
+        name = "${ociRegistry}/${lib.removePrefix "registry.ci.iog.io/" imageName}:${imageTag}";
+        imageDrv = drvPath;
       }
     ];
 
@@ -49,7 +49,7 @@
         let
           hcl =
             (
-              (inputs.nixpkgs.lib.callPackageWith cell.constants.args.prod)
+              (lib.callPackageWith cell.constants.args.prod)
               ./nomadEnvs/cicero
               {
                 inherit cell;
