@@ -2,7 +2,12 @@
   cell,
   inputs,
 }: {
-  "cicero/cd" = {config, options, lib, ...}: {
+  "cicero/cd" = {
+    config,
+    options,
+    lib,
+    ...
+  }: {
     io = ''
       let cfg = {
         #lib.io.github_push
@@ -39,22 +44,28 @@
 
     job.cicero.type = "service";
 
-    imports = [ (
-      let
-        hcl = (
-          (inputs.nixpkgs.lib.callPackageWith cell.constants.args.prod)
-          ./nomadEnvs/cicero
-          {
-            inherit cell;
-            inputs = inputs // {
-              cicero = builtins.getFlake "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "ci" null}";
-            };
-          }
-        ).job;
+    imports = [
+      (
+        let
+          hcl =
+            (
+              (inputs.nixpkgs.lib.callPackageWith cell.constants.args.prod)
+              ./nomadEnvs/cicero
+              {
+                inherit cell;
+                inputs =
+                  inputs
+                  // {
+                    cicero = builtins.getFlake "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "ci" null}";
+                  };
+              }
+            )
+            .job;
 
-        hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON { job = hcl; }));
-      in
-        lib.nix-nomad.importNomadModule hclFile {}
-    ) ];
+          hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {job = hcl;}));
+        in
+          lib.nix-nomad.importNomadModule hclFile {}
+      )
+    ];
   };
 }
