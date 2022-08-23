@@ -2,11 +2,8 @@
   cell,
   inputs,
 }: {
-  "cicero/cd" = {
-    task = "cicero/deploy";
+  "cicero/cd" = {config, options, lib, ...}: {
     io = ''
-      #lib: _
-
       let cfg = {
         #lib.io.github_push
         #repo: "input-output-hk/cicero"
@@ -27,5 +24,33 @@
         [Case=string]: revision: cfg.output[Case].revision
       }
     '';
+
+    prepare = [
+      rec {
+        type = "nix2container";
+        name = cell.library.ociNamer imageDrv;
+        imageDrv = cell.oci-images.cicero;
+      }
+    ];
+
+    job.cicero.type = "service";
+
+    imports = [ (
+      let
+        hcl = (
+          (inputs.nixpkgs.lib.callPackageWith cell.constants.args.prod)
+          ./nomadEnvs/cicero
+          {
+            inherit cell;
+            inputs = inputs // {
+              cicero = builtins.getFlake "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "ci" null}";
+            };
+          }
+        ).job;
+
+        hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON { job = hcl; }));
+      in
+        lib.nix-nomad.importNomadModule hclFile {}
+    ) ];
   };
 }
