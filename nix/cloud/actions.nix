@@ -14,7 +14,11 @@
 
         ci: match: {
           ok: true
+
           revision: output.success.revision
+          // Declare a direct dependency on the input that has the revision
+          // as CUE flows do not consider indirect dependencies.
+          _dep: inputs[cfg.#input]
         }
       }
 
