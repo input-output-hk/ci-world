@@ -29,6 +29,7 @@ in {
       extraAcmeSANs = [];
       kms = "arn:aws:kms:eu-central-1:074718059002:key/5bb7cc1b-151c-4841-bcb3-622bc8df4b5a";
       s3Bucket = "iohk-ci-bitte";
+      s3BucketTempo = "iohk-ci-tempo";
     };
 
     services = {

@@ -488,16 +488,16 @@
         "utils": "utils_9"
       },
       "locked": {
-        "lastModified": 1660743678,
-        "narHash": "sha256-NPTuZagGNJ33exw9hpg2beKdws4sWIx9D4026QrHTLI=",
+        "lastModified": 1661383963,
+        "narHash": "sha256-nznJB1EWgQXSqTHMkUsMPTGQO2LhS2PM/3XEH42KPcQ=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "725469f99374af40807337a9ec80b4f24df88e6d",
+        "rev": "6413a0c4a8786858137fa4e1f9cd6772dd7d3c4c",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "routing-token-fix",
+        "ref": "tempo",
         "repo": "bitte",
         "type": "github"
       }
@@ -5049,11 +5049,11 @@
     },
     "nixpkgs-unstable_2": {
       "locked": {
-        "lastModified": 1656338871,
-        "narHash": "sha256-+LOvZFt3MpWtrxXLH4igQtRVzyD43VnuTJjDVbt7phY=",
+        "lastModified": 1660227034,
+        "narHash": "sha256-bXMlG/YU0IjAod6M625XT1YbUG+/3L9ypk9llYpKeuM=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "819e4d63fc7f337a822a049fd055cd7615a5e0d6",
+        "rev": "964d60ff2e6bc76c0618962da52859603784fa78",
         "type": "github"
       },
       "original": {
