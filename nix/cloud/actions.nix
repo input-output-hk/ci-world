@@ -10,27 +10,25 @@
   }: {
     io = ''
       let cfg = {
-        #lib.io.github_push
+        #lib.io.github_push,
         #repo: "input-output-hk/cicero"
+        inputs: _final_inputs
       }
 
+      _final_inputs: inputs
       inputs: {
         cfg.inputs
 
         ci: match: {
           ok: true
-
-          revision: output.success.revision
-          // Declare a direct dependency on the input that has the revision
-          // as CUE flows do not consider indirect dependencies.
-          _dep: inputs[cfg.#input]
+          revision: cfg._revision
         }
       }
 
       output: {
         success: deployed: true
         failure: deployed: false
-        [Case=string]: revision: cfg.output[Case].revision
+        [string]: revision: cfg._revision
       }
     '';
 
