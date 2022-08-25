@@ -44,28 +44,34 @@
         /bin/jq --compact-output \
           --argjson args ${lib.escapeShellArg (builtins.toJSON args)} \
           '
-            .job[]?.datacenters |= . + $args.datacenters |
-            .job[]?.group[]?.task[]? |= (
-              .vault.policies |= . + ["cicero"] |
-              .env |= . + {
-                NOMAD_ADDR: env.NOMAD_ADDR,
-                NOMAD_TOKEN: env.NOMAD_TOKEN,
-                CICERO_WEB_URL: $args.ciceroWebUrl,
-                NIX_CONFIG: ($args.nixConfig + .NIX_CONFIG),
-              } |
-              .template |= . + [{
-                destination: "local/post-build-hook",
-                perms: "544",
-                data: $args.postBuildHook,
-              }] |
-              if .driver != "nix" or .config?.nixos then . else
-                .config.packages |=
-                  # only add bash if needed to avoid conflicts in profile
-                  if any(endswith("#bash") or endswith("#bashInteractive"))
-                  then .
-                  else . + ["github:NixOS/nixpkgs/\($args.nixpkgsRev)#bash"]
+            .job |= (
+              .Datacenters += $args.datacenters |
+              .TaskGroups[]?.Tasks[]? |= (
+                .Env += {
+                  NOMAD_ADDR: env.NOMAD_ADDR,
+                  NOMAD_TOKEN: env.NOMAD_TOKEN,
+                  CICERO_WEB_URL: $args.ciceroWebUrl,
+                  NIX_CONFIG: ($args.nixConfig + .NIX_CONFIG),
+                } |
+                .Templates += [{
+                  DestPath: "local/post-build-hook",
+                  Perms: "544",
+                  EmbeddedTmpl: $args.postBuildHook,
+                }]
+              ) |
+              if .Type != null and .Type != "batch" then . else (
+                .TaskGroups[]?.Tasks[]? |= (
+                  .Vault.Policies += ["cicero"] |
+                  if .Driver != "nix" or .Config?.nixos then . else
+                    .Config.packages |=
+                      # only add bash if needed to avoid conflicts in profile
+                      if any(endswith("#bash") or endswith("#bashInteractive"))
+                      then .
+                      else . + ["github:NixOS/nixpkgs/\($args.nixpkgsRev)#bash"]
+                      end
                   end
-              end
+                )
+              ) end
             )
           '
       '';
