@@ -1185,11 +1185,11 @@
         "utils": "utils_24"
       },
       "locked": {
-        "lastModified": 1661432673,
-        "narHash": "sha256-e+CyVo5chrfkAlyi4pcrr8+NPVtX9fCnAn5WFyIANgI=",
+        "lastModified": 1661443037,
+        "narHash": "sha256-LfJDQRd/N3prGhDJ9AQtloTAfAfuIH+GTHZkU9AAU8E=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "265e99f0934da78fd5242aa4ec99b9c36a99d793",
+        "rev": "f89bfcc6d8b8e4c75afb7a5b7b3df42479e061c8",
         "type": "github"
       },
       "original": {
