@@ -15,7 +15,7 @@ in {
       coreutils
       gitMinimal
       dbmate
-      vault-bin
+      vault
       netcat
       shadow
     ];
