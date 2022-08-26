@@ -28,6 +28,27 @@ in {
     }
   );
 
+  dev = buildImage (cell.library.addN2cNixArgs {} {
+    name = "registry.ci.iog.io/dev";
+    tag = "latest";
+    config.Cmd = ["/bin/bash"];
+    maxLayers = 60;
+    contents = [
+      (symlinkJoin {
+        name = "tools";
+        paths = with inputs.nixpkgs; [
+          bashInteractive
+          coreutils
+          gitMinimal
+          tmux
+          fd
+          ripgrep
+          entr
+        ];
+      })
+    ];
+  });
+
   webhook-trigger = buildImage {
     name = "registry.ci.iog.io/webhook-trigger";
     config.Cmd = ["${webhook-trigger}/bin/trigger"];

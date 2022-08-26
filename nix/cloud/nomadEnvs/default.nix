@@ -41,4 +41,9 @@ in {
       inherit (constants.args.prod) domain namespace;
     };
   };
+
+  dev.dev = import ./dev {
+    inherit inputs cell;
+    inherit (constants.args.dev) domain namespace;
+  };
 }

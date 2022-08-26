@@ -11,8 +11,15 @@ in rec {
   args = {
     prod = {
       namespace = "prod";
-      domain = "${baseDomain}";
+      domain = baseDomain;
       nodeClass = "prod";
+      datacenters = ["eu-central-1"];
+    };
+
+    dev = {
+      namespace = "prod"; # TODO create dev namespace
+      domain = baseDomain;
+      # nodeClass = "dev";
       datacenters = ["eu-central-1"];
     };
   };
