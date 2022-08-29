@@ -7,11 +7,17 @@
     lib,
     ociRegistry,
     ...
-  }: {
+  }: let
+    pushInput = "push";
+    pushBody = config.run.facts.${pushInput}.value.github_body;
+    branch = lib.removePrefix "refs/heads/" pushBody.ref;
+  in {
     io = ''
       let cfg = {
         #lib.io.github_push,
+        #input: "${pushInput}"
         #repo: "input-output-hk/cicero"
+        #default_branch: false
         inputs: _final_inputs
       }
 
@@ -35,35 +41,47 @@
     prepare = with cell.oci-images.cicero; [
       {
         type = "nix2container";
-        name = "${ociRegistry}/${lib.removePrefix "registry.ci.iog.io/" imageName}:${imageTag}";
+        name = "${ociRegistry}/${lib.removePrefix "registry.ci.iog.io/" imageName}:${branch}";
         imageDrv = drvPath;
       }
     ];
 
-    job.cicero.type = "service";
+    job = let
+      inherit (pushBody.repository) default_branch;
 
-    imports = [
-      (
-        let
-          hcl =
-            (
-              (lib.callPackageWith cell.constants.args.prod)
-              ./nomadEnvs/cicero
-              {
-                inherit cell;
-                inputs =
-                  inputs
-                  // {
-                    cicero = builtins.getFlake "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "ci" null}";
-                  };
-              }
-            )
-            .job;
+      hcl =
+        (
+          (lib.callPackageWith (
+            cell.constants.args.prod
+            // {inherit branch default_branch;}
+          ))
+          ./nomadEnvs/cicero
+          {
+            inherit cell;
+            inputs =
+              inputs
+              // {
+                cicero =
+                  builtins.getFlake
+                  "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision pushInput null}";
+              };
+          }
+        )
+        .job;
 
-          hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {job = hcl;}));
-        in
-          lib.nix-nomad.importNomadModule hclFile {}
-      )
-    ];
+      hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {job = hcl;}));
+
+      module = lib.nix-nomad.importNomadModule hclFile {};
+
+      jobName = "cicero" + lib.optionalString (branch != default_branch) "-${branch}";
+    in {
+      ${jobName} = args:
+        (
+          __mapAttrs
+          (_: job: {type = "service";} // job)
+          (module args).job
+        )
+        .${jobName};
+    };
   };
 }

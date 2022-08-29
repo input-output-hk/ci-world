@@ -1184,11 +1184,11 @@
         "utils": "utils_24"
       },
       "locked": {
-        "lastModified": 1661530942,
-        "narHash": "sha256-aezmn918FvDt34qxTVmHWg+z4FRcxkfrxLDqhfxb9hE=",
+        "lastModified": 1661858786,
+        "narHash": "sha256-+MN8L+bXNsv13Mqhcp+SWxHOFDIci3ggM4q6xNPUBuI=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "f36cb9c544260a06050e7ac5e0c4a34e4fab2fa3",
+        "rev": "944f1a2ed533e4dae257be19caaf66b044effdaa",
         "type": "github"
       },
       "original": {
@@ -7767,11 +7767,11 @@
         "std": "std_6"
       },
       "locked": {
-        "lastModified": 1661432472,
-        "narHash": "sha256-fLUIFr673WIeJSpNf9k1wY9xp8HmZL1RfBhs3pKpLCI=",
+        "lastModified": 1661851664,
+        "narHash": "sha256-/5vtJnPwkow+b05oaOgHyU+Hr/jJZxydSmC8wkcLyaM=",
         "owner": "input-output-hk",
         "repo": "tullia",
-        "rev": "85bd4d7e0dacb5d89b67e638ef867e7605e39736",
+        "rev": "d9952fd0ea3fe2f34c6132b4fa5e80bbb1ce94c6",
         "type": "github"
       },
       "original": {

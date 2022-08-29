@@ -4,12 +4,22 @@
   namespace,
   domain,
   datacenters ? ["eu-central-1"],
+  default_branch ? "main",
+  branch ? default_branch,
 }: let
   inherit (cell.library) ociNamer;
   inherit (cell) oci-images;
   inherit (inputs.cicero.packages) cicero-entrypoint;
   inherit (inputs.data-merge) merge;
   inherit (inputs.nixpkgs) writeText lib;
+
+  subdomain =
+    lib.optionalString (branch != default_branch) "${branch}."
+    + "cicero";
+
+  ciceroName =
+    "cicero"
+    + lib.optionalString (branch != default_branch) "-${branch}";
 
   nixConfig = ''
     substituters = http://spongix.service.consul:7745?compression=none
@@ -36,7 +46,7 @@
           # arbitrary revision from nixpkgs-unstable
           nixpkgsRev = "19574af0af3ffaf7c9e359744ed32556f34536bd";
           datacenters = ["eu-central-1"];
-          ciceroWebUrl = "https://cicero.ci.iog.io";
+          ciceroWebUrl = "https://${subdomain}.${domain}";
           inherit nixConfig postBuildHook;
         };
       in ''
@@ -103,7 +113,7 @@
       driver = "docker";
 
       config = {
-        image = ociNamer oci-images.cicero;
+        image = "${oci-images.cicero.imageName}:${branch}";
         command = "${cell.entrypoints.cicero}/bin/entrypoint";
       };
 
@@ -130,7 +140,7 @@
         # https://github.com/hashicorp/go-getter/blob/4553965d9c4a8d99bd0d381c1180c08e07eff5fd/netrc.go#L24
         NETRC = "/secrets/netrc";
 
-        CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.ci.iog.io";
+        CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.${domain}";
         REGISTRY_AUTH_FILE = "/secrets/docker";
       };
 
@@ -163,7 +173,7 @@
             data = let
               pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.data.value}}{{end}}'';
             in ''
-              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/cicero?target_session_attrs=read-write
+              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/${ciceroName}?target_session_attrs=read-write
             '';
             env = true;
           }
@@ -173,7 +183,7 @@
             data = ''
               {
                 "auths": {
-                  "registry.ci.iog.io": {
+                  "registry.${domain}": {
                     "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{print .user ":" .password | base64Encode}}{{end}}{{end}}"
                   }
                 }
@@ -210,27 +220,27 @@
     };
   };
 in {
-  job.cicero = {
+  job.${ciceroName} = {
     inherit datacenters namespace;
 
     group.cicero = merge commonGroup {
       service = [
         {
-          name = "cicero-internal";
+          name = "${ciceroName}-internal";
           address_mode = "auto";
           port = "http";
           tags = [
             "ingress"
             "traefik.enable=true"
-            "traefik.http.routers.cicero-internal.rule=Host(`cicero.ci.iog.io`, `cicero.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
-            "traefik.http.routers.cicero-internal.middlewares=cicero-auth@consulcatalog"
+            "traefik.http.routers.${ciceroName}-internal.rule=Host(`${subdomain}.${domain}`, `${subdomain}.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
+            "traefik.http.routers.${ciceroName}-internal.middlewares=cicero-auth@consulcatalog"
             "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
             "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
-            "traefik.http.routers.cicero-internal.entrypoints=https"
-            "traefik.http.routers.cicero-internal.tls=true"
-            "traefik.http.routers.cicero-internal.tls.certresolver=acme"
+            "traefik.http.routers.${ciceroName}-internal.entrypoints=https"
+            "traefik.http.routers.${ciceroName}-internal.tls=true"
+            "traefik.http.routers.${ciceroName}-internal.tls.certresolver=acme"
           ];
-          canary_tags = ["cicero"];
+          canary_tags = [ciceroName];
           check = [
             {
               type = "tcp";
@@ -241,19 +251,19 @@ in {
           ];
         }
         {
-          name = "cicero";
+          name = ciceroName;
           address_mode = "auto";
           port = "http";
           tags = [
             "ingress"
             "traefik.enable=true"
-            "traefik.http.routers.cicero.rule=Host(`cicero.ci.iog.io`, `cicero.iog.io`)"
-            "traefik.http.routers.cicero.middlewares=oauth-auth-redirect@file"
-            "traefik.http.routers.cicero.entrypoints=https"
-            "traefik.http.routers.cicero.tls=true"
-            "traefik.http.routers.cicero.tls.certresolver=acme"
+            "traefik.http.routers.${ciceroName}.rule=Host(`${subdomain}.${domain}`, `${subdomain}.iog.io`)"
+            "traefik.http.routers.${ciceroName}.middlewares=oauth-auth-redirect@file"
+            "traefik.http.routers.${ciceroName}.entrypoints=https"
+            "traefik.http.routers.${ciceroName}.tls=true"
+            "traefik.http.routers.${ciceroName}.tls.certresolver=acme"
           ];
-          canary_tags = ["cicero"];
+          canary_tags = [ciceroName];
           check = [
             {
               type = "tcp";
