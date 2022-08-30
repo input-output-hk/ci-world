@@ -8,14 +8,17 @@
     ociRegistry,
     ...
   }: let
-    pushInput = "push";
-    pushBody = config.run.facts.${pushInput}.value.github_body;
+    factNames = {
+      ci = "ci";
+      push = "push";
+    };
+    pushBody = config.run.facts.${factNames.push}.value.github_body;
     branch = lib.removePrefix "refs/heads/" pushBody.ref;
   in {
     io = ''
       let cfg = {
         #lib.io.github_push,
-        #input: "${pushInput}"
+        #input: "${factNames.push}"
         #repo: "input-output-hk/cicero"
         #default_branch: false
         inputs: _final_inputs
@@ -25,7 +28,7 @@
       inputs: {
         cfg.inputs
 
-        ci: match: {
+        ${factNames.ci}: match: {
           ok: true
           revision: cfg._revision
         }
@@ -52,7 +55,7 @@
       hcl =
         (
           let
-            additionalInputs = {cicero = builtins.getFlake "github:input-output-hk/cicero/${pushBody.head_commit.id}";};
+            additionalInputs = {cicero = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}";};
             additionalDesystemizedInputs = inputs.std.deSystemize inputs.cicero.defaultPackage.system additionalInputs;
             newInputs = inputs // additionalDesystemizedInputs;
           in
