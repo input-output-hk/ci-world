@@ -12,7 +12,24 @@
       ci = "ci";
       push = "push";
     };
+
+    newArgs = {
+      inputs =
+        inputs
+        // inputs.std.deSystemize inputs.cicero.defaultPackage.system {
+          cicero = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}";
+        };
+
+      cell =
+        cell
+        // {
+          oci-images = import ./oci-images.nix newArgs;
+          entrypoints = import ./entrypoints newArgs;
+        };
+    };
+
     pushBody = config.run.facts.${factNames.push}.value.github_body;
+
     branch = lib.removePrefix "refs/heads/" pushBody.ref;
   in {
     io = ''
@@ -41,7 +58,7 @@
       }
     '';
 
-    prepare = with cell.oci-images.cicero; [
+    prepare = with newArgs.cell.oci-images.cicero; [
       {
         type = "nix2container";
         name = "${ociRegistry}/${lib.removePrefix "registry.ci.iog.io/" imageName}:${branch}";
@@ -53,25 +70,10 @@
       inherit (pushBody.repository) default_branch;
 
       hcl =
-        (
-          let
-            additionalInputs = {cicero = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}";};
-            additionalDesystemizedInputs = inputs.std.deSystemize inputs.cicero.defaultPackage.system additionalInputs;
-            newInputs = inputs // additionalDesystemizedInputs;
-          in
-            lib.callPackageWith cell.constants.args.prod ./nomadEnvs/cicero {
-              inherit branch default_branch;
-              inputs = newInputs;
-              cell =
-                cell
-                // {
-                  entrypoints = import ./entrypoints {
-                    inherit cell;
-                    inputs = newInputs;
-                  };
-                };
-            }
-        )
+        (lib.callPackageWith cell.constants.args.prod ./nomadEnvs/cicero {
+          inherit (newArgs) inputs cell;
+          inherit branch default_branch;
+        })
         .job;
 
       hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {job = hcl;}));
