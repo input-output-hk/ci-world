@@ -9,8 +9,8 @@
     ...
   }: let
     factNames = {
-      ci = "ci";
-      push = "push";
+      ci = "CI passed";
+      push = "Push to repo";
     };
 
     newArgs = {
@@ -45,7 +45,7 @@
       inputs: {
         cfg.inputs
 
-        ${factNames.ci}: match: {
+        "${factNames.ci}": match: {
           ok: true
           revision: cfg._revision
         }
