@@ -51,21 +51,23 @@
 
       hcl =
         (
-          (lib.callPackageWith (
-            cell.constants.args.prod
-            // {inherit branch default_branch;}
-          ))
-          ./nomadEnvs/cicero
-          {
-            inherit cell;
-            inputs =
-              inputs
-              // {
-                cicero =
-                  builtins.getFlake
-                  "github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision pushInput null}";
-              };
-          }
+          let
+            additionalInputs = {cicero = builtins.getFlake "github:input-output-hk/cicero/${pushBody.head_commit.id}";};
+            additionalDesystemizedInputs = inputs.std.deSystemize inputs.cicero.defaultPackage.system additionalInputs;
+            newInputs = inputs // additionalDesystemizedInputs;
+          in
+            lib.callPackageWith cell.constants.args.prod ./nomadEnvs/cicero {
+              inherit branch default_branch;
+              inputs = newInputs;
+              cell =
+                cell
+                // {
+                  entrypoints = import ./entrypoints {
+                    inherit cell;
+                    inputs = newInputs;
+                  };
+                };
+            }
         )
         .job;
 
