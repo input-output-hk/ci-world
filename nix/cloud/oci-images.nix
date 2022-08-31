@@ -32,6 +32,10 @@ in {
     nixConf = runCommandNoCC "nix.conf" {} ''
       mkdir -p $out/etc/nix
       cat > $out/etc/nix/nix.conf <<'EOF'
+      # If /dev/kvm does not actually exist in the container
+      # we would rather build without KVM than fail.
+      extra-system-features = kvm
+
       experimental-features = nix-command flakes
       EOF
     '';
