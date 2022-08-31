@@ -32,7 +32,6 @@ in {
     nixConf = runCommandNoCC "nix.conf" {} ''
       mkdir -p $out/etc/nix
       cat > $out/etc/nix/nix.conf <<'EOF'
-      sandbox = false
       experimental-features = nix-command flakes
       EOF
     '';
