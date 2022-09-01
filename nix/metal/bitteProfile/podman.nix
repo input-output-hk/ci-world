@@ -6,18 +6,20 @@
   dockerAuth,
   ...
 }: let
+  # Remove and use package from nixpkgs as soon as it includes this PR:
+  # https://github.com/hashicorp/nomad-driver-podman/pull/183
   nomad-driver-podman = pkgs.buildGo117Module rec {
     pname = "nomad-driver-podman";
     version = "0.4.0";
 
     src = pkgs.fetchFromGitHub {
-      owner = "dermetfan";
+      owner = "hashicorp";
       repo = "nomad-driver-podman";
-      rev = "309618ce0839da6ec6b1d4d90a9666ff19c74151";
-      sha256 = "sha256-WvXyGspfFwcMPtpqhNDu//IMkN+P3xbZSmHVhXDdq0s=";
+      rev = "2a5da7cba46fbfcbada120515a69dec1f3ff04ad";
+      sha256 = "sha256-3KMrgS72s9qkp3Cn0gZzuKnc0wfP8NUfnv1ElI3D3ys=";
     };
 
-    vendorSha256 = "sha256-5PQIWSGSR5vizWEsResBLd//yWs99o/bj5DVpRMBwhA=";
+    vendorSha256 = "sha256-rGqP7Fzh2zms+GB/XYaoZTnaWQD4GmlJJDYprcH9bZQ=";
 
     subPackages = ["."];
 
