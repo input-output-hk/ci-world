@@ -7767,11 +7767,11 @@
         "std": "std_6"
       },
       "locked": {
-        "lastModified": 1661851664,
-        "narHash": "sha256-/5vtJnPwkow+b05oaOgHyU+Hr/jJZxydSmC8wkcLyaM=",
+        "lastModified": 1662040473,
+        "narHash": "sha256-x3FDUN7bPBdZZx712wmK2v8AFYa8FS52Y3Cpn3gPAI8=",
         "owner": "input-output-hk",
         "repo": "tullia",
-        "rev": "d9952fd0ea3fe2f34c6132b4fa5e80bbb1ce94c6",
+        "rev": "005e795b342f95692e5ed3458326ace221cbaf91",
         "type": "github"
       },
       "original": {
