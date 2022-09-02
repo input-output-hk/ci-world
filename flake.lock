@@ -1184,11 +1184,11 @@
         "utils": "utils_24"
       },
       "locked": {
-        "lastModified": 1662053787,
-        "narHash": "sha256-0JeCN9iCQWGqbbKYkEUIBzx3Oyxt+YIhQ68WRFDdNSk=",
+        "lastModified": 1662134031,
+        "narHash": "sha256-/FRNv72GvIRrXTHgph9e4N4DQP2v75BJqDAlJVBBjGI=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "23000ddb1e9345e44775508351cdbd54f7b8e889",
+        "rev": "9a5eb5e3a9cf5069162d26799f45e59f34b621d4",
         "type": "github"
       },
       "original": {
