@@ -10,7 +10,7 @@
   inherit (cell.library) ociNamer;
   inherit (cell) oci-images;
   inherit (inputs.cicero.packages) cicero-entrypoint;
-  inherit (inputs.data-merge) merge;
+  inherit (inputs.data-merge) merge append;
   inherit (inputs.nixpkgs) writeText lib;
 
   subdomain =
@@ -115,6 +115,11 @@
       config = {
         image = "${oci-images.cicero.imageName}:${branch}";
         command = "${cell.entrypoints.cicero}/bin/entrypoint";
+        args = lib.flatten [
+          ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
+          ["--prometheus-addr" "http://monitoring.node.consul:3100"]
+          ["--transform" (map (t: t.destination) transformers)]
+        ];
       };
 
       vault = {
@@ -279,12 +284,7 @@ in {
 
       task.cicero.config = {
         ports = ["http"];
-        args = lib.flatten [
-          ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
-          ["--prometheus-addr" "http://monitoring.node.consul:3100"]
-          ["--web-listen" ":8080"]
-          ["--transform" (map (t: t.destination) transformers)]
-        ];
+        args = append ["--web-listen" ":8080"];
       };
     };
 
@@ -292,10 +292,7 @@ in {
       count = 3;
 
       task.cicero.config = {
-        args = lib.flatten [
-          ["nomad"]
-          ["--transform" (map (t: t.destination) transformers)]
-        ];
+        args = append ["nomad"];
       };
     };
   };
