@@ -54,7 +54,18 @@
       output: {
         success: deployed: true
         failure: deployed: false
-        [string]: revision: cfg._revision
+        [string]: {
+          revision: cfg._revision
+
+          _sub: string
+          if cfg._branch == cfg._default_branch {
+            _sub: ""
+          }
+          if cfg._branch != cfg._default_branch {
+            _sub: "\(cfg._branch)."
+          }
+          url: "https://\(_sub)cicero.ci.iog.io"
+        }
       }
     '';
 
