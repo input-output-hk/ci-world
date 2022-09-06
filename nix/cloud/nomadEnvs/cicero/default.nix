@@ -292,7 +292,7 @@ in {
       count = 3;
 
       task.cicero.config = {
-        args = append ["nomad"];
+        args = append ["--" "nomad"];
       };
     };
   };
