@@ -14,6 +14,7 @@ in {
   }: {
     imports = [
       (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["prod"])
+      (bitte-cells.tempo.hydrationProfiles.hydrate-cluster ["prod"])
     ];
 
     # NixOS-level hydration
@@ -29,7 +30,7 @@ in {
       extraAcmeSANs = [];
       kms = "arn:aws:kms:eu-central-1:074718059002:key/5bb7cc1b-151c-4841-bcb3-622bc8df4b5a";
       s3Bucket = "iohk-ci-bitte";
-      s3BucketTempo = "iohk-ci-tempo";
+      s3Tempo = "iohk-ci-tempo";
     };
 
     services = {
@@ -223,6 +224,11 @@ in {
             (inputs.bitte-cells.patroni.alerts)
             bitte-cells-patroni
             ;
+
+          inherit
+            (inputs.bitte-cells.tempo.alerts)
+            bitte-cells-tempo
+            ;
         }
         # Dashboard attrset
         {
@@ -251,6 +257,13 @@ in {
           inherit
             (inputs.bitte-cells.patroni.dashboards)
             bitte-cells-patroni
+            ;
+
+          inherit
+            (inputs.bitte-cells.tempo.dashboards)
+            bitte-cells-tempo-operational
+            bitte-cells-tempo-reads
+            bitte-cells-tempo-writes
             ;
         };
     };

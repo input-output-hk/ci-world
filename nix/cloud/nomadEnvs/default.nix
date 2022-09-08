@@ -3,7 +3,7 @@
   cell,
 }: let
   inherit (inputs.data-merge) append merge;
-  inherit (inputs.bitte-cells) patroni vector;
+  inherit (inputs.bitte-cells) patroni tempo vector;
   inherit (cell) constants;
   inherit (constants) args;
   inherit (cell.library) pp;
@@ -17,9 +17,10 @@ in {
       # Job mod constants
       
       patroniMods
+      tempoMods
       ;
   in {
-    database = merge (patroni.nomadJob.default (args.prod // {inherit (patroniMods) scaling;})) {
+    database = merge (patroni.nomadCharts.default (args.prod // {inherit (patroniMods) scaling;})) {
       job.database.constraint = append [
         {
           operator = "distinct_property";
@@ -29,6 +30,27 @@ in {
       job.database.group.database.task.patroni.resources = {inherit (patroniMods.resources) cpu memory;};
       job.database.group.database.task.patroni.env = {inherit WALG_S3_PREFIX;};
       job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};
+    };
+
+    tempo = merge (tempo.nomadCharts.default (args.prod
+      // {
+        inherit (tempoMods) scaling;
+
+        nodeClass = "test";
+
+        extraTempo = {
+          services.tempo = {
+            inherit (tempoMods) storageS3Bucket storageS3Endpoint;
+          };
+        };
+      })) {
+      job.tempo.group.tempo.task.tempo = {
+        env = {
+          # DEBUG_SLEEP = 3600;
+          # LOG_LEVEL = "debug";
+        };
+        resources = {inherit (tempoMods.resources) cpu memory;};
+      };
     };
 
     cicero = import ./cicero {
