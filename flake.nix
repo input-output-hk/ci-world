@@ -14,7 +14,13 @@
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
     nixpkgs.follows = "bitte/nixpkgs";
-    capsules.url = "github:input-output-hk/devshell-capsules";
+    capsules = {
+      # Until nixago is implemented, as HEAD currently removes fmt hooks
+      url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
+
+      # To obtain latest available bitte-cli
+      inputs.bitte.follows = "bitte";
+    };
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
