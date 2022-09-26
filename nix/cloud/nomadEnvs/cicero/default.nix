@@ -152,20 +152,29 @@
 
       template =
         transformers
-        ++ [
+        ++ (let
+          data = ''
+            machine github.com
+            login git
+            password {{with secret "kv/data/cicero/github"}}{{.Data.data.token}}{{end}}
+
+            machine api.github.com
+            login git
+            password {{with secret "kv/data/cicero/github"}}{{.Data.data.token}}{{end}}
+          '';
+        in [
           {
-            destination = "secrets/netrc";
-            data = ''
-              machine github.com
-              login git
-              password {{with secret "kv/data/cicero/github"}}{{.Data.data.token}}{{end}}
-
-              machine api.github.com
-              login git
-              password {{with secret "kv/data/cicero/github"}}{{.Data.data.token}}{{end}}
-            '';
+            destination = "/secrets/netrc";
+            inherit data;
           }
-
+          {
+            # go-getter's NETRC env var has no effect on the git fetcher.
+            # It just invokes git, which invokes curl, which looks for `$HOME/.netrc`.
+            destination = "/local/.netrc";
+            inherit data;
+          }
+        ])
+        ++ [
           {
             destination = "/root/.config/git/config";
             data = ''
