@@ -114,6 +114,7 @@
 
       config = {
         image = "${oci-images.cicero.imageName}:${branch}";
+        force_pull = true;
         command = "${cell.entrypoints.cicero}/bin/entrypoint";
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
