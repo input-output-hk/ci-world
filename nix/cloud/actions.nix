@@ -179,9 +179,9 @@
               checks = [{
                 type = "tcp";
                 port = "http";
-                # nanoseconds to 10s
+                # 10s in nanoseconds
                 interval = 10000000000;
-                # nanoseconds to 2s
+                # 2s in nanoseconds
                 timeout = 2000000000;
               }];
             }];
