@@ -179,8 +179,10 @@
               checks = [{
                 type = "tcp";
                 port = "http";
-                interval = "10s";
-                timeout = "2s";
+                # nanoseconds to 10s
+                interval = 10000000000;
+                # nanoseconds to 2s
+                timeout = 2000000000;
               }];
             }];
             task.handbook = {
