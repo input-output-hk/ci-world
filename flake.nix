@@ -6,7 +6,7 @@
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/tempo";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/fix-core-user-data";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
