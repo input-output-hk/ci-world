@@ -114,7 +114,6 @@
     };
 
     handbook = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}#handbook-entrypoint";
-
   in {
     io = ''
       let cfg = {
@@ -162,30 +161,36 @@
           "us-east-2"
         ];
         group.handbook = {
-          networks = [{
-            port.http = {};
-          }];
-          services = [{
-            name = "cicero-handbook";
-            port = "http";
-            tags = [
-              "ingress"
-              "traefik.enable=true"
-              "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.ci.iog.io`) && PathPrefix(`/`)"
-              "traefik.http.routers.cicero-handbook.entrypoints=https"
-              "traefik.http.routers.cicero-handbook.middlewares=oauth-auth-redirect@file"
-              "traefik.http.routers.cicero-handbook.tls=true"
-              "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
-            ];
-            checks = [{
-              type = "tcp";
+          networks = [
+            {
+              port.http = {};
+            }
+          ];
+          services = [
+            {
+              name = "cicero-handbook";
               port = "http";
-              # 10s in nanoseconds
-              interval = 10000000000;
-              # 2s in nanoseconds
-              timeout = 2000000000;
-            }];
-          }];
+              tags = [
+                "ingress"
+                "traefik.enable=true"
+                "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.ci.iog.io`) && PathPrefix(`/`)"
+                "traefik.http.routers.cicero-handbook.entrypoints=https"
+                "traefik.http.routers.cicero-handbook.middlewares=oauth-auth-redirect@file"
+                "traefik.http.routers.cicero-handbook.tls=true"
+                "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
+              ];
+              checks = [
+                {
+                  type = "tcp";
+                  port = "http";
+                  # 10s in nanoseconds
+                  interval = 10000000000;
+                  # 2s in nanoseconds
+                  timeout = 2000000000;
+                }
+              ];
+            }
+          ];
           task.handbook = {
             driver = "nix";
             config = {
