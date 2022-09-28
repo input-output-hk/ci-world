@@ -102,4 +102,97 @@
         .${jobName};
     };
   };
+
+  "cicero/handbook" = {
+    config,
+    lib,
+    ...
+  }: let
+    factNames = {
+      ci = "Deploy Handbook";
+      push = "Push to repo";
+    };
+
+  in {
+    io = ''
+      let cfg = {
+        #lib.io.github_push,
+        #input: "${factNames.push}"
+        #repo: "input-output-hk/cicero"
+        #default_branch: false
+        inputs: _final_inputs
+      }
+
+      _final_inputs: inputs
+      inputs: {
+        cfg.inputs
+
+        "${factNames.ci}": match: {
+          ok: true
+          revision: cfg._revision
+        }
+      }
+
+      output: {
+        success: deployed: true
+        failure: deployed: false
+        [string]: {
+          revision: cfg._revision
+
+          _sub: string
+          if cfg._branch == cfg._default_branch {
+            _sub: ""
+          }
+          if cfg._branch != cfg._default_branch {
+            _sub: "\(cfg._branch)."
+          }
+          url: "https://\(_sub)cicero.ci.iog.io"
+        }
+      }
+    '';
+
+    job = lib.nix-nomad.mkNomadJobs {
+      config = {
+        job.ciceroHandbook = {
+          namespace = "cicero";
+          datacenters = [
+            "dc1"
+            "eu-central-1"
+            "us-east-2"
+          ];
+          group.handbook = {
+            networks = [{
+              port.http = {};
+            }];
+            services = [{
+              name = "cicero-handbook";
+              port = "http";
+              tags = [
+                "ingress"
+                "traefik.enable=true"
+                "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.infra.aws.iohkdev.io`) && PathPrefix(`/`)"
+                "traefik.http.routers.cicero-handbook.entrypoints=https"
+                "traefik.http.routers.cicero-handbook.middlewares=oauth-auth-redirect@file"
+                "traefik.http.routers.cicero-handbook.tls=true"
+                "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
+              ];
+              checks = [{
+                type = "tcp";
+                port = "http";
+                interval = "10s";
+                timeout = "2s";
+              }];
+            }];
+            task.handbook = {
+              driver = "nix";
+              config = {
+                packages = ["#handbookFlake"];
+                command = ["/bin/serve-cicero-handbook"];
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 }
