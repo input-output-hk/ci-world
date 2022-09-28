@@ -172,7 +172,7 @@
               tags = [
                 "ingress"
                 "traefik.enable=true"
-                "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.infra.aws.iohkdev.io`) && PathPrefix(`/`)"
+                "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.ci.iog.io`) && PathPrefix(`/`)"
                 "traefik.http.routers.cicero-handbook.entrypoints=https"
                 "traefik.http.routers.cicero-handbook.middlewares=oauth-auth-redirect@file"
                 "traefik.http.routers.cicero-handbook.tls=true"
