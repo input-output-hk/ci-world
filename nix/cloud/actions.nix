@@ -113,6 +113,8 @@
       push = "Push to repo";
     };
 
+    handbook = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}#handbook-entrypoint";
+
   in {
     io = ''
       let cfg = {
@@ -188,7 +190,7 @@
             task.handbook = {
               driver = "nix";
               config = {
-                packages = ["#handbookFlake"];
+                packages = [handbook];
                 command = ["/bin/serve-cicero-handbook"];
               };
             };
