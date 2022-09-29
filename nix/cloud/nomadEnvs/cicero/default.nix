@@ -110,7 +110,7 @@
     };
 
     task.cicero = {
-      driver = "docker";
+      driver = "podman";
 
       config = {
         image = "${oci-images.cicero.imageName}:${branch}";
@@ -139,6 +139,7 @@
 
         NIX_CONFIG = ''
           netrc-file = /secrets/netrc
+          sandbox = false # does not work inside podman
           ${nixConfig}
         '';
 
