@@ -129,7 +129,7 @@
       };
 
       resources = {
-        memory = 4096;
+        memory = 1024 * 16;
         cpu = 300;
       };
 
