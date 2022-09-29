@@ -38,6 +38,8 @@
         extra-system-features = kvm
 
         experimental-features = nix-command flakes
+
+        show-trace = true
         EOF
       '';
 
