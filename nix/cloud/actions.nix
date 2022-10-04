@@ -155,7 +155,7 @@
     '';
 
     job = {
-      job.ciceroHandbook = {
+      ciceroHandbook = {
         namespace = "cicero";
         datacenters = [
           "dc1"
