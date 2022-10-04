@@ -36,6 +36,7 @@ in {
     services = {
       nomad.namespaces = {
         prod = {description = "CI Prod";};
+        baremetal = {description = "CI Baremetal Builders";};
       };
     };
 
