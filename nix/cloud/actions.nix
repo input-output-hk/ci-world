@@ -113,9 +113,7 @@
       push = "Push to repo";
     };
 
-    handbook = (
-      builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}"
-    ).packages.${inputs.nixpkgs.system}.handbook-entrypoint;
+    handbook = "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}#handbook-entrypoint";
   in {
     io = ''
       let cfg = {
@@ -155,7 +153,7 @@
     '';
 
     job = {
-      job.ciceroHandbook = {
+      ciceroHandbook = {
         namespace = "cicero";
         datacenters = [
           "dc1"
