@@ -129,8 +129,8 @@
       };
 
       resources = {
-        memory = 1024 * 16;
-        cpu = 300;
+        memory = 1024 * 64;
+        cpu = 1000;
       };
 
       env = {
