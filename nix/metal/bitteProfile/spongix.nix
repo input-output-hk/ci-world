@@ -17,7 +17,7 @@ in {
     port = 7745;
     gcInterval = "1h";
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
-    substituters = ["https://cache.nixos.org" "https://hydra.iohk.io"];
+    substituters = ["https://hydra.iohk.io"];
     trustedPublicKeys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       (lib.fileContents (config.secrets.encryptedRoot + "/nix-public-key-file"))
