@@ -57,7 +57,7 @@
             .job |= (
               .Datacenters += $args.datacenters |
               .TaskGroups[]?.Tasks[]? |= (
-                .Env += {
+                .Env |= . + {
                   NOMAD_ADDR: env.NOMAD_ADDR,
                   NOMAD_TOKEN: env.NOMAD_TOKEN,
                   CICERO_WEB_URL: $args.ciceroWebUrl,
