@@ -13,13 +13,13 @@
     closureRootPaths:
     # The arguments to nix2container's buildImage or buildLayer function to enrich.
     args: let
-      inherit (inputs.nixpkgs) lib cacert symlinkJoin closureInfo runCommandNoCC;
+      inherit (inputs.nixpkgs) lib cacert symlinkJoin closureInfo runCommand;
 
       closure = closureInfo {
         rootPaths = {inherit cacert;} // closureRootPaths;
       };
 
-      global = runCommandNoCC "global" {} ''
+      global = runCommand "global" {} ''
         mkdir -p $out $out/etc
         cp ${closure}/registration $out
 
@@ -30,7 +30,7 @@
         echo 'nixbld1:!:30001:30000:Nix build user 1:/var/empty:/bin/nologin' >> $out/etc/passwd
       '';
 
-      nixConf = runCommandNoCC "nix.conf" {} ''
+      nixConf = runCommand "nix.conf" {} ''
         mkdir -p $out/etc/nix
         cat > $out/etc/nix/nix.conf <<'EOF'
         # If /dev/kvm does not actually exist in the container
@@ -43,7 +43,7 @@
         EOF
       '';
 
-      tmp = runCommandNoCC "tmp" {} ''
+      tmp = runCommand "tmp" {} ''
         mkdir -p $out/tmp
       '';
     in

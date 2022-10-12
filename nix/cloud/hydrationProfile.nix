@@ -201,7 +201,7 @@ in {
         inputs.bitte-cells._utils.library.mkMonitoring
         # Alert attrset
         {
-          # Organelle local declared dashboards
+          # Cell Block local declared dashboards
           inherit
             (cell.alerts)
             ci-world-spongix
@@ -233,7 +233,7 @@ in {
         }
         # Dashboard attrset
         {
-          # Organelle local declared dashboards
+          # Cell block local declared dashboards
           inherit
             (cell.dashboards)
             ci-world-spongix

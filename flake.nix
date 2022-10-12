@@ -42,7 +42,7 @@
       inherit inputs;
       cellsFrom = ./nix;
       # debug = ["cells" "cloud" "nomadEnvs"];
-      organelles = [
+      cellBlocks = [
         (inputs.std.data "nomadEnvs")
         (inputs.std.data "constants")
         (inputs.std.data "alerts")
