@@ -4,9 +4,7 @@
   pkgs,
   lib,
   ...
-}: let
-  inherit (builtins) toJSON fromJSON;
-in {
+}: {
   imports = [inputs.spongix.nixosModules.spongix];
 
   services.spongix = {
@@ -17,8 +15,12 @@ in {
     port = 7745;
     gcInterval = "1h";
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
-    substituters = ["https://hydra.iohk.io"];
+    substituters = [
+      "https://hydra.iohk.io"
+      "https://iohk-mamba-bitte.s3.eu-central-1.amazonaws.com/infra/binary-cache"
+    ];
     trustedPublicKeys = [
+      "mamba-testnet-0:bLL+QUo+WSSYJZP5NA9VY97DyIj3YV5US4C6YLHNPGc="
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       (lib.fileContents (config.secrets.encryptedRoot + "/nix-public-key-file"))
       (lib.fileContents (config.secrets.encryptedRoot + "/spongix-public-key-file"))
