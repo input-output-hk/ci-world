@@ -16,6 +16,7 @@
     gcInterval = "1h";
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
     substituters = [
+      "https://cache.nixos.org"
       "https://hydra.iohk.io"
       "https://iohk-mamba-bitte.s3.eu-central-1.amazonaws.com/infra/binary-cache"
     ];
