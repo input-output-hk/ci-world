@@ -5,8 +5,8 @@
     n2c.url = "github:nlewo/nix2container";
     data-merge.url = "github:divnix/data-merge";
     # --- Bitte Stack ----------------------------------------------
-    bitte.url = "github:input-output-hk/bitte";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/fix-core-user-data";
+    bitte.url = "github:input-output-hk/bitte/zt";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/zt";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
@@ -30,6 +30,8 @@
     cicero.inputs.spongix.follows = "spongix";
     cicero.inputs.driver.follows = "nomad-driver-nix";
     tullia.url = "github:input-output-hk/tullia";
+    openziti.url = "github:johnalotoski/openziti-bins";
+    openziti.inputs.nixpkgs.follows = "nixpkgs";
     # --------------------------------------------------------------
   };
 

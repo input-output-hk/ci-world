@@ -25,6 +25,15 @@ in {
       flakePath = "${inputs.self}";
       vbkBackend = "local";
       builder = "cache";
+      transitGateway = {
+        enable = true;
+        transitRoutes = [
+          {
+            gatewayCoreNodeName = "zt";
+            cidrRange = "10.10.0.0/24";
+          }
+        ];
+      };
 
       autoscalingGroups = let
         defaultModules = [
@@ -229,6 +238,37 @@ in {
 
           securityGroupRules = {
             inherit (securityGroupRules) internet internal ssh;
+          };
+        };
+
+        zt = {
+          # https://support.netfoundry.io/hc/en-us/articles/360025875331-Edge-Router-VM-Sizing-Guide
+          instanceType = "c5.large";
+          privateIP = "172.16.0.30";
+          subnet = cluster.vpc.subnets.core-1;
+          volumeSize = 100;
+          sourceDestCheck = false;
+
+          modules = [
+            (bitte + /profiles/common.nix)
+            (bitte + /modules/ziti/ziti-controller.nix)
+            (bitte + /modules/ziti/ziti-router.nix)
+            (bitte + /modules/ziti/ziti-console.nix)
+            (bitte + /modules/ziti/ziti-edge-tunnel.nix)
+            ./ziti.nix
+          ];
+
+          securityGroupRules = {
+            inherit
+              (securityGroupRules)
+              internal
+              internet
+              ssh
+              ziti-controller-mgmt
+              ziti-controller-rest
+              ziti-router-edge
+              ziti-router-fabric
+              ;
           };
         };
       };
