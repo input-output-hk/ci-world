@@ -8,22 +8,16 @@
     pkgs,
     ...
   }: {
-    command.text = let
-      flakeUrl = lib.escapeShellArg (
-        if config.action.facts != {}
-        then "github:input-output-hk/ci-world/${inputs.self.rev}"
-        else "."
-      );
-    in ''
+    command.text = ''
       system=$(nix eval --raw --impure --expr __currentSystem)
-      nix run ${flakeUrl}#"$system".cloud.oci-images.cicero.copyToRegistry \
-        --override-input cicero github:input-output-hk/cicero/${config.preset.github-ci.lib.getRevision "GitHub event" "HEAD"}
-      nix eval ${flakeUrl}#"$system".cloud.nomadEnvs.prod.cicero --json | nomad job run -
+      nix run .#"$system".cloud.oci-images.cicero.copyToRegistry \
+        --override-input cicero github:input-output-hk/cicero/${config.preset.github.lib.readRevision "GitHub event" "HEAD"}
+      nix eval .#"$system".cloud.nomadEnvs.prod.cicero --json | nomad job run -
     '';
 
     dependencies = with pkgs; [nomad];
 
-    nomad.template = [
+    nomad.templates = [
       {
         destination = "/secrets/auth.json";
         data = ''
@@ -42,11 +36,10 @@
 
     preset = {
       nix.enable = true;
-      github-ci = {
-        enable = config.action.facts != {};
-        repo = "input-output-hk/cicero";
-        sha = config.preset.github-ci.lib.getRevision "GitHub event" "HEAD";
-        clone = false;
+      github.ci = {
+        enable = config.actionRun.facts != {};
+        repository = "input-output-hk/cicero";
+        revision = config.preset.github.lib.readRevision "GitHub event" "HEAD";
       };
     };
 
