@@ -202,4 +202,16 @@
       };
     };
   };
+
+  "ci-world/test-darwin-nix-remote-builders" = rec {
+    task = "test-darwin-nix-remote-builders";
+    io = ''
+      inputs: trigger: match: "ci-world/${task}": "trigger"
+
+      output: {
+        success: "x86_64-darwin remote builders work": true
+        failure: "x86_64-darwin remote builders work": false
+      }
+    '';
+  };
 }
