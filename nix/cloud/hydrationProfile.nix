@@ -205,6 +205,7 @@ in {
           inherit
             (cell.alerts)
             ci-world-spongix
+            ci-world-nomad-follower
             # Upstream alerts which may have downstream deps can be imported here
             
             ;
