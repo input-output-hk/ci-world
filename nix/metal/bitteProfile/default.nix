@@ -2,7 +2,7 @@
   inputs,
   cell,
 }: let
-  inherit (inputs) nixpkgs;
+  inherit (inputs) nixpkgs openziti;
   inherit (inputs.bitte-cells) patroni;
 in {
   default = {
@@ -251,10 +251,10 @@ in {
 
           modules = [
             (bitte + /profiles/common.nix)
-            (bitte + /modules/ziti/ziti-controller.nix)
-            (bitte + /modules/ziti/ziti-router.nix)
-            (bitte + /modules/ziti/ziti-console.nix)
-            (bitte + /modules/ziti/ziti-edge-tunnel.nix)
+            openziti.nixosModules.ziti-controller
+            openziti.nixosModules.ziti-router
+            openziti.nixosModules.ziti-console
+            openziti.nixosModules.ziti-edge-tunnel
             ./ziti.nix
           ];
 
