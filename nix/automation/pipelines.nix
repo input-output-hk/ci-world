@@ -76,39 +76,6 @@
             '''
         '';
       }
-      {
-        destination = "${config.env.HOME}/.ssh/known_hosts";
-        data = let
-          builder = i: ''
-            {{range (index .Data.data "darwin${toString i}-host" | split "\n") -}}
-            10.10.0.${toString i} {{.}}
-            {{end}}
-          '';
-        in ''
-          {{with secret "kv/data/cicero/darwin" -}}
-          ${builder 1}
-          ${builder 2}
-          {{end}}
-        '';
-      }
-      {
-        destination = "/secrets/id_buildfarm";
-        perms = "0400";
-        data = ''
-          {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm-private"}}{{end}}
-        '';
-      }
-      {
-        destination = "/local/NIX_CONFIG.env";
-        env = true;
-        data = let
-          builder = i: ''ssh://builder@10.10.0.${toString i} x86_64-darwin /secrets/id_buildfarm 4 2 big-parallel - {{index .Data.data "darwin${toString i}-public" | base64Encode}}'';
-        in ''
-          {{with secret "kv/data/cicero/darwin"}}
-          NIX_CONFIG="builders = ${builder 1} ; ${builder 2}\nbuilders-use-substitutes = true"
-          {{end}}
-        '';
-      }
     ];
   };
 }
