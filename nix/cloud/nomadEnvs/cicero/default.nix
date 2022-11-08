@@ -86,6 +86,72 @@
           '
       '';
     }
+    {
+      destination = "/local/transformer-darwin-nix-remote-builders.sh";
+      perms = "544";
+      data = let
+        templates = [
+          {
+            # this will be changed to DestPath in the transformer
+            DestPathInHome = ".ssh/known_hosts";
+
+            EmbeddedTmpl = let
+              builder = i: ''
+                {{range (index .Data.data "darwin${toString i}-host" | split "\n") -}}
+                10.10.0.${toString i} {{.}}
+                {{end}}
+              '';
+            in ''
+              {{with secret "kv/data/cicero/darwin" -}}
+              ${builder 1}
+              ${builder 2}
+              {{end}}
+            '';
+          }
+          {
+            DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
+            Perms = "0400";
+            EmbeddedTmpl = ''
+              {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm-private"}}{{end}}
+            '';
+          }
+          {
+            DestPath = "\${NOMAD_TASK_DIR}/darwin-nix-remote-builders.env";
+            Envvars = true;
+            EmbeddedTmpl = let
+              builder = i: ''ssh://builder@10.10.0.${toString i} x86_64-darwin /secrets/id_buildfarm 4 2 big-parallel - {{index .Data.data "darwin${toString i}-public" | base64Encode}}'';
+            in ''
+              {{with secret "kv/data/cicero/darwin"}}
+              NIX_CONFIG="builders = ${builder 1} ; ${builder 2}\nbuilders-use-substitutes = true"
+              {{end}}
+            '';
+          }
+        ];
+      in ''
+        #! /bin/bash
+        /bin/jq --compact-output \
+          --argjson templates ${lib.escapeShellArg (builtins.toJSON templates)} \
+          '
+            .job.TaskGroups[]?.Tasks[]? |=
+              .Env.HOME as $home |
+              if $home == null
+              then error("`.job.TaskGroups[].Tasks[].Env.HOME` must be set for the darwin-nix-remote-builders transformer")
+              else .Templates |= (
+                . + (
+                  $templates |
+                  map(
+                    if has("DestPathInHome")
+                    then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
+                    else .
+                    end
+                  )
+                ) |
+                unique
+              )
+              end
+          '
+      '';
+    }
   ];
 
   commonGroup = {
