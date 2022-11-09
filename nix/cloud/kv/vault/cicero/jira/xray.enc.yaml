@@ -1,0 +1,17 @@
+id: ENC[AES256_GCM,data:mOIzpFOPJoMtHHjYe4kLakfv5V8nEyi/Wjts/hVrQyM=,iv:7IUyjF6erW5fs5XsUrBSUKzsk1sBG9jdvQfgv45bVYQ=,tag:gYirJxFxZD3Cq6OLES2W9A==,type:str]
+secret: ENC[AES256_GCM,data:hm5/9RxZZB5QMdrYFfA9Lw0bDzKf0rsjzbOfKCXKzN8dCsGvuRZymqi9kat0wdXAbcdPWynv1YerQxE1tXTmbA==,iv:MUUjAPYV9DjcksxdD8S6ND8o15rkD4AT4Vw+E0jL57k=,tag:iRyMBtXBUST3c6FBhTd2/w==,type:str]
+sops:
+    kms:
+        - arn: arn:aws:kms:eu-central-1:074718059002:key/5bb7cc1b-151c-4841-bcb3-622bc8df4b5a
+          created_at: "2022-11-09T14:15:23Z"
+          enc: AQICAHg3OCn+/PAIR22bdMZmmm7xlk3KpM4n+haJ8Ph2IaYRgwGvXYORFiy+umREavIJL09iAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMMn7R6v/liVB4RuGVAgEQgDvphOoFqH9VaBI1EaQ26wNijCAMiYMdE1XsMc7dtqPSdisFzFpx+LcRHUHpkPLsVyfQrTujYZcVcKtzUA==
+          aws_profile: ""
+    gcp_kms: []
+    azure_kv: []
+    hc_vault: []
+    age: []
+    lastmodified: "2022-11-09T14:15:31Z"
+    mac: ENC[AES256_GCM,data:/quSli9RJnZUGPgiW/haBFJQcsL6tm337ULgTSV8LLvO5GJZmAcqGoyPtWFrm7gtv2aFRrKkKJ1kApLkqjrp0U5W8L3IwQ4VueoMbYV1Nc45hMzCF7YGAQS+KGmpaYXIc2EguMeRwctz6gPdYPVpNXkdaYuPXfF/Z92B74Lo348=,iv:5u7b9mkdZpS71k93j0rACQ9UqH0Znsk+mVV+3WhgpTE=,tag:p861Mr4aZOUzn1oB+QIJqA==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.3
