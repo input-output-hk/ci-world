@@ -7,6 +7,15 @@
 }: {
   imports = [inputs.spongix.nixosModules.spongix];
 
+  systemd.services.spongix.serviceConfig = {
+    Restart = lib.mkForce "always";
+    RestartSec = lib.mkForce "30s";
+    OOMScoreAdjust = 1000;
+    MemoryAccounting = "true";
+    MemoryHigh = "60%";
+    MemoryMax = "70%";
+  };
+
   services.spongix = {
     enable = true;
     cacheDir = "/var/lib/spongix";
