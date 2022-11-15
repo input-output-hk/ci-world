@@ -11,7 +11,7 @@
   inherit (cell) oci-images;
   inherit (inputs.cicero.packages) cicero-entrypoint;
   inherit (inputs.data-merge) merge append;
-  inherit (inputs.nixpkgs) writeText lib;
+  inherit (inputs.nixpkgs) runCommand writeText lib;
 
   subdomain =
     lib.optionalString (branch != default_branch) "${branch}."
@@ -127,10 +127,13 @@
             '';
           }
         ];
+        templatesJsonBase64 = runCommand "templates.json.base64" {} ''
+          echo -n ${lib.escapeShellArg (builtins.toJSON templates)} | base64 --wrap 0 - > $out
+        '';
       in ''
         #! /bin/bash
         /bin/jq --compact-output \
-          --argjson templates ${lib.escapeShellArg (builtins.toJSON templates)} \
+          --argjson templates '{{ base64Decode "${lib.fileContents templatesJsonBase64}" }}' \
           '
             .job.TaskGroups[]?.Tasks[]? |=
               .Env.HOME as $home |
