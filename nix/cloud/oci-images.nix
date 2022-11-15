@@ -15,7 +15,7 @@ in {
       tag = "main"; # keep in sync with branch name of flake input
       config.Cmd = ["${cell.entrypoints.cicero}/bin/entrypoint"];
       maxLayers = 60;
-      contents = [
+      copyToRoot = [
         (symlinkJoin {
           name = "root";
           paths = with inputs.nixpkgs; [

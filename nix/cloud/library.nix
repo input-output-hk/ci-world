@@ -57,8 +57,8 @@
               SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
             };
           };
-        contents =
-          args.contents
+        copyToRoot =
+          args.copyToRoot
           or []
           ++ [
             (symlinkJoin {
