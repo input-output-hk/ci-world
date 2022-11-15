@@ -2,8 +2,8 @@
   description = "CI World";
   inputs = {
     std.url = "github:divnix/std";
-    n2c.url = "github:nlewo/nix2container";
-    data-merge.url = "github:divnix/data-merge";
+    n2c.follows = "std/n2c";
+    data-merge.follows = "std/dmerge";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/zt";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/zt";
@@ -13,7 +13,7 @@
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
-    nixpkgs.follows = "bitte/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs";
     capsules = {
       # Until nixago is implemented, as HEAD currently removes fmt hooks
       url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
@@ -44,23 +44,23 @@
       inherit inputs;
       cellsFrom = ./nix;
       # debug = ["cells" "cloud" "nomadEnvs"];
-      cellBlocks = [
-        (inputs.std.data "nomadEnvs")
-        (inputs.std.data "constants")
-        (inputs.std.data "alerts")
-        (inputs.std.data "dashboards")
-        (inputs.std.runnables "entrypoints")
-        (inputs.std.functions "bitteProfile")
-        (inputs.std.functions "oci-images")
-        (inputs.std.functions "library")
-        (inputs.std.installables "packages")
-        (inputs.std.functions "hydrationProfile")
-        (inputs.std.runnables "jobs")
-        (inputs.std.devshells "devshells")
+      cellBlocks = with inputs.std.blockTypes; [
+        (data "nomadEnvs")
+        (data "constants")
+        (data "alerts")
+        (data "dashboards")
+        (runnables "entrypoints")
+        (functions "bitteProfile")
+        (functions "oci-images")
+        (functions "library")
+        (installables "packages")
+        (functions "hydrationProfile")
+        (runnables "jobs")
+        (devshells "devshells")
 
         # Tullia
         (inputs.tullia.tasks "pipelines")
-        (inputs.std.functions "actions")
+        (functions "actions")
       ];
     }
     # soil (TODO: eat up soil)

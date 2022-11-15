@@ -2,9 +2,9 @@
   inputs,
   cell,
 }: let
-  inherit (inputs.std) std;
   inherit (inputs) capsules bitte-cells bitte nixpkgs;
-  inherit (inputs.cells) cardano;
+  inherit (inputs.std) std;
+  inherit (inputs.std.lib) dev;
 
   # FIXME: this is a work around just to get access
   # to 'awsAutoScalingGroups'
@@ -41,14 +41,14 @@
     };
   };
 in {
-  dev = std.lib.mkShell {
+  dev = dev.mkShell {
     imports = [
       ciWorld
       capsules.base
       capsules.cloud
     ];
   };
-  ops = std.lib.mkShell {
+  ops = dev.mkShell {
     imports = [
       ciWorld
       capsules.base
