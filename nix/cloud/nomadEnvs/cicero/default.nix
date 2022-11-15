@@ -369,7 +369,7 @@ in {
     };
 
     group.cicero-nomad = merge commonGroup {
-      count = 2;
+      count = 0;
 
       task.cicero.config = {
         args = append ["--" "nomad"];
