@@ -247,6 +247,7 @@ in {
           privateIP = "172.16.0.30";
           subnet = cluster.vpc.subnets.core-1;
           volumeSize = 100;
+          route53.domains = ["zt.${cluster.domain}"];
           sourceDestCheck = false;
 
           modules = [

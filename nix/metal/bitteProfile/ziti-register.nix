@@ -41,8 +41,8 @@ in {
 
   # Below, register the remaining ziti controller and edge listener services for consul visibility and health checks,
   # but do not route these services through traefik as doing so creates a potential bandwidth hog on routing machine.
-  # We want ZT traefik going directly through zt machine, and need to create a specific Route53 record to zt machine.
-  # TODO: Add Route53 zt machine record update in transitGateway TF handling.
+  # We want ZT traefik going directly through zt machine, and need to create a specific Route53 record to zt machine,
+  # which can be done in the metal machine declaration with: `route53.domains = ["zt.${cluster.domain}"];`
 
   systemd.services.ziti-controller-rest-service =
     mkIf config.services.ziti-controller.enable
