@@ -8,7 +8,7 @@
     bitte.url = "github:input-output-hk/bitte/zt";
     # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/zt";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells";
+    bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-token-rotation";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     # --------------------------------------------------------------
