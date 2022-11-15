@@ -250,12 +250,15 @@ in {
           sourceDestCheck = false;
 
           modules = [
-            (bitte + /profiles/common.nix)
+            inputs.bitte.profiles.common
+            inputs.bitte.profiles.consul-common
+            inputs.bitte.profiles.vault-cache
             openziti.nixosModules.ziti-controller
             openziti.nixosModules.ziti-router
             openziti.nixosModules.ziti-console
             openziti.nixosModules.ziti-edge-tunnel
             ./ziti.nix
+            ./ziti-register.nix
           ];
 
           securityGroupRules = {

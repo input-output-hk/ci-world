@@ -6331,11 +6331,11 @@
         "zitiConsole": "zitiConsole"
       },
       "locked": {
-        "lastModified": 1666899256,
-        "narHash": "sha256-6XTpeo0l9CDsJ8e02wsOozOUd7tYqGDCMX3ObEYRbJg=",
+        "lastModified": 1666917895,
+        "narHash": "sha256-oWORwbpWQy9q0vwOXzB14fqQfZlPjTg3VENRCNxXsy8=",
         "owner": "johnalotoski",
         "repo": "openziti-bins",
-        "rev": "a8396de36a6a7197d2fd1d8b9069559eab1c4592",
+        "rev": "7f92e8d08b02257d424d5debf1a4cfda8f34ac3a",
         "type": "github"
       },
       "original": {
