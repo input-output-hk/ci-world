@@ -11,6 +11,7 @@
     bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-token-rotation";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
+    bitte.inputs.nomad-follower.url = "github:input-output-hk/nomad-follower/3ff1d80324a3a716f008fbfc970a0e836c5b34db";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
     nixpkgs.url = "github:NixOS/nixpkgs";

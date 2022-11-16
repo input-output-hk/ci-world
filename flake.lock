@@ -5917,11 +5917,11 @@
         "utils": "utils_8"
       },
       "locked": {
-        "lastModified": 1658244176,
-        "narHash": "sha256-oM+7WdbXcTiDEfuuiiVLlJi/MTRgSBwFdzVkFWsC8so=",
+        "lastModified": 1668602700,
+        "narHash": "sha256-kFcdI8xAvroCDPf1oWpcepAQwiSet90iLvOxwccirQw=",
         "owner": "input-output-hk",
         "repo": "nomad-follower",
-        "rev": "bd8cc28c94ba8bd48c4d4be5ab14f3904328dde3",
+        "rev": "3ff1d80324a3a716f008fbfc970a0e836c5b34db",
         "type": "github"
       },
       "original": {
