@@ -116,13 +116,15 @@
             '';
           }
           {
-            DestPath = "\${NOMAD_TASK_DIR}/darwin-nix-remote-builders.env";
-            Envvars = true;
+            # this will be changed to DestPath in the transformer
+            DestPathInHome = ".config/nix/nix.conf";
+
             EmbeddedTmpl = let
               builder = i: ''ssh://builder@10.10.0.${toString i} x86_64-darwin /secrets/id_buildfarm 4 2 big-parallel - {{index .Data.data "darwin${toString i}-public" | base64Encode}}'';
             in ''
               {{with secret "kv/data/cicero/darwin"}}
-              NIX_CONFIG="builders = ${builder 1} ; ${builder 2}\nbuilders-use-substitutes = true"
+              builders = ${builder 1} ; ${builder 2}
+              builders-use-substitutes = true
               {{end}}
             '';
           }
