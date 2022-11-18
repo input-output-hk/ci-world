@@ -92,8 +92,8 @@
       data = let
         templates = [
           {
-            # this will be changed to DestPath in the transformer
             DestPathInHome = ".ssh/known_hosts";
+            append = true;
 
             EmbeddedTmpl = let
               builder = i: ''
@@ -116,8 +116,8 @@
             '';
           }
           {
-            # this will be changed to DestPath in the transformer
             DestPathInHome = ".config/nix/nix.conf";
+            append = true;
 
             EmbeddedTmpl = let
               builder = i: ''ssh://builder@10.10.0.${toString i} x86_64-darwin /secrets/id_buildfarm 4 2 big-parallel - {{index .Data.data "darwin${toString i}-public" | base64Encode}}'';
@@ -135,7 +135,7 @@
       in ''
         #! /bin/bash
         /bin/jq --compact-output \
-          --argjson templates '{{ base64Decode "${lib.fileContents templatesJsonBase64}" }}' \
+          --arg templates ${lib.escapeShellArg (lib.fileContents templatesJsonBase64)} \
           '
             .job.TaskGroups[]?.Tasks[]? |=
               .Env.HOME as $home |
@@ -143,13 +143,29 @@
               then error("`.job.TaskGroups[].Tasks[].Env.HOME` must be set for the darwin-nix-remote-builders transformer")
               else .Templates |= (
                 . + (
-                  $templates |
+                  $templates | @base64d | fromjson |
                   map(
                     if has("DestPathInHome")
                     then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
                     else .
                     end
                   )
+                ) |
+                group_by(.DestPath) |
+                map(
+                  sort_by(.append) |
+                  if .[length - 1].append | not
+                  then .
+                  else [reduce .[range(1; length)] as $tmpl (
+                    .[0];
+                    if $tmpl | .append | not
+                    then error("Multiple templates that are not meant to be appended have the same destination")
+                    else . + {EmbeddedTmpl: (.EmbeddedTmpl + "\n" + $tmpl.EmbeddedTmpl)}
+                    end
+                  )]
+                  end |
+                  .[] |
+                  del(.append)
                 ) |
                 unique
               )
