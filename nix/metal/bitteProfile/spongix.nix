@@ -19,10 +19,10 @@
   services.spongix = {
     enable = true;
     cacheDir = "/var/lib/spongix";
-    cacheSize = 400;
     host = "";
     port = 7745;
-    gcInterval = "1h";
+    gc.interval = "daily";
+    gc.cacheSize = 400;
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
     substituters = [
       "https://cache.nixos.org"

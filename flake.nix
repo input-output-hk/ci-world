@@ -25,7 +25,7 @@
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
-    spongix.url = "github:input-output-hk/spongix";
+    spongix.url = "github:input-output-hk/spongix/extract-gc";
     spongix.inputs.cicero.follows = "cicero";
     cicero.url = "github:input-output-hk/cicero";
     cicero.inputs.spongix.follows = "spongix";

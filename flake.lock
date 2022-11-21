@@ -6473,15 +6473,16 @@
         "utils": "utils_22"
       },
       "locked": {
-        "lastModified": 1652474186,
-        "narHash": "sha256-PILVEX1e4ze0gxK60TDuX+E/umnwelHir/83dfXmTTU=",
+        "lastModified": 1669043861,
+        "narHash": "sha256-llU9dLnR74q78ZPqFCYDFJjpbPqKX/WU2gXwQuks1DE=",
         "owner": "input-output-hk",
         "repo": "spongix",
-        "rev": "a08bcc8f0bb63e372bf82abe5ad1f001e6b4d566",
+        "rev": "b2d279aa8bbe8ac70a68b4cc44f553be3c474a94",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "extract-gc",
         "repo": "spongix",
         "type": "github"
       }
