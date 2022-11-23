@@ -57,13 +57,13 @@ in {
           "ziti-controller-rest"
         ];
 
-        checks = {
-          ziti-controller-rest-tcp = {
-            interval = "60s";
-            timeout = "5s";
-            tcp = "127.0.0.1:${toString config.services.ziti-controller.portRestApi}";
-          };
-        };
+        # checks = {
+        #   ziti-controller-rest-tcp = {
+        #     interval = "60s";
+        #     timeout = "5s";
+        #     tcp = "127.0.0.1:${toString config.services.ziti-controller.portRestApi}";
+        #   };
+        # };
       };
     })
     .systemdService;
@@ -82,13 +82,13 @@ in {
           "zt.${config.cluster.domain}"
         ];
 
-        checks = {
-          ziti-controller-mgmt-tcp = {
-            interval = "60s";
-            timeout = "5s";
-            tcp = "127.0.0.1:${toString config.services.ziti-controller.portManagementApi}";
-          };
-        };
+        # checks = {
+        #   ziti-controller-mgmt-tcp = {
+        #     interval = "60s";
+        #     timeout = "5s";
+        #     tcp = "127.0.0.1:${toString config.services.ziti-controller.portManagementApi}";
+        #   };
+        # };
       };
     })
     .systemdService;
@@ -107,13 +107,13 @@ in {
           "zt.${config.cluster.domain}"
         ];
 
-        checks = {
-          ziti-router-edge-tcp = {
-            interval = "60s";
-            timeout = "5s";
-            tcp = "127.0.0.1:${toString config.services.ziti-router.portEdgeConnection}";
-          };
-        };
+        # checks = {
+        #   ziti-router-edge-tcp = {
+        #     interval = "60s";
+        #     timeout = "5s";
+        #     tcp = "127.0.0.1:${toString config.services.ziti-router.portEdgeConnection}";
+        #   };
+        # };
       };
     })
     .systemdService;
@@ -132,13 +132,13 @@ in {
           "zt.${config.cluster.domain}"
         ];
 
-        checks = {
-          ziti-router-fabric-tcp = {
-            interval = "60s";
-            timeout = "5s";
-            tcp = "127.0.0.1:${toString config.services.ziti-router.portFabricLinks}";
-          };
-        };
+        # checks = {
+        #   ziti-router-fabric-tcp = {
+        #     interval = "60s";
+        #     timeout = "5s";
+        #     tcp = "127.0.0.1:${toString config.services.ziti-router.portFabricLinks}";
+        #   };
+        # };
       };
     })
     .systemdService;
