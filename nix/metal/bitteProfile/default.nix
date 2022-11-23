@@ -48,6 +48,7 @@ in {
             profiles.auxiliaries.builder.remoteBuilder.buildMachine.supportedFeatures = ["big-parallel"];
             virtualisation.containers.ociSeccompBpfHook.enable = true;
 
+            systemd.services.nomad-follower.serviceConfig.LimitNOFILE = "8192";
             systemd.services.nomad.serviceConfig = {
               JobTimeoutSec = "600s";
               JobRunningTimeoutSec = "600s";
@@ -266,7 +267,7 @@ in {
               # they are currently being passed through the wg endpoint and are in the allowedIPs list
               # of the mac peers as they are unused ranges on the macs and make packet debugging easier.
               networking = {
-                firewall.allowedUDPPorts = [ 51820 ];
+                firewall.allowedUDPPorts = [51820];
                 wireguard = {
                   enable = true;
                   interfaces.wg-zt = {
