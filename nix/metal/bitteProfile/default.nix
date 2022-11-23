@@ -260,6 +260,52 @@ in {
             openziti.nixosModules.ziti-edge-tunnel
             ./ziti.nix
             ./ziti-register.nix
+            ({etcEncrypted, ...}: {
+              # Substitute wg tunnel as temp drop in for zt
+              # The AWS CIDR ranges could be source NATed here, but for debug purposes
+              # they are currently being passed through the wg endpoint and are in the allowedIPs list
+              # of the mac peers as they are unused ranges on the macs and make packet debugging easier.
+              networking = {
+                firewall.allowedUDPPorts = [ 51820 ];
+                wireguard = {
+                  enable = true;
+                  interfaces.wg-zt = {
+                    listenPort = 51820;
+                    ips = ["10.10.0.254/32"];
+                    privateKeyFile = "/etc/wireguard/private.key";
+                    peers = [
+                      # mm1
+                      {
+                        publicKey = "nvKCarVUXdO0WtoDsEjTzU+bX0bwWYHJAM2Y3XhO0Ao=";
+                        allowedIPs = ["10.10.0.1/32"];
+                        persistentKeepalive = 30;
+                      }
+                      # mm2
+                      {
+                        publicKey = "VcOEVp/0EG4luwL2bMmvGvlDNDbCzk7Vkazd3RRl51w=";
+                        allowedIPs = ["10.10.0.2/32"];
+                        persistentKeepalive = 30;
+                      }
+                    ];
+                  };
+                };
+              };
+
+              secrets.install.zt-wg-private = {
+                source = "${etcEncrypted}/zt-wg-private";
+                target = "/etc/wireguard/private.key";
+                outputType = "binary";
+                script = ''
+                  chmod 0400 /etc/wireguard/private.key
+                '';
+              };
+
+              secrets.install.zt-wg-public = {
+                source = "${etcEncrypted}/zt-wg-public";
+                target = "/etc/wireguard/public.key";
+                outputType = "binary";
+              };
+            })
           ];
 
           securityGroupRules = {
@@ -272,6 +318,10 @@ in {
               ziti-controller-rest
               ziti-router-edge
               ziti-router-fabric
+              ;
+            inherit
+              (import ./sg.nix {inherit terralib lib;} config)
+              wg
               ;
           };
         };
