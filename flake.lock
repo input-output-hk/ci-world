@@ -994,11 +994,11 @@
         "utils": "utils_20"
       },
       "locked": {
-        "lastModified": 1666093680,
-        "narHash": "sha256-FUJtYod6+XYBnLDJ2aWQ0q6JNJ5AZsUZajSs/8/OIbY=",
+        "lastModified": 1669113763,
+        "narHash": "sha256-Qz40t/wbRp9znXW6s6aFUzDy8B5FL44MV5gOcOJ2QfY=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "f506daf3b4aa4b6cfa931f7c4cb8fd95233891bc",
+        "rev": "37a30a3bb403d70389cfedc6f6c42b48b3515de9",
         "type": "github"
       },
       "original": {
