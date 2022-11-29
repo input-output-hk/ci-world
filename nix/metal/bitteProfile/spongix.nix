@@ -12,7 +12,6 @@
     RestartSec = lib.mkForce "30s";
     OOMScoreAdjust = 1000;
     MemoryAccounting = "true";
-    MemoryHigh = "60%";
     MemoryMax = "70%";
   };
 
