@@ -2,6 +2,24 @@
   inputs,
   cell,
 }: {
+  ci-world-darwin = {
+    datasource = "vm";
+    rules = [
+      {
+        alert = "DarwinSshFailure";
+        expr = ''probe_success{job="blackbox-ssh-darwin"} == 0'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = ''
+            Cluster ssh connectivity to darwin builder {{ $labels.alias }} at {{ $labels.instance }}
+             has been down for more than 5 minutes. Darwin CI capacity is degraded or down.'';
+          summary = "Connectivity to Darwin builder {{ $labels.alias }} is down";
+        };
+      }
+    ];
+  };
+
   ci-world-spongix = {
     datasource = "vm";
     rules = [

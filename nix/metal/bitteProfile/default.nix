@@ -169,7 +169,65 @@ in {
           subnet = cluster.vpc.subnets.core-1;
           volumeSize = 300;
 
-          modules = [bitte.profiles.monitoring];
+          modules = [
+            bitte.profiles.monitoring
+            ({lib, ...}: {
+              services.prometheus.exporters.blackbox = lib.mkForce {
+                enable = true;
+                configFile = pkgs.toPrettyJSON "blackbox-exporter.yaml" {
+                  modules = {
+                    ssh_banner = {
+                      prober = "tcp";
+                      timeout = "10s";
+                      tcp = {
+                        preferred_ip_protocol = "ip4";
+                        query_response = [
+                          {
+                            expect = "^SSH-2.0-";
+                            send = "SSH-2.0-blackbox-ssh-check";
+                          }
+                        ];
+                      };
+                    };
+                  };
+                };
+              };
+
+              services.vmagent.promscrapeConfig = let
+                mkTarget = ip: machine: {
+                  targets = ["${ip}:22"];
+                  labels.alias = machine;
+                };
+              in [
+                {
+                  job_name = "blackbox-ssh-darwin";
+                  scrape_interval = "60s";
+                  metrics_path = "/probe";
+                  params.module = ["ssh_banner"];
+                  static_configs = [
+                    (mkTarget "10.10.0.1" "mm1-builder")
+                    (mkTarget "10.10.0.2" "mm2-builder")
+                    (mkTarget "10.10.0.101" "mm1-signer")
+                    (mkTarget "10.10.0.102" "mm2-signer")
+                  ];
+                  relabel_configs = [
+                    {
+                      source_labels = ["__address__"];
+                      target_label = "__param_target";
+                    }
+                    {
+                      source_labels = ["__param_target"];
+                      target_label = "instance";
+                    }
+                    {
+                      replacement = "127.0.0.1:9115";
+                      target_label = "__address__";
+                    }
+                  ];
+                }
+              ];
+            })
+          ];
 
           securityGroupRules = {
             inherit
@@ -278,13 +336,13 @@ in {
                       # mm1
                       {
                         publicKey = "nvKCarVUXdO0WtoDsEjTzU+bX0bwWYHJAM2Y3XhO0Ao=";
-                        allowedIPs = ["10.10.0.1/32"];
+                        allowedIPs = ["10.10.0.1/32" "10.10.0.101/32"];
                         persistentKeepalive = 30;
                       }
                       # mm2
                       {
                         publicKey = "VcOEVp/0EG4luwL2bMmvGvlDNDbCzk7Vkazd3RRl51w=";
-                        allowedIPs = ["10.10.0.2/32"];
+                        allowedIPs = ["10.10.0.2/32" "10.10.0.102/32"];
                         persistentKeepalive = 30;
                       }
                     ];

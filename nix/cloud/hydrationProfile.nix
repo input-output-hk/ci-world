@@ -204,6 +204,7 @@ in {
           # Cell Block local declared dashboards
           inherit
             (cell.alerts)
+            ci-world-darwin
             ci-world-spongix
             ci-world-nomad-follower
             # Upstream alerts which may have downstream deps can be imported here
