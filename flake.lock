@@ -381,16 +381,15 @@
         "utils": "utils_10"
       },
       "locked": {
-        "lastModified": 1669659862,
+        "lastModified": 1669660862,
         "narHash": "sha256-qyozVixPuzXFlN2MahkTazBkqSNpBu9JNt2nhwSFpgk=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "d552ba0ff543dcdbf45d46e62eafa254bc1d2fee",
+        "rev": "024db2bcfd5dbc141c9b762955875a97fe755a7c",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "zt",
         "repo": "bitte",
         "type": "github"
       }
