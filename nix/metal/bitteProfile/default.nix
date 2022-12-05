@@ -290,7 +290,7 @@ in {
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
             (bitte + /modules/docker-registry.nix)
-            ./builder.nix
+            ./cache.nix
             ./spongix-user.nix
             {services.docker-registry.enable = true;}
           ];

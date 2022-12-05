@@ -5,7 +5,10 @@
   lib,
   ...
 }: {
-  imports = [inputs.spongix.nixosModules.spongix];
+  imports = [
+    inputs.spongix.nixosModules.spongix
+    inputs.spongix-nar-proxy.nixosModules.nar-proxy
+  ];
 
   systemd.services.spongix.serviceConfig = {
     Restart = lib.mkForce "always";
@@ -17,6 +20,7 @@
 
   services.spongix = {
     enable = true;
+    package = inputs.spongix.legacyPackages.x86_64-linux.spongix;
     cacheDir = "/var/lib/spongix";
     host = "";
     port = 7745;
@@ -25,7 +29,6 @@
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
     substituters = [
       "https://cache.nixos.org"
-      "https://hydra.iohk.io"
       "https://iohk-mamba-bitte.s3.eu-central-1.amazonaws.com/infra/binary-cache"
     ];
     trustedPublicKeys = [
@@ -35,6 +38,40 @@
       (lib.fileContents (config.secrets.encryptedRoot + "/spongix-public-key-file"))
     ];
   };
+
+  services.nar-proxy = {
+    enable = true;
+    package = inputs.spongix-nar-proxy.legacyPackages.x86_64-linux.spongix;
+    cacheUrl = "http://127.0.0.1:${toString config.services.spongix.port}/";
+    logLevel = "debug";
+  };
+
+  systemd.services.nar-proxy-service =
+    (pkgs.consulRegister {
+      pkiFiles.caCertFile = "/etc/ssl/certs/ca.pem";
+      service = {
+        name = "nar-proxy";
+        port = config.services.nar-proxy.port;
+        tags = [
+          "nar-proxy"
+          "ingress"
+          "traefik.enable=true"
+          "traefik.http.routers.nar-proxy.rule=Host(`nar-proxy.ci.iog.io`) && Method(`GET`, `HEAD`)"
+          "traefik.http.routers.nar-proxy.entrypoints=https"
+          "traefik.http.routers.nar-proxy.tls=true"
+          "traefik.http.routers.nar-proxy.tls.certresolver=acme"
+        ];
+
+        checks = {
+          spongix-tcp = {
+            interval = "10s";
+            timeout = "5s";
+            tcp = "127.0.0.1:${toString config.services.spongix.port}";
+          };
+        };
+      };
+    })
+    .systemdService;
 
   services.telegraf.overrides.inputs.prometheus = {
     urls = [

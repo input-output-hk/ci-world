@@ -27,6 +27,8 @@
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix/extract-gc";
     spongix.inputs.cicero.follows = "cicero";
+    spongix-nar-proxy.url = "github:input-output-hk/spongix/nar-proxy";
+    spongix-nar-proxy.inputs.cicero.follows = "cicero";
     cicero.url = "github:input-output-hk/cicero";
     cicero.inputs.spongix.follows = "spongix";
     cicero.inputs.driver.follows = "nomad-driver-nix";
