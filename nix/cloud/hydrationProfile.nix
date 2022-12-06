@@ -153,6 +153,20 @@ in {
             description = "Dev policies";
 
             namespace."*".policy = "deny";
+
+            namespace."prod" = {
+              policy = "read";
+              capabilities = [
+                "list-jobs"
+                "list-scaling-policies"
+                "read-fs"
+                "read-job"
+                "read-job-scaling"
+                "read-logs"
+                "read-scaling-policy"
+              ];
+            };
+
             namespace."marlowe" = {
               policy = "write";
               capabilities = [
