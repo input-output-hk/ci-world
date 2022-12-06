@@ -250,7 +250,11 @@ in {
 
           modules = [
             bitte.profiles.routing
-            ({etcEncrypted, ...}: {
+            ({
+              etcEncrypted,
+              config,
+              ...
+            }: {
               services.traefik = {
                 # Enables cert management via job tabs vs extraSANs
                 acmeDnsCertMgr = false;
@@ -260,6 +264,24 @@ in {
 
                 # Changing to a default of true soon
                 useVaultBackend = true;
+
+                staticConfigOptions = {
+                  entryPoints = {
+                    http = lib.mkForce {
+                      address = ":80";
+                      forwardedHeaders.insecure = true;
+                    };
+
+                    https = {
+                      address = ":443";
+                      forwardedHeaders.insecure = true;
+                    };
+
+                    metrics = {
+                      address = "127.0.0.1:${toString config.services.traefik.prometheusPort}";
+                    };
+                  };
+                };
               };
 
               # For spongix basic auth

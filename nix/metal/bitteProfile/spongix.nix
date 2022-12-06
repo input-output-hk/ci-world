@@ -66,7 +66,7 @@
           spongix-tcp = {
             interval = "10s";
             timeout = "5s";
-            tcp = "127.0.0.1:${toString config.services.spongix.port}";
+            tcp = "127.0.0.1:${toString config.services.nar-proxy.port}";
           };
         };
       };
@@ -96,6 +96,9 @@
           "traefik.http.routers.spongix.entrypoints=https"
           "traefik.http.routers.spongix.tls=true"
           "traefik.http.routers.spongix.tls.certresolver=acme"
+
+          "traefik.http.routers.spongix-http.rule=Host(`hydra.iohk.io`) && Method(`GET`, `HEAD`)"
+          "traefik.http.routers.spongix-http.entrypoints=http"
 
           "traefik.http.routers.spongix-oci.rule=Host(`oci.ci.iog.io`)"
           "traefik.http.routers.spongix-oci.entrypoints=https"
