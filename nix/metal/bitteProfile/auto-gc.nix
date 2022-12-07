@@ -1,5 +1,9 @@
-{ pkgs, config, lib, ... }:
-let
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}: let
   cfg = config.services.auto-gc;
   inherit (lib) types mkIf mkOption;
 in {
@@ -82,7 +86,7 @@ in {
         Unit = "gc-hourly.service";
         OnCalendar = "*-*-* *:15:00";
       };
-      wantedBy = [ "timers.target" ];
+      wantedBy = ["timers.target"];
     };
 
     systemd.services.gc-weekly = mkIf cfg.nixWeeklyGcFull {
@@ -94,7 +98,7 @@ in {
         Unit = "gc-weekly.service";
         OnCalendar = cfg.nixWeeklyGcOnCalendar;
       };
-      wantedBy = [ "timers.target" ];
+      wantedBy = ["timers.target"];
     };
   };
 }

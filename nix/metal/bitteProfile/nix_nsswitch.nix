@@ -1,7 +1,5 @@
-{ ... }:
-
-{
+{...}: {
   nix = {
-    sandboxPaths = [ "/etc/nsswitch.conf" "/etc/protocols" ];
+    sandboxPaths = ["/etc/nsswitch.conf" "/etc/protocols"];
   };
 }
