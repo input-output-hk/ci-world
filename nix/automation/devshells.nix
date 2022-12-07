@@ -64,6 +64,9 @@ in {
       ciWorld = withCategory "ci-world";
     in
       with nixpkgs; [
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.consul;})
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.nomad;})
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.vault-bin;})
         (ciWorld {package = deploy-rs.defaultPackage;})
         (ciWorld {package = httpie;})
       ];
