@@ -2,7 +2,7 @@
   inputs,
   cell,
 }: let
-  inherit (inputs) capsules bitte-cells bitte nixpkgs;
+  inherit (inputs) capsules bitte-cells bitte deploy-rs nixpkgs;
   inherit (inputs.std) std;
   inherit (inputs.std.lib) dev;
 
@@ -64,6 +64,7 @@ in {
       ciWorld = withCategory "ci-world";
     in
       with nixpkgs; [
+        (ciWorld {package = deploy-rs.defaultPackage;})
         (ciWorld {package = httpie;})
       ];
   };

@@ -3,7 +3,7 @@
   cell,
 }: let
   inherit (inputs) nixpkgs openziti;
-  inherit (inputs.bitte-cells) patroni;
+  inherit (inputs.bitte-cells) patroni tempo;
 in {
   default = {
     self,
@@ -21,6 +21,7 @@ in {
     secrets.encryptedRoot = ./encrypted;
 
     cluster = {
+      infraType = "awsExt";
       s3CachePubKey = lib.fileContents ./encrypted/nix-public-key-file;
       flakePath = "${inputs.self}";
       vbkBackend = "local";
@@ -28,9 +29,15 @@ in {
       transitGateway = {
         enable = true;
         transitRoutes = [
+          # Darwin
           {
             gatewayCoreNodeName = "zt";
             cidrRange = "10.10.0.0/24";
+          }
+          # Equinix, ci-world project
+          {
+            gatewayCoreNodeName = "zt";
+            cidrRange = "10.12.10.0/24";
           }
         ];
       };
@@ -57,13 +64,20 @@ in {
         ];
 
         mkAsgs = region: desiredCapacity: instanceType: volumeSize: node_class: asgSuffix: opts: extraConfig:
+          lib.recursiveUpdate
           {
             inherit region desiredCapacity instanceType volumeSize node_class asgSuffix;
             modules =
               defaultModules
-              ++ lib.optional (opts ? withPatroni && opts.withPatroni == true) (patroni.nixosProfiles.client node_class);
+              ++ lib.optional (opts ? withPatroni && opts.withPatroni == true) (patroni.nixosProfiles.client node_class)
+              ++ lib.optional (node_class == "prod") ({...}: {
+                services.nomad.client.host_volume.host-nix-mount = {
+                  path = "/nix";
+                  read_only = false;
+                };
+              });
           }
-          // extraConfig;
+          extraConfig;
         # -------------------------
         # For each list item below which represents an auto-scaler machine(s),
         # an autoscaling group name will be created in the form of:
@@ -172,6 +186,12 @@ in {
           modules = [
             bitte.profiles.monitoring
             ({lib, ...}: {
+              # If this is needed, check there isn't a rogue logger first
+              # services.loki.configuration.limits_config = {
+              #   per_stream_rate_limit = "10MB";
+              #   per_stream_rate_limit_burst = "30MB";
+              # };
+
               services.prometheus.exporters.blackbox = lib.mkForce {
                 enable = true;
                 configFile = pkgs.toPrettyJSON "blackbox-exporter.yaml" {
@@ -250,6 +270,14 @@ in {
 
           modules = [
             bitte.profiles.routing
+
+            # Required temporarily because bitte-cells.tempo.hydrationProfile qualifies
+            # routing machine nixosProfile inclusion on infraType = "aws", and this is
+            # an infraType "awsExt" cluster.
+            #
+            # TODO: update bitte-cells to include awsExt, plus other bitte-cells
+            tempo.nixosProfiles.routing
+
             ({
               etcEncrypted,
               config,
@@ -405,6 +433,80 @@ in {
               wg
               ;
           };
+        };
+      };
+
+      awsExtNodes = let
+        # For each new machine provisioning to equinix:
+        #   1) TF plan/apply in the `equinix` workspace to get the initial machine provisioning done after declaration
+        #      `nix run .#clusters.ci-world.tf.equinix.[plan|apply]
+        #   2) Record the privateIP attr that the machine is assigned in the nix metal code
+        #   3) Add the provisioned machine to ssh config for deploy-rs to utilize
+        #   4) Update the encrypted ssh config file with the new machine so others can easily pull the ssh config
+        #   5) Deploy again with proper private ip, provisioning configuration and bitte stack modules applied
+        #      `deploy -s .#$CLUSTER_NAME-$MACHINE_NAME --auto-rollback false --magic-rollback false
+        deployType = "awsExt";
+        node_class = "equinix";
+        primaryInterface = "bond0";
+        role = "client";
+
+        # Equinix TF specific attrs
+        project = config.cluster.name;
+        plan = "m3.small.x86";
+
+        baseEquinixMachineConfig = machineName:
+          if builtins.pathExists ./equinix/${machineName}/configuration.nix != false
+          then [./equinix/${machineName}/configuration.nix]
+          else [];
+
+        baseEquinixModuleConfig = [
+          (bitte + /profiles/client.nix)
+          (bitte + /profiles/multicloud/aws-extended.nix)
+          (bitte + /profiles/multicloud/equinix.nix)
+          openziti.nixosModules.ziti-edge-tunnel
+          ({
+            pkgs,
+            lib,
+            config,
+            ...
+          }: {
+            services.ziti-edge-tunnel.enable = true;
+
+            services.resolved = {
+              # Vault agent does not seem to recognize successful lookups while resolved is in dnssec allow-downgrade mode
+              dnssec = "false";
+
+              # Ensure dnsmasq stays as the primary resolver while resolved is in use
+              extraConfig = "Domains=~.";
+            };
+
+            # Extra prem diagnostic utils
+            environment.systemPackages = with pkgs; [
+              conntrack-tools
+              ethtool
+              icdiff
+              iptstate
+              tshark
+            ];
+          })
+        ];
+
+        buildkiteOnly = [
+          ({lib, ...}: {
+            # Temporarily disable nomad to avoid conflict with buildkite resource consumption
+            services.nomad.enable = lib.mkForce false;
+          })
+        ];
+      in {
+        equinix-1 = {
+          inherit deployType node_class primaryInterface role;
+          equinix = {inherit plan project;};
+          privateIP = "147.75.85.17";
+
+          modules =
+            baseEquinixModuleConfig
+            ++ (baseEquinixMachineConfig "equinix-1")
+            ++ buildkiteOnly;
         };
       };
     };
