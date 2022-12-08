@@ -178,10 +178,11 @@ in {
         };
 
         monitoring = {
-          instanceType = "t3a.xlarge";
+          instanceType = "t3a.2xlarge";
           privateIP = "172.16.0.20";
           subnet = cluster.vpc.subnets.core-1;
           volumeSize = 300;
+          ebsOptimized = true;
 
           modules = [
             bitte.profiles.monitoring
