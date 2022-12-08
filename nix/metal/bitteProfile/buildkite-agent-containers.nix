@@ -2,16 +2,18 @@
   config,
   lib,
   pkgs,
-  name,
+  self,
+  nodeName,
+  etcEncrypted,
   ...
 }: let
   cfg = config.services.buildkite-containers;
-  ssh-keys = config.services.ssh-keys;
+  ssh-keys = pkgs.ssh-keys;
 in
   with lib; {
     imports = [
       # GC only from the host to avoid duplicating GC in containers
-      #  ./auto-gc.nix
+      ./auto-gc.nix
       # Docker module required in both the host and guest containers
       ./docker-builder.nix
     ];
@@ -30,6 +32,7 @@ in
           '';
           example = "1";
         };
+
         queue = mkOption {
           type = types.str;
           default = "default";
@@ -102,31 +105,57 @@ in
         name = containerName;
         value = {
           autoStart = true;
+
           bindMounts = {
             "/run/keys" = {
               hostPath = "/run/keys";
             };
+
             "/var/lib/buildkite-agent/hooks" = {
               hostPath = "/var/lib/buildkite-agent/hooks";
             };
+
             "/cache" = {
               hostPath = "/cache";
               isReadOnly = false;
             };
           };
+
           privateNetwork = true;
           hostAddress = hostIp;
           localAddress = guestIp;
+
           config = {
             imports = [
+              ./common.nix
               ./nix_nsswitch.nix
+
               # Docker module required in both the host and guest containers
               ./docker-builder.nix
-              # common.nix doesn't get automatically added to containers like to nodes
-              ./common.nix
+
+              # Ensure the buildkite guests can also generate a nixpkgs link in /run/current-system
+              # for legacy nixPath references.
+              ({lib, ...}: {
+                options = {
+                  services.buildkite-containers-guest = {
+                    nixpkgs = mkOption {
+                      type = types.path;
+                      default = self.nixosConfigurations."${config.cluster.name}-${nodeName}".pkgs.path;
+                    };
+                  };
+                };
+              })
             ];
-            services.monitoring-exporters.enable = false;
-            services.ntp.enable = mkForce false;
+
+            # services.monitoring-exporters.enable = false;
+
+            # Ensure we can use same nixpkgs with overlays the host uses
+            nixpkgs.pkgs = pkgs;
+
+            # Don't try to inherit resolved from the equinix host which won't work
+            environment.etc."resolv.conf".text = ''
+              nameserver 8.8.8.8
+            '';
 
             systemd.services.buildkite-agent.serviceConfig = {
               ExecStart = mkForce "${pkgs.buildkite-agent}/bin/buildkite-agent start --config /var/lib/buildkite-agent/buildkite-agent.cfg";
@@ -134,7 +163,7 @@ in
             };
 
             services.buildkite-agents.iohk = {
-              name = name + "-" + containerName;
+              name = "ci" + "-" + nodeName + "-" + containerName;
               privateSshKeyPath = "/run/keys/buildkite-ssh-iohk-devops-private";
               tokenPath = "/run/keys/buildkite-token";
               inherit tags;
@@ -149,31 +178,36 @@ in
                 nix
               ];
 
-              hooks.environment = ''
-                # Provide a minimal build environment
-                export NIX_BUILD_SHELL="/run/current-system/sw/bin/bash"
-                export PATH="/run/current-system/sw/bin:$PATH"
+              hooks = {
+                environment = ''
+                  # Provide a minimal build environment
+                  export NIX_BUILD_SHELL="/run/current-system/sw/bin/bash"
+                  export PATH="/run/current-system/sw/bin:$PATH"
 
-                # Provide NIX_PATH, unless it's already set by the pipeline
-                if [ -z "''${NIX_PATH:-}" ]; then
-                    # see ci-ops/modules/common.nix (system.extraSystemBuilderCmds)
-                    export NIX_PATH="nixpkgs=/run/current-system/nixpkgs"
-                fi
+                  # Provide NIX_PATH, unless it's already set by the pipeline
+                  if [ -z "''${NIX_PATH:-}" ]; then
+                      # see ci-ops/modules/common.nix (system.extraSystemBuilderCmds)
+                      export NIX_PATH="nixpkgs=/run/current-system/nixpkgs"
+                  fi
 
-                # load S3 credentials for artifact upload
-                source /var/lib/buildkite-agent/hooks/aws-creds
+                  # load S3 credentials for artifact upload
+                  source /var/lib/buildkite-agent/hooks/aws-creds
 
-                # load extra credentials for user services
-                source /var/lib/buildkite-agent/hooks/buildkite-extra-creds
-              '';
-              hooks.pre-command = ''
-                # Clean out the state that gets messed up and makes builds fail.
-                rm -rf ~/.cabal
-              '';
-              hooks.pre-exit = ''
-                # Clean up the scratch and tmp directories
-                rm -rf /scratch/* &> /dev/null || true
-              '';
+                  # load extra credentials for user services
+                  source /var/lib/buildkite-agent/hooks/buildkite-extra-creds
+                '';
+
+                pre-command = ''
+                  # Clean out the state that gets messed up and makes builds fail.
+                  rm -rf ~/.cabal
+                '';
+
+                pre-exit = ''
+                  # Clean up the scratch and tmp directories
+                  rm -rf /scratch/* &> /dev/null || true
+                '';
+              };
+
               extraConfig = ''
                 git-clean-flags="-ffdqx"
                 ${
@@ -183,6 +217,7 @@ in
                 }
               '';
             };
+
             users.users.buildkite-agent-iohk = {
               isSystemUser = true;
               group = "buildkite-agent-iohk";
@@ -193,6 +228,7 @@ in
                 "docker"
               ];
             };
+
             users.groups.buildkite-agent-iohk = {
               gid = 10000;
             };
@@ -218,102 +254,173 @@ in
         };
       };
     in {
-      users.users.root.openssh.authorizedKeys.keys = ssh-keys.ciInfra;
-      #services.buildkite-agents.package = pkgs.buildkite-agent;
+      users.users.root.openssh.authorizedKeys.keys = lib.mkForce ssh-keys.ciInfra;
 
-      # To go on the host -- and get shared to the container(s)
-      deployment.keys = {
-        aws-creds = {
-          keyFile = ../secrets/buildkite-hook;
-          destDir = "/var/lib/buildkite-agent/hooks";
-          user = "buildkite-agent-iohk";
-          permissions = "0770";
+      # Secrets install attr naming is to be consistent within the ci-world repo.
+      # Secrets target file naming is to be backwards compatible with the legacy deployment
+      # and other scripts which may rely on the legacy naming.
+      secrets.install = {
+        buildkite-aws-creds = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-hook";
+          target = "/var/lib/buildkite-agent/hooks/aws-creds";
+          outputType = "binary";
+          script = ''
+            chmod 0770 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # Project-specific credentials to install on Buildkite agents.
-        buildkite-extra-creds = {
-          keyFile = ../secrets/buildkite-hook-extra-creds.sh;
-          destDir = "/var/lib/buildkite-agent/hooks";
-          user = "buildkite-agent-iohk";
-          permissions = "0770";
+        buildkite-extra-creds = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-hook-extra-creds.sh";
+          target = "/var/lib/buildkite-agent/hooks/buildkite-extra-creds";
+          outputType = "binary";
+          script = ''
+            chmod 0770 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # SSH keypair for buildkite-agent user
-        buildkite-ssh-private = {
-          keyFile = ../secrets/buildkite-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-ssh-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-ssh";
+          target = "/run/keys/buildkite-ssh-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
-        buildkite-ssh-public = {
-          keyFile = ../secrets/buildkite-ssh.pub;
-          user = "buildkite-agent-iohk";
+
+        buildkite-ssh-public = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-ssh.pub";
+          target = "/run/keys/buildkite-ssh-public";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # SSH keypair for buildkite-agent user (iohk-devops on Github)
-        buildkite-ssh-iohk-devops-private = {
-          keyFile = ../secrets/buildkite-iohk-devops-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-ssh-iohk-devops-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-iohk-devops-ssh";
+          target = "/run/keys/buildkite-ssh-iohk-devops-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # GitHub deploy key for input-output-hk/hackage.nix
-        buildkite-hackage-ssh-private = {
-          keyFile = ../secrets/buildkite-hackage-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-hackage-ssh-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-hackage-ssh";
+          target = "/run/keys/buildkite-hackage-ssh-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # GitHub deploy key for input-output-hk/stackage.nix
-        buildkite-stackage-ssh-private = {
-          keyFile = ../secrets/buildkite-stackage-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-stackage-ssh-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-stackage-ssh";
+          target = "/run/keys/buildkite-stackage-ssh-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # GitHub deploy key for input-output-hk/haskell.nix
-        # (used to update gh-pages documentation)
-        buildkite-haskell-dot-nix-ssh-private = {
-          keyFile = ../secrets/buildkite-haskell-dot-nix-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-haskell-dot-nix-ssh-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-haskell-dot-nix-ssh";
+          target = "/run/keys/buildkite-haskell-dot-nix-ssh-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # GitHub deploy key for input-output-hk/cardano-wallet
-        # created with: ssh-keygen -t ed25519 -C "buildkite cardano-wallet" -f secrets/buildkite-cardano-wallet-ssh
-        buildkite-cardano-wallet-ssh-private = {
-          keyFile = ../secrets/buildkite-cardano-wallet-ssh;
-          user = "buildkite-agent-iohk";
+        buildkite-cardano-wallet-ssh-private = rec {
+          source = "${etcEncrypted}/buildkite/buildkite-cardano-wallet-ssh";
+          target = "/run/keys/buildkite-cardano-wallet-ssh-private";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # API Token for BuildKite
-        buildkite-token = {
-          keyFile = ../secrets/buildkite_token;
-          user = "buildkite-agent-iohk";
+        buildkite-token = rec {
+          source = "${etcEncrypted}/buildkite/buildkite_token";
+          target = "/run/keys/buildkite-token";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # DockerHub password/token (base64-encoded in json)
-        dockerhub-auth = {
-          keyFile = ../secrets/dockerhub-auth-config.json;
-          user = "buildkite-agent-iohk";
+        buildkite-dockerhub-auth = rec {
+          source = "${etcEncrypted}/buildkite/dockerhub-auth-config.json";
+          target = "/run/keys/dockerhub-auth";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # Catalyst keystore
-        "catalyst.keystore" = {
-          keyFile = ../secrets/catalyst.keystore;
-          user = "buildkite-agent-iohk";
+        buildkite-catalyst-keystore = rec {
+          source = "${etcEncrypted}/buildkite/catalyst.keystore";
+          target = "/run/keys/catalyst.keystore";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # Catalyst build spec
-        "catalyst-android-build.json" = {
-          keyFile = ../secrets/catalyst-android-build.json;
-          user = "buildkite-agent-iohk";
+        buildkite-catalyst-android-build = rec {
+          source = "${etcEncrypted}/buildkite/catalyst-android-build.json";
+          target = "/run/keys/catalyst-android-build.json";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # Catalyst env vars
-        "catalyst-env.sh" = {
-          keyFile = ../secrets/catalyst-env.sh;
-          user = "buildkite-agent-iohk";
+        buildkite-catalyst-env = rec {
+          source = "${etcEncrypted}/buildkite/catalyst-env.sh";
+          target = "/run/keys/catalyst-env.sh";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
 
         # Catalyst sentry spec
-        "catalyst-sentry.properties" = {
-          keyFile = ../secrets/catalyst-sentry.properties;
-          user = "buildkite-agent-iohk";
+        buildkite-catalyst-sentry = rec {
+          source = "${etcEncrypted}/buildkite/catalyst-sentry.properties";
+          target = "/run/keys/catalyst-sentry.properties";
+          outputType = "binary";
+          script = ''
+            chmod 0600 ${target}
+            chown buildkite-agent-iohk ${target}
+          '';
         };
       };
 
@@ -330,9 +437,11 @@ in
         isSystemUser = true;
         createHome = true;
         group = "buildkite-agent-iohk";
+
         # To ensure buildkite-agent-iohk user sharing of keys in guests
         uid = 10000;
       };
+
       users.groups.buildkite-agent-iohk = {
         gid = 10000;
       };
@@ -340,7 +449,9 @@ in
       environment.etc."mdadm.conf".text = ''
         MAILADDR root
       '';
+
       environment.systemPackages = [pkgs.nixos-container];
+
       networking.nat.enable = true;
       networking.nat.internalInterfaces = ["ve-+"];
       networking.nat.externalInterface = "bond0";
@@ -350,8 +461,7 @@ in
 
       systemd.services.weekly-cache-purge = mkIf cfg.weeklyCachePurge {
         script = ''
-          # Temporarily clear the cache manually during no buildkite builds
-          #rm -rf /cache/* || true
+          rm -rf /cache/* || true
           ${pkgs.utillinux}/bin/swapoff -a
           ${pkgs.utillinux}/bin/swapon -a
         '';

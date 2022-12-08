@@ -506,7 +506,13 @@ in {
           modules =
             baseEquinixModuleConfig
             ++ (baseEquinixMachineConfig "equinix-1")
-            ++ buildkiteOnly;
+            ++ buildkiteOnly
+            ++ [
+              ./buildkite-agent-containers.nix
+              ./common.nix
+              ({lib, ...}: {
+              })
+            ];
         };
       };
     };

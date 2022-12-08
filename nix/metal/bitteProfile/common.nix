@@ -2,28 +2,26 @@
   pkgs,
   lib,
   config,
-  resources,
-  name,
+  self,
+  nodeName,
   ...
 }: let
-  ssh-keys = config.services.ssh-keys;
+  ssh-keys = pkgs.ssh-keys;
 in {
   imports = [
-    ./cloud.nix
-    ./systemd-exporter.nix
-    ./monitoring-exporters.nix
-    ./ssh-keys.nix
+    # ./systemd-exporter.nix
+    # ./monitoring-exporters.nix
   ];
 
   environment.systemPackages = with pkgs; [
     bat
     git
+    glances
     graphviz
     htop
     iptables
     jq
     lsof
-    mosh
     ncdu
     sysstat
     sqliteInteractive
@@ -45,12 +43,11 @@ in {
   users.users.root.openssh.authorizedKeys.keys = ssh-keys.devOps;
 
   services = {
-    monitoring-exporters = {
-      ownIp = config.node.wireguardIP;
-      useWireguardListeners = true;
-    };
-
-    nginx.mapHashBucketSize = 128;
+    # monitoring-exporters = {
+    #   ownIp = config.node.wireguardIP;
+    #   useWireguardListeners = true;
+    # };
+    # nginx.mapHashBucketSize = 128;
 
     openssh = {
       passwordAuthentication = false;
@@ -61,20 +58,17 @@ in {
       '';
     };
 
-    timesyncd.enable = true;
     cron.enable = true;
   };
 
   nix = rec {
-    package = (import ../nix {}).packages.nix;
-
-    # use nix sandboxing for greater determinism
+    # Use nix sandboxing for greater determinism
     useSandbox = true;
 
-    # make sure we have enough build users
+    # Make sure we have enough build users
     nrBuildUsers = 64;
 
-    # if our hydra is down, don't wait forever
+    # If our cache is down, don't wait forever
     extraOptions = ''
       connect-timeout = 10
       http2 = true
@@ -83,13 +77,13 @@ in {
       allow-import-from-derivation = true
     '';
 
-    # use all cores
+    # Use all cores
     buildCores = 0;
 
     nixPath = ["nixpkgs=/run/current-system/nixpkgs"];
 
-    # use our hydra builds
-    trustedBinaryCaches = ["https://cache.nixos.org" "https://hydra.iohk.io"];
+    # Use our binary cache builds
+    trustedBinaryCaches = ["https://cache.nixos.org" "https://cache.iog.io"];
     binaryCaches = trustedBinaryCaches;
     binaryCachePublicKeys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
@@ -97,15 +91,8 @@ in {
     ];
   };
 
-  system.extraSystemBuilderCmds = ''
-    ln -sv ${(import ../nix {}).path} $out/nixpkgs
-  '';
-
-  # Mosh
-  networking.firewall.allowedUDPPortRanges = [
-    {
-      from = 60000;
-      to = 61000;
-    }
-  ];
+  system.extraSystemBuilderCmds =
+    if config.services ? "buildkite-containers-guest"
+    then ''ln -sv ${config.services.buildkite-containers-guest.nixpkgs} $out/nixpkgs''
+    else ''ln -sv ${self.nixosConfigurations."${config.cluster.name}-${nodeName}".pkgs.path} $out/nixpkgs'';
 }
