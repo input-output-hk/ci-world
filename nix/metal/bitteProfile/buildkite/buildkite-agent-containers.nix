@@ -12,6 +12,8 @@
 in
   with lib; {
     imports = [
+      # Common host level config (also applied at guest level)
+      ./common.nix
       # GC only from the host to avoid duplicating GC in containers
       ./auto-gc.nix
       # Docker module required in both the host and guest containers
@@ -127,7 +129,10 @@ in
 
           config = {
             imports = [
+              # Common guest level config (also applied at host level)
               ./common.nix
+
+              # Prevent nix sandbox related failures
               ./nix_nsswitch.nix
 
               # Docker module required in both the host and guest containers
