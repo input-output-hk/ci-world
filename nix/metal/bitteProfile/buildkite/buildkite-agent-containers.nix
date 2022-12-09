@@ -429,6 +429,10 @@ in
         };
       };
 
+      # The buildkite host machine will need to be deployed twice before
+      # the /cache directory will be properly owned since the first deployment
+      # will have the activation run before the buildkite-agent-iohk user
+      # exists.
       system.activationScripts.cacheDir = {
         text = ''
           mkdir -p /cache
