@@ -492,57 +492,65 @@ in {
           })
         ];
 
-        buildkiteOnly = [
-          ({lib, ...}: {
-            # Temporarily disable nomad to avoid conflict with buildkite resource consumption
+        buildkiteOnly = queue: count: [
+          ({
+            lib,
+            config,
+            ...
+          }: let
+            cfg = config.services.buildkite-containers;
+          in {
+            # Temporarily disable nomad to avoid conflict with buildkite resource consumption.
             services.nomad.enable = lib.mkForce false;
+
+            # We don't need to purge 10 MB daily from the nix store by default.
+            nix.gc.automatic = lib.mkForce false;
+
+            services.auto-gc = {
+              # Apply some auto and hourly gc thresholds
+              nixAutoMaxFreedGB = 150;
+              nixAutoMinFreeGB = 90;
+              nixHourlyMaxFreedGB = 600;
+              nixHourlyMinFreeGB = 150;
+
+              # The auto and hourly gc should negate the need for a weekly full gc.
+              nixWeeklyGcFull = false;
+            };
+
+            services.buildkite-containers = {
+              # There should be enough space on these machines to cache dir purges.
+              weeklyCachePurge = false;
+
+              containerList = let
+                mkContainer = n: prio: {
+                  containerName = "ci${cfg.hostIdSuffix}-${toString n}";
+                  guestIp = "10.254.1.1${toString n}";
+                  inherit prio;
+                  tags = {
+                    inherit queue;
+                    system = "x86_64-linux";
+                  };
+                };
+              in
+                map (n: mkContainer n (toString (10 - n))) (lib.range 1 count);
+            };
           })
         ];
-      in {
-        equinix-1 = {
-          inherit deployType node_class primaryInterface role;
+
+        mkEquinixBuildkite = name: privateIP: queue: count: {
+          inherit deployType node_class primaryInterface role privateIP;
           equinix = {inherit plan project;};
-          privateIP = "147.75.85.17";
 
           modules =
             baseEquinixModuleConfig
-            ++ (baseEquinixMachineConfig "equinix-1")
-            ++ buildkiteOnly
-            ++ [
-              ./buildkite/buildkite-agent-containers.nix
-              (
-                {
-                  config,
-                  lib,
-                  ...
-                }: let
-                  cfg = config.services.buildkite-containers;
-                in {
-                  services.auto-gc = {
-                    nixAutoMaxFreedGB = 150;
-                    nixAutoMinFreeGB = 90;
-                    nixHourlyMaxFreedGB = 600;
-                    nixHourlyMinFreeGB = 150;
-                    nixWeeklyGcFull = true;
-                    nixWeeklyGcOnCalendar = "Sat *-*-* 20:00:00";
-                  };
-
-                  services.buildkite-containers.containerList = let
-                    mkContainer = n: prio: {
-                      containerName = "ci${cfg.hostIdSuffix}-${toString n}";
-                      guestIp = "10.254.1.1${toString n}";
-                      inherit prio;
-                      tags = {
-                        system = "x86_64-linux";
-                        queue = "test";
-                      };
-                    };
-                  in
-                    map (n: mkContainer n (toString (10 - n))) (lib.range 1 5);
-                }
-              )
-            ];
+            ++ (baseEquinixMachineConfig name)
+            ++ (buildkiteOnly queue count)
+            ++ [./buildkite/buildkite-agent-containers.nix];
         };
+      in {
+        equinix-1 = mkEquinixBuildkite "equinix-1" "10.12.10.1" "default" 5;
+        equinix-2 = mkEquinixBuildkite "equinix-2" "10.12.10.3" "default" 5;
+        equinix-3 = mkEquinixBuildkite "equinix-3" "10.12.10.5" "benchmark" 1;
       };
     };
   };

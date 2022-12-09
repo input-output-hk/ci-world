@@ -61,7 +61,7 @@ in {
     cron.enable = true;
   };
 
-  nix = rec {
+  nix = lib.mkForce rec {
     # Use nix sandboxing for greater determinism
     useSandbox = true;
 
@@ -70,6 +70,7 @@ in {
 
     # If our cache is down, don't wait forever
     extraOptions = ''
+      max-jobs = auto
       connect-timeout = 10
       http2 = true
       show-trace = true
