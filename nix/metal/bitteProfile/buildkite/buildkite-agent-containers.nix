@@ -162,8 +162,8 @@ in
               nameserver 8.8.8.8
             '';
 
-            systemd.services.buildkite-agent.serviceConfig = {
-              ExecStart = mkForce "${pkgs.buildkite-agent}/bin/buildkite-agent start --config /var/lib/buildkite-agent/buildkite-agent.cfg";
+            systemd.services.buildkite-agent-iohk.serviceConfig = {
+              ExecStart = mkForce "${pkgs.buildkite-agent}/bin/buildkite-agent start --config /var/lib/buildkite-agent-iohk/buildkite-agent.cfg";
               LimitNOFILE = 1024 * 512;
             };
 
@@ -246,7 +246,7 @@ in
             '';
 
             systemd.services.buildkite-agent-custom = {
-              wantedBy = ["buildkite-agent.service"];
+              wantedBy = ["buildkite-agent-iohk.service"];
               script = ''
                 mkdir -p /build /scratch
                 chown -R buildkite-agent-iohk:buildkite-agent-iohk /build /scratch
