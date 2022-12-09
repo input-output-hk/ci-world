@@ -551,6 +551,7 @@ in {
         equinix-1 = mkEquinixBuildkite "equinix-1" "10.12.10.1" "default" 5;
         equinix-2 = mkEquinixBuildkite "equinix-2" "10.12.10.3" "default" 5;
         equinix-3 = mkEquinixBuildkite "equinix-3" "10.12.10.5" "benchmark" 1;
+        equinix-4 = mkEquinixBuildkite "equinix-4" "10.12.10.7" "benchmark" 1;
       };
     };
   };
