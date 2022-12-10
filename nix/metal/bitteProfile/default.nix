@@ -263,7 +263,7 @@ in {
         };
 
         routing = {
-          instanceType = "t3a.small";
+          instanceType = "m5n.large";
           privateIP = "172.16.1.20";
           subnet = cluster.vpc.subnets.core-2;
           volumeSize = 100;
@@ -333,7 +333,7 @@ in {
         };
 
         cache = {
-          instanceType = "m5.4xlarge";
+          instanceType = "m5n.4xlarge";
           privateIP = "172.16.0.52";
           subnet = cluster.vpc.subnets.core-1;
           volumeSize = 2000;
