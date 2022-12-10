@@ -60,6 +60,16 @@ in {
               JobTimeoutSec = "600s";
               JobRunningTimeoutSec = "600s";
             };
+
+            # Remove when ZFS >= 2.1.5
+            # Ref:
+            #   https://github.com/openzfs/zfs/pull/12746
+            system.activationScripts.zfsAccurateHoleReporting = {
+              text = ''
+                echo 1 > /sys/module/zfs/parameters/zfs_dmu_offset_next_sync
+              '';
+              deps = [];
+            };
           })
         ];
 
