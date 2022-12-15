@@ -4810,6 +4810,21 @@
         "type": "github"
       }
     },
+    "nixpkgs-nix": {
+      "locked": {
+        "lastModified": 1671117561,
+        "narHash": "sha256-vnMbd6Z4390rQlY/qb/WHsAQQZtozVMA03iCyWZurvo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "234c9883745d7630768225d976784a81b3556694",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -6455,6 +6470,7 @@
         ],
         "nix-inclusive": "nix-inclusive",
         "nixpkgs": "nixpkgs_54",
+        "nixpkgs-nix": "nixpkgs-nix",
         "nixpkgs-vector": "nixpkgs-vector",
         "nomad-driver-nix": "nomad-driver-nix_2",
         "openziti": "openziti",

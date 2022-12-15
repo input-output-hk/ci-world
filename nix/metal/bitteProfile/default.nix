@@ -508,6 +508,7 @@ in {
             config,
             ...
           }: let
+            inherit (self.inputs.nixpkgs-nix.legacyPackages.x86_64-linux.nixVersions) nix_2_12;
             cfg = config.services.buildkite-containers;
           in {
             # Temporarily disable nomad to avoid conflict with buildkite resource consumption.
@@ -544,6 +545,10 @@ in {
               in
                 map (n: mkContainer n (toString (10 - n))) (lib.range 1 count);
             };
+
+            # Ensure nix package on buildkite matches darwin buildkite at 2.12.0
+            nix.package = nix_2_12;
+            environment.systemPackages = [nix_2_12];
           })
         ];
 

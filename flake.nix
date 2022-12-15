@@ -15,6 +15,7 @@
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
     nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs-nix.url = "github:NixOS/nixpkgs";
     capsules = {
       # Until nixago is implemented, as HEAD currently removes fmt hooks
       url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
