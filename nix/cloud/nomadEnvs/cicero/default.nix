@@ -216,7 +216,7 @@
       };
 
       resources = {
-        memory = 1024 * 64;
+        memory = 1024 * 16;
         cpu = 1000;
       };
 
@@ -387,7 +387,7 @@ in {
     };
 
     group.cicero-nomad = merge commonGroup {
-      count = 0;
+      count = 1;
 
       task.cicero.config = {
         args = append ["--" "nomad"];
