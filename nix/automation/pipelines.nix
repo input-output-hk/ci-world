@@ -60,22 +60,26 @@
       cat result
     '';
 
-    nomad.templates = [
-      {
-        destination = "/local/default.nix";
-        data = ''
-          let
-            nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9;
-            pkgs = nixpkgs.legacyPackages.x86_64-darwin;
-          in
-            pkgs.runCommand "foo" {} '''
-              {
-                echo '{{timestamp}}' # to force a new build
-                uname
-              } > $out
-            '''
-        '';
-      }
-    ];
+    nomad = {
+      templates = [
+        {
+          destination = "/local/default.nix";
+          data = ''
+            let
+              nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9;
+              pkgs = nixpkgs.legacyPackages.x86_64-darwin;
+            in
+              pkgs.runCommand "foo" {} '''
+                {
+                  echo '{{timestamp}}' # to force a new build
+                  uname
+                } > $out
+              '''
+          '';
+        }
+      ];
+
+      driver = "exec";
+    };
   };
 }
