@@ -235,6 +235,7 @@
         NETRC = "/secrets/netrc";
 
         CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.${domain}";
+        CICERO_EVALUATOR_NIX_BINARY_CACHE = "http://spongix.service.consul:7745?compression=none";
         REGISTRY_AUTH_FILE = "/secrets/docker";
       };
 
