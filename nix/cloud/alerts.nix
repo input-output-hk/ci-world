@@ -2,6 +2,25 @@
   inputs,
   cell,
 }: {
+  ci-world-loki = {
+    datasource = "loki";
+    rules = [
+      {
+        alert = "CoredumpDetected";
+        expr = ''sum(rate({syslog_identifier="systemd-coredump", host=~"core.*"}[1h] != "sshd" |= "dumped core")) by (host) > 0'';
+        for = "1m";
+        labels.severity = "critical";
+        annotations = {
+          description = ''
+            Detected a coredump on {{ $labels.host }}.
+             This usually requires attention and most likely manual intervention.
+             To analyze a coredump, run `coredumpctl list` on the affected machine, and run `coredump debug $id` in a nix shell with gdb.'';
+          summary = "Detected a coredump on {{ $labels.host }}";
+        };
+      }
+    ];
+  };
+
   ci-world-darwin = {
     datasource = "vm";
     rules = [

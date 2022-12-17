@@ -133,8 +133,8 @@ in {
             "auth/token/lookup-self" = [r];
             "auth/token/renew-self" = [u];
             "sys/capabilities-self" = [u];
-            "kv/data/perf/*" = [r l];
-            "kv/metadata/perf/*" = [r l];
+            "kv/data/postgrest/*" = [r l];
+            "kv/metadata/postgrest/*" = [r l];
             "nomad/creds/perf" = [r u];
             "consul/creds/developer" = [r u];
             "sops/keys/dev" = [r l];
@@ -265,6 +265,7 @@ in {
           # Cell Block local declared dashboards
           inherit
             (cell.alerts)
+            ci-world-loki
             ci-world-darwin
             ci-world-spongix
             ci-world-nomad-follower
@@ -276,7 +277,6 @@ in {
             (inputs.bitte-cells.bitte.alerts)
             bitte-consul
             bitte-deadmanssnitch
-            bitte-loki
             bitte-system
             bitte-vault
             bitte-vm-health
