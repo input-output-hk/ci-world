@@ -2,7 +2,7 @@
   inputs,
   cell,
 }: let
-  inherit (inputs) bitte-cells;
+  inherit (inputs) bitte-cells cells;
 in {
   # Bitte Hydrate Module
   # -----------------------------------------------------------------------
@@ -15,6 +15,7 @@ in {
     imports = [
       (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["prod"])
       (bitte-cells.tempo.hydrationProfiles.hydrate-cluster ["prod"])
+      (cells.perf.hydrationProfile.workload-policies-postgrest)
     ];
 
     # NixOS-level hydration
@@ -37,6 +38,7 @@ in {
       nomad.namespaces = {
         prod = {description = "CI Prod";};
         baremetal = {description = "CI Baremetal Builders";};
+        perf = {description = "CI Performance Benchmarking";};
       };
     };
 
@@ -53,6 +55,12 @@ in {
         backend = "\${vault_github_auth_backend.employee.path}";
         user = "rschardt";
         policies = ["cicero"];
+      };
+
+      resource.vault_github_team.performance-tracing = {
+        backend = "\${vault_github_auth_backend.employee.path}";
+        team = "performance-tracing";
+        policies = ["perf"];
       };
 
       locals.policies = {
@@ -118,6 +126,20 @@ in {
             "pki/issue/client" = [c u];
             "pki/roles/client" = [r];
             "sys/capabilities-self" = [u];
+          };
+
+          perf.path = caps {
+            "auth/token/lookup" = [u];
+            "auth/token/lookup-self" = [r];
+            "auth/token/renew-self" = [u];
+            "sys/capabilities-self" = [u];
+            "kv/data/perf/*" = [r l];
+            "kv/metadata/perf/*" = [r l];
+            "nomad/creds/perf" = [r u];
+            "consul/creds/developer" = [r u];
+            "sops/keys/dev" = [r l];
+            "sops/decrypt/dev" = [r u l];
+            "sops/encrypt/dev" = [r u l];
           };
         };
 
@@ -203,6 +225,31 @@ in {
               ];
             };
             host_volume."marlowe".policy = "write";
+          };
+
+          perf = {
+            description = "Performance tracing and benchmarking policies";
+
+            namespace."*".policy = "deny";
+
+            namespace."perf" = {
+              policy = "write";
+              capabilities = [
+                "alloc-exec"
+                "alloc-lifecycle"
+                "dispatch-job"
+                "list-jobs"
+                "list-scaling-policies"
+                "read-fs"
+                "read-job"
+                "read-job-scaling"
+                "read-logs"
+                "read-scaling-policy"
+                "scale-job"
+                "submit-job"
+              ];
+            };
+            node.policy = "read";
           };
         };
       };

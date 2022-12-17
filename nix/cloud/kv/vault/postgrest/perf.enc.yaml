@@ -1,0 +1,21 @@
+#ENC[AES256_GCM,data:WEjMvMIDqX1Jg92hCgva,iv:/sjGqs654JqWI/3vhVyrrAJRakuAd70t4YfKfr8Y628=,tag:4MLQGlbNZ/v7vAYoQjAgoQ==,type:comment]
+#ENC[AES256_GCM,data:WB+AqjTDkX90Xw5XywAiHfpJrRwNZrM8em8bEUNS54GAbQOTwz27dWY1HQ78KU0=,iv:83KYwq8C1PtkhQS30+b+SiARvBJLPe7zt5WVkD4uFAo=,tag:i26bNOjnfjulcfBoGcm6Aw==,type:comment]
+postgrestDbUser: ENC[AES256_GCM,data:csX7Xg==,iv:mipRz6MZmAAtOHtnQpgRyg40i2eXPK9m8DdddJSdM1o=,tag:fHt8gUz36M+DNvJGl6irDQ==,type:str]
+postgrestDbPass: ENC[AES256_GCM,data:CNFO2xcWmsrj0oIw3JXH3XO1rsNGfq3ZEgfopetFWeE=,iv:tdO+Udiz10NARYrLmd8AOiu3LMdZQPXset9vRTZiUn8=,tag:uxClRN3xqIPOsCJAd1u2qQ==,type:str]
+jwtSecret: ENC[AES256_GCM,data:21V7Vvcuv517K2oIoqwxApp3riZOCKVePWoyCyN4X1Y=,iv:eIp0vD+8WXnsBnPf8OKlvUsSHaFwB19ev0UQrLNjfPw=,tag:acS2HFFqesh/Yw0fah2Mww==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: dev
+          created_at: "2022-12-16T19:26:21Z"
+          enc: vault:v1:0LluEnlsU4wV7x9VdY+rfGlu//vo5ryHki7sCg3dUVsxVEU6WQlrtAxDlhjZtP98bTjSzRl68jW9y+jF
+    age: []
+    lastmodified: "2022-12-16T22:34:13Z"
+    mac: ENC[AES256_GCM,data:idB9gqRKoFOAakkKHXMDp7gKPf1E+O90l3cibBJGpreiB9FBu0fcBw/Vz6hPIMN020gfToASziGrAIal6rUQHWSf5s5+uJ3LAsKS+S68m0NLDhu622AoJjExeHFIZJ/WV+XHUjy1E2Iyqxfpx7vsCoeDXx9jN3SNmbYq/d/GBrA=,iv:tjumEcugyoADxXbZGnA+fyVORoxgltSY/TA0FjDr9ZA=,tag:LoafwGKNEjvbn9TCpuVU+A==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.3

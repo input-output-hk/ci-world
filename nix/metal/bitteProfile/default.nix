@@ -110,6 +110,7 @@ in {
             (mkAsgs "eu-central-1" 10 "m5.8xlarge" 500 "prod" "prod" {withPatroni = true;} {})
             (mkAsgs "eu-central-1" 0 "m5.metal" 1000 "baremetal" "baremetal" {} {primaryInterface = "enp125s0";})
             (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "test" "test" {} {})
+            (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "perf" "perf" {} {})
           ]
           (args: let
             attrs =

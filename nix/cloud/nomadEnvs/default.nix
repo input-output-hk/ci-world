@@ -62,5 +62,20 @@ in {
       inherit inputs cell;
       inherit (constants.args.prod) domain namespace;
     };
+
+    postgrest = inputs.cells.perf.jobs.default;
+  };
+
+  perf = let
+    # inherit
+    #   (constants.perf)
+    #   # App constants
+    #   WALG_S3_PREFIX
+    #   # Job mod constants
+    #   patroniMods
+    #   tempoMods
+    #   ;
+  in {
+    postgrest = inputs.cells.perf.jobs.default inputs.cells.perf.constants.args.perf;
   };
 }

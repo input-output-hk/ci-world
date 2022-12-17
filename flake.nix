@@ -24,6 +24,7 @@
       inputs.bitte.follows = "bitte";
     };
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
+    nixpkgs-postgrest.url = "github:NixOS/nixpkgs/haskell-updates";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
     nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix/extract-gc";
@@ -56,7 +57,7 @@
         (data "dashboards")
         (runnables "entrypoints")
         (functions "bitteProfile")
-        (functions "oci-images")
+        (containers "oci-images")
         (functions "library")
         (installables "packages")
         (functions "hydrationProfile")
@@ -86,6 +87,7 @@
     )
     {
       prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
+      perf = bitte.lib.mkNomadJobs "perf" nomadEnvs;
     }
     (inputs.tullia.fromStd {
       actions = inputs.std.harvest inputs.self ["cloud" "actions"];

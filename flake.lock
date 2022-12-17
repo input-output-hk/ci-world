@@ -400,11 +400,11 @@
         "utils": "utils_10"
       },
       "locked": {
-        "lastModified": 1670557789,
-        "narHash": "sha256-YBT11H6sUYDse51nzr4Tb/zxnJ21ciYpWeNx6qzBxuk=",
+        "lastModified": 1671220395,
+        "narHash": "sha256-l4CbS0VHGxWYIn8pHienyfWtrcIirbQi9P24cZPtt9k=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "8f0da3333e3278f512e7444031001469a2016908",
+        "rev": "05bef06c30f09e8a338840ab187f75d9cf88a3cb",
         "type": "github"
       },
       "original": {
@@ -4964,6 +4964,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-postgrest": {
+      "locked": {
+        "lastModified": 1671063215,
+        "narHash": "sha256-3XuqZUE6yMid8MSgYNyU76ClnZelfT2iO3YyaMxd/N4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "13d086012159a2c351925e746b083456a7c91636",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "haskell-updates",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-regression": {
       "locked": {
         "lastModified": 1643052045,
@@ -6610,6 +6626,7 @@
         "nix-inclusive": "nix-inclusive",
         "nixpkgs": "nixpkgs_54",
         "nixpkgs-nix": "nixpkgs-nix",
+        "nixpkgs-postgrest": "nixpkgs-postgrest",
         "nixpkgs-vector": "nixpkgs-vector",
         "nomad-driver-nix": "nomad-driver-nix_2",
         "openziti": "openziti",
