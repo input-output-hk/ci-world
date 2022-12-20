@@ -277,12 +277,59 @@ in {
             (inputs.bitte-cells.bitte.alerts)
             bitte-consul
             bitte-deadmanssnitch
-            bitte-system
             bitte-vault
             bitte-vm-health
             bitte-vm-standalone
             bitte-vmagent
             ;
+          # Modified upstream alerts
+          bitte-system-modified = {
+            datasource = "vm";
+            rules =
+              (builtins.filter (e: !(builtins.elem e.alert ["SystemCpuUsedAlert" "SystemMemoryUsedAlert"])) inputs.bitte-cells.bitte.alerts.bitte-system.rules)
+              ++ [
+                {
+                  alert = "SystemCpuUsedAlert";
+                  expr = ''100 - cpu_usage_idle{cpu="cpu-total",host!~"ip-.*|equinix.*"} > 90'';
+                  for = "5m";
+                  labels.severity = "critical";
+                  annotations = {
+                    description = "CPU has been above 90% on {{ $labels.host }} for more than 5 minutes.";
+                    summary = "[System] CPU Used alert on {{ $labels.host }}";
+                  };
+                }
+                {
+                  alert = "SystemCpuUsedAlertEquinix";
+                  expr = ''100 - cpu_usage_idle{cpu="cpu-total",host=~"equinix.*"} > 90'';
+                  for = "4h";
+                  labels.severity = "critical";
+                  annotations = {
+                    description = "CPU has been above 90% on {{ $labels.host }} for more than 4 hours.";
+                    summary = "[System] CPU Used alert on {{ $labels.host }}";
+                  };
+                }
+                {
+                  alert = "SystemMemoryUsedAlert";
+                  expr = ''mem_used_percent{host!~"equinix.*"} > 90'';
+                  for = "5m";
+                  labels.severity = "critical";
+                  annotations = {
+                    description = "Memory used has been above 90% for more than 5 minutes.";
+                    summary = "[System] Memory Used alert on {{ $labels.host }}";
+                  };
+                }
+                {
+                  alert = "SystemMemoryUsedAlertEquinix";
+                  expr = ''mem_used_percent{host=~"equinix.*"} > 90'';
+                  for = "4h";
+                  labels.severity = "critical";
+                  annotations = {
+                    description = "Memory used has been above 90% for more than 4 hours.";
+                    summary = "[System] Memory Used alert on {{ $labels.host }}";
+                  };
+                }
+              ];
+          };
 
           inherit
             (inputs.bitte-cells.patroni.alerts)
