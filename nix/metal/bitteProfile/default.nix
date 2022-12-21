@@ -25,7 +25,8 @@ in {
       s3CachePubKey = lib.fileContents ./encrypted/nix-public-key-file;
       flakePath = "${inputs.self}";
       vbkBackend = "local";
-      builder = "cache";
+      # TODO: Review builder profile and impact on client builders
+      # builder = "cache";
       transitGateway = {
         enable = true;
         transitRoutes = [

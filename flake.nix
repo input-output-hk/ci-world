@@ -5,10 +5,10 @@
     n2c.follows = "std/n2c";
     data-merge.follows = "std/dmerge";
     # --- Bitte Stack ----------------------------------------------
-    bitte.url = "github:input-output-hk/bitte/equinix";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/equinix";
+    # bitte.url = "github:input-output-hk/bitte/equinix";
+    bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/equinix-2211";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-token-rotation";
+    bitte-cells.url = "github:input-output-hk/bitte-cells";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
     bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     bitte.inputs.nomad-follower.url = "github:input-output-hk/nomad-follower/3ff1d80324a3a716f008fbfc970a0e836c5b34db";
