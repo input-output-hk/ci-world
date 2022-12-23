@@ -85,7 +85,8 @@ in {
                   path = "/nix";
                   read_only = false;
                 };
-              });
+              })
+              ++ lib.optional (node_class == "test") ./local-builder.nix;
           }
           extraConfig;
         # -------------------------
