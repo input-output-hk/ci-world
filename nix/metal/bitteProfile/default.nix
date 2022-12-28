@@ -80,13 +80,15 @@ in {
             modules =
               defaultModules
               ++ lib.optional (opts ? withPatroni && opts.withPatroni == true) (patroni.nixosProfiles.client node_class)
-              ++ lib.optional (node_class == "prod") ({...}: {
-                services.nomad.client.host_volume.host-nix-mount = {
-                  path = "/nix";
-                  read_only = false;
-                };
-              })
-              ++ lib.optional (node_class == "test") ./local-builder.nix;
+              ++ lib.optionals (node_class == "prod") [
+                ./local-builder.nix
+                ({...}: {
+                  services.nomad.client.host_volume.host-nix-mount = {
+                    path = "/nix";
+                    read_only = false;
+                  };
+                })
+              ];
           }
           extraConfig;
         # -------------------------
