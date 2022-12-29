@@ -400,11 +400,11 @@
         "utils": "utils_10"
       },
       "locked": {
-        "lastModified": 1671621071,
-        "narHash": "sha256-X9o1bYrgzDxDnlqzZsiLHJEezQcRmfHgGLl4GsIM6II=",
+        "lastModified": 1672346412,
+        "narHash": "sha256-AFHvIVxM+SIAQdJuT/6bwqdRbQU/daLQrCLdduavXVM=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "b2c4968b94f3514c4e265abf23bcf710955f99d2",
+        "rev": "4cdc3a603ff136a2b3b0ed66d7f4cfb6b2d9ab45",
         "type": "github"
       },
       "original": {
