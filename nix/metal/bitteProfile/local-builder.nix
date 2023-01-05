@@ -6,7 +6,9 @@
 }: {
   profiles.auxiliaries.builder.enable = false;
 
-  nix = {
+  nix = let
+    systemFeatures = ["big-parallel" "benchmark"];
+  in {
     buildMachines = let
       mkDarwinBuilder = name: mandatoryFeatures: {
         inherit mandatoryFeatures;
@@ -16,7 +18,7 @@
         sshKey = "/etc/nix/darwin-builder-key";
         sshUser = "builder";
         systems = ["x86_64-darwin"];
-        supportedFeatures = ["big-parallel"];
+        supportedFeatures = systemFeatures;
       };
     in [
       (mkDarwinBuilder "mm1-builder" [])
@@ -26,6 +28,8 @@
     ];
 
     distributedBuilds = true;
+
+    inherit systemFeatures;
 
     trustedUsers = ["root" "builder"];
 
