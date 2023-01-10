@@ -24,7 +24,7 @@ in {
     lsof
     ncdu
     sysstat
-    sqliteInteractive
+    sqlite-interactive
     tcpdump
     tig
     tree
@@ -61,35 +61,40 @@ in {
     cron.enable = true;
   };
 
-  nix = lib.mkForce rec {
+  nix = lib.mkForce {
     # Use nix sandboxing for greater determinism
-    useSandbox = true;
+    settings = rec {
+      sandbox = true;
+      sandbox-fallback = false;
+
+      max-jobs = "auto";
+
+      # Use all cores
+      cores = 0;
+
+      # If our cache is down, don't wait forever
+      connect-timeout = 10;
+
+      # Use our binary cache builds
+      trusted-substituters = ["https://cache.nixos.org" "https://cache.iog.io"];
+      substituters = trusted-substituters;
+      trusted-public-keys = [
+        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+      ];
+
+      system-features = ["kvm" "big-parallel" "nixos-test" "benchmark"];
+
+      http2 = true;
+      show-trace = true;
+      experimental-features = "nix-command flakes";
+      allow-import-from-derivation = true;
+    };
 
     # Make sure we have enough build users
     nrBuildUsers = 64;
 
-    # If our cache is down, don't wait forever
-    extraOptions = ''
-      max-jobs = auto
-      connect-timeout = 10
-      http2 = true
-      show-trace = true
-      experimental-features = nix-command flakes
-      allow-import-from-derivation = true
-    '';
-
-    # Use all cores
-    buildCores = 0;
-
     nixPath = ["nixpkgs=/run/current-system/nixpkgs"];
-
-    # Use our binary cache builds
-    trustedBinaryCaches = ["https://cache.nixos.org" "https://cache.iog.io"];
-    binaryCaches = trustedBinaryCaches;
-    binaryCachePublicKeys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-    ];
   };
 
   system.extraSystemBuilderCmds =

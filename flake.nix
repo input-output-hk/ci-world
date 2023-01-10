@@ -5,17 +5,17 @@
     n2c.follows = "std/n2c";
     data-merge.follows = "std/dmerge";
     # --- Bitte Stack ----------------------------------------------
-    bitte.url = "github:input-output-hk/bitte/equinix";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/equinix";
+    bitte.url = "github:input-output-hk/bitte/equinix-2211";
+    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/equinix-2211";
     # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-token-rotation";
     # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
-    bitte.inputs.nomad-driver-nix.follows = "nomad-driver-nix";
     bitte.inputs.nomad-follower.url = "github:input-output-hk/nomad-follower/3ff1d80324a3a716f008fbfc970a0e836c5b34db";
+    bitte.inputs.capsules.follows = "capsules";
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
-    nixpkgs.url = "github:NixOS/nixpkgs";
-    nixpkgs-nix.url = "github:NixOS/nixpkgs";
+    nixpkgs.follows = "bitte/nixpkgs";
+    nix.follows = "bitte/nix";
     capsules = {
       # Until nixago is implemented, as HEAD currently removes fmt hooks
       url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
@@ -26,16 +26,15 @@
     nix-inclusive.url = "github:input-output-hk/nix-inclusive";
     nixpkgs-postgrest.url = "github:NixOS/nixpkgs/haskell-updates";
     nixpkgs-vector.url = "github:NixOS/nixpkgs/30d3d79b7d3607d56546dd2a6b49e156ba0ec634";
-    nomad-driver-nix.url = "github:input-output-hk/nomad-driver-nix";
     spongix.url = "github:input-output-hk/spongix/extract-gc";
     spongix.inputs.cicero.follows = "cicero";
     spongix-nar-proxy.url = "github:input-output-hk/spongix/nar-proxy";
     spongix-nar-proxy.inputs.cicero.follows = "cicero";
     cicero.url = "github:input-output-hk/cicero";
     cicero.inputs.spongix.follows = "spongix";
-    cicero.inputs.driver.follows = "nomad-driver-nix";
     tullia.url = "github:input-output-hk/tullia";
     openziti.url = "github:johnalotoski/openziti-bins";
+    # openziti.url = "path:/home/jlotoski/work/johnalotoski/openziti-bins-wt/openziti-bins";
     openziti.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
     # --------------------------------------------------------------

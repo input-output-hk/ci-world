@@ -6,5 +6,5 @@
     inputs.bitte.profiles.vault-cache
     inputs.bitte.profiles.auxiliaries-builder
   ];
-  nix.systemFeatures = ["big-parallel"];
+  nix.settings.system-features = ["big-parallel"];
 }

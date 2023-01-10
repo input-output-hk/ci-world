@@ -47,6 +47,15 @@ in {
       capsules.base
       capsules.cloud
     ];
+    commands = let
+      withCategory = category: attrset: attrset // {inherit category;};
+      ciWorld = withCategory "ci-world";
+    in
+      with nixpkgs; [
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.consul;})
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.nomad;})
+        (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.vault-bin;})
+      ];
   };
   ops = dev.mkShell {
     imports = [

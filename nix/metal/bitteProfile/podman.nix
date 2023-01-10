@@ -8,7 +8,7 @@
 }: let
   # Remove and use package from nixpkgs as soon as it includes this PR:
   # https://github.com/hashicorp/nomad-driver-podman/pull/183
-  nomad-driver-podman = pkgs.buildGo117Module rec {
+  nomad-driver-podman = pkgs.buildGoModule rec {
     pname = "nomad-driver-podman";
     version = "0.4.0";
 
@@ -63,7 +63,6 @@ in {
     dir = pkgs.symlinkJoin {
       name = "nomad-plugins";
       paths = [
-        inputs.nomad-driver-nix.defaultPackage.x86_64-linux
         nomad-driver-podman
       ];
     };
