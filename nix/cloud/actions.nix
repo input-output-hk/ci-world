@@ -193,6 +193,7 @@
           ];
           task.handbook = {
             driver = "nix";
+            env.HOME = "/local";
             config = {
               packages = [handbook];
               command = ["/bin/serve-cicero-handbook"];
