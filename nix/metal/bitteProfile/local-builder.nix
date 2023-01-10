@@ -7,7 +7,7 @@
   profiles.auxiliaries.builder.enable = false;
 
   nix = let
-    systemFeatures = ["big-parallel" "benchmark"];
+    supportedFeatures = ["big-parallel" "benchmark"];
   in {
     buildMachines = let
       mkDarwinBuilder = name: mandatoryFeatures: {
@@ -18,7 +18,7 @@
         sshKey = "/etc/nix/darwin-builder-key";
         sshUser = "builder";
         systems = ["x86_64-darwin"];
-        supportedFeatures = systemFeatures;
+        inherit supportedFeatures;
       };
     in [
       (mkDarwinBuilder "mm1-builder" [])
@@ -29,7 +29,11 @@
 
     distributedBuilds = true;
 
-    inherit systemFeatures;
+    systemFeatures =
+      supportedFeatures
+      ++ [
+        "kvm" # even if KVM is not supported; better to run slow than to fail
+      ];
 
     trustedUsers = ["root" "builder"];
 
