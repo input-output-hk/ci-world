@@ -25,7 +25,7 @@
     host = "";
     port = 7745;
     gc.interval = "daily";
-    gc.cacheSize = 400;
+    gc.cacheSize = 800;
     secretKeyFiles.ci-world = config.secrets.install.spongix-secret-key.target;
     substituters = [
       "https://cache.nixos.org"
