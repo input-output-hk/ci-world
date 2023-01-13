@@ -127,9 +127,7 @@ in
           hostAddress = hostIp;
           localAddress = guestIp;
 
-          config = let
-            inherit (self.inputs.nixpkgs-nix.legacyPackages.x86_64-linux.nixVersions) nix_2_12;
-          in {
+          config = {
             imports = [
               # Common guest level config (also applied at host level)
               ./common.nix
@@ -156,12 +154,11 @@ in
 
             # services.monitoring-exporters.enable = false;
 
+            # Set the state version to the current nixpkgs being used to avoid trace warns
+            system.stateVersion = lib.mkDefault config.system.nixos.release;
+
             # Ensure we can use same nixpkgs with overlays the host uses
             nixpkgs.pkgs = pkgs;
-
-            # Ensure nix package on buildkite matches darwin buildkite at 2.12.0
-            nix.package = nix_2_12;
-            environment.systemPackages = [nix_2_12];
 
             # Don't try to inherit resolved from the equinix host which won't work
             environment.etc."resolv.conf".text = ''

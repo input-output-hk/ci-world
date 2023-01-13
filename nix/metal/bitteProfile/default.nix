@@ -506,13 +506,12 @@ in {
           })
         ];
 
-        buildkiteOnly = queue: count: [
+        buildkiteOnly = hostIdSuffix: queue: count: [
           ({
             lib,
             config,
             ...
           }: let
-            inherit (self.inputs.nixpkgs-nix.legacyPackages.x86_64-linux.nixVersions) nix_2_12;
             cfg = config.services.buildkite-containers;
           in {
             # Temporarily disable nomad to avoid conflict with buildkite resource consumption.
@@ -533,6 +532,8 @@ in {
             };
 
             services.buildkite-containers = {
+              inherit hostIdSuffix;
+
               # There should be enough space on these machines to cache dir purges.
               weeklyCachePurge = false;
 
@@ -549,28 +550,24 @@ in {
               in
                 map (n: mkContainer n (toString (10 - n))) (lib.range 1 count);
             };
-
-            # Ensure nix package on buildkite matches darwin buildkite at 2.12.0
-            nix.package = nix_2_12;
-            environment.systemPackages = [nix_2_12];
           })
         ];
 
-        mkEquinixBuildkite = name: privateIP: queue: count: {
+        mkEquinixBuildkite = name: hostIdSuffix: privateIP: queue: count: {
           inherit deployType node_class primaryInterface role privateIP;
           equinix = {inherit plan project;};
 
           modules =
             baseEquinixModuleConfig
             ++ (baseEquinixMachineConfig name)
-            ++ (buildkiteOnly queue count)
+            ++ (buildkiteOnly hostIdSuffix queue count)
             ++ [./buildkite/buildkite-agent-containers.nix];
         };
       in {
-        equinix-1 = mkEquinixBuildkite "equinix-1" "10.12.10.1" "default" 5;
-        equinix-2 = mkEquinixBuildkite "equinix-2" "10.12.10.3" "default" 5;
-        equinix-3 = mkEquinixBuildkite "equinix-3" "10.12.10.5" "benchmark" 1;
-        equinix-4 = mkEquinixBuildkite "equinix-4" "10.12.10.7" "benchmark" 1;
+        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" "default" 5;
+        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" "default" 5;
+        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" "benchmark" 1;
+        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" "benchmark" 1;
       };
     };
   };

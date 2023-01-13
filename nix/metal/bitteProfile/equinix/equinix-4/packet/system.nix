@@ -27,7 +27,7 @@
           systemd-boot.enable = true;
           efi.canTouchEfiVariables = true;
         };
-        nix.maxJobs = lib.mkDefault 64;
+        nix.settings.max-jobs = lib.mkDefault 64;
       }
     )
     {

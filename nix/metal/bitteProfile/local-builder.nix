@@ -29,22 +29,22 @@
 
     distributedBuilds = true;
 
-    systemFeatures =
-      supportedFeatures
-      ++ [
-        "kvm" # even if KVM is not supported; better to run slow than to fail
-      ];
+    settings = {
+      system-features =
+        supportedFeatures
+        ++ [
+          "kvm" # even if KVM is not supported; better to run slow than to fail
+        ];
 
-    trustedUsers = ["root" "builder"];
+      trusted-users = ["root" "builder"];
 
-    extraOptions = ''
-      builders = @/etc/nix/machines
+      builders = "@/etc/nix/machines";
 
       # Constrain Linux builds to 4 hrs
-      timeout = 14400
+      timeout = 14400;
 
-      connect-timeout = 10
-    '';
+      connect-timeout = 10;
+    };
   };
 
   programs.ssh.extraConfig = let
