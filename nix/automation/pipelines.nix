@@ -39,6 +39,7 @@
       github.ci = {
         enable = config.actionRun.facts != {};
         repository = "input-output-hk/cicero";
+        remote = config.preset.github.lib.readRepository "GitHub event" null;
         revision = config.preset.github.lib.readRevision "GitHub event" "HEAD";
       };
     };
