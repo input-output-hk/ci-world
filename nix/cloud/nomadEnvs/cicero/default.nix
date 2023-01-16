@@ -72,14 +72,9 @@
               if .Type != null and .Type != "batch" then . else (
                 .TaskGroups[]?.Tasks[]? |= (
                   .Vault.Policies += ["cicero"] |
-                  if .Driver != "nix" or .Config?.nixos then . else
-                    .Config.packages |=
-                      # only add bash if needed to avoid conflicts in profile
-                      if any(endswith("#bash") or endswith("#bashInteractive"))
-                      then .
-                      else . + ["github:NixOS/nixpkgs/\($args.nixpkgsRev)#bash"]
-                      end
-                  end
+                  if .Config.nix_host then
+                    .Env.NIX_CONFIG += "\nextra-substituters = http://cache:7745"
+                  else . end
                 )
               ) end
             )
