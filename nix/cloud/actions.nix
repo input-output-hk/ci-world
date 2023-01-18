@@ -33,21 +33,18 @@
     branch = lib.removePrefix "refs/heads/" pushBody.ref;
   in {
     io = ''
-      let cfg = {
+      let push = {
         #lib.io.github_push,
         #input: "${factNames.push}"
         #repo: "input-output-hk/cicero"
-        #default_branch: false
-        inputs: _final_inputs
       }
 
-      _final_inputs: inputs
       inputs: {
-        cfg.inputs
+        push.inputs
 
         "${factNames.ci}": match: {
           ok: true
-          revision: cfg._revision
+          revision: push._revision
         }
       }
 
@@ -55,14 +52,14 @@
         success: deployed: true
         failure: deployed: false
         [string]: {
-          revision: cfg._revision
+          revision: push._revision
 
           _sub: string
-          if cfg._branch == cfg._default_branch {
+          if push._branch == push._default_branch {
             _sub: ""
           }
-          if cfg._branch != cfg._default_branch {
-            _sub: "\(cfg._branch)."
+          if push._branch != push._default_branch {
+            _sub: "\(push._branch)."
           }
           url: "https://\(_sub)cicero.ci.iog.io"
         }

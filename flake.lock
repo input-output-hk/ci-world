@@ -6323,11 +6323,11 @@
         "std": "std_6"
       },
       "locked": {
-        "lastModified": 1673288142,
-        "narHash": "sha256-LrUhUX0rK1tbjNo1tov+ZCDnLWKNM4UjuMvnX7DhBsU=",
+        "lastModified": 1673967538,
+        "narHash": "sha256-jv3S5zlHuOsaj3wxftPTXrZJCZqtMtcJYlrJ1Tg1iJE=",
         "owner": "input-output-hk",
         "repo": "tullia",
-        "rev": "41502706d4bbd299b991ecbe79b4893e69cd5999",
+        "rev": "6c4cb98a266891c40134e621ee5fc3a321143fc3",
         "type": "github"
       },
       "original": {
