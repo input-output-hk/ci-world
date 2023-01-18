@@ -229,8 +229,8 @@ in {
               };
 
               services.vmagent.promscrapeConfig = let
-                mkTarget = ip: machine: {
-                  targets = ["${ip}:22"];
+                mkTarget = ip: port: machine: {
+                  targets = ["${ip}:${toString port}"];
                   labels.alias = machine;
                 };
               in [
@@ -240,10 +240,10 @@ in {
                   metrics_path = "/probe";
                   params.module = ["ssh_banner"];
                   static_configs = [
-                    (mkTarget "10.10.0.1" "mm1-builder")
-                    (mkTarget "10.10.0.2" "mm2-builder")
-                    (mkTarget "10.10.0.101" "mm1-signer")
-                    (mkTarget "10.10.0.102" "mm2-signer")
+                    (mkTarget "10.10.0.1" 22 "mm1-builder")
+                    (mkTarget "10.10.0.2" 22 "mm2-builder")
+                    (mkTarget "10.10.0.101" 22 "mm1-signer")
+                    (mkTarget "10.10.0.102" 22 "mm2-signer")
                   ];
                   relabel_configs = [
                     {
@@ -258,6 +258,33 @@ in {
                       replacement = "127.0.0.1:9115";
                       target_label = "__address__";
                     }
+                  ];
+                }
+                {
+                  job_name = "mm-hosts";
+                  scrape_interval = "60s";
+                  metrics_path = "/monitorama/host";
+                  static_configs = [
+                    (mkTarget "10.10.0.1" 9111 "mm1-host")
+                    (mkTarget "10.10.0.2" 9111 "mm2-host")
+                  ];
+                }
+                {
+                  job_name = "mm-ci";
+                  scrape_interval = "60s";
+                  metrics_path = "/monitorama/ci";
+                  static_configs = [
+                    (mkTarget "10.10.0.1" 9111 "mm1-builder")
+                    (mkTarget "10.10.0.2" 9111 "mm2-builder")
+                  ];
+                }
+                {
+                  job_name = "mm-signing";
+                  scrape_interval = "60s";
+                  metrics_path = "/monitorama/signing";
+                  static_configs = [
+                    (mkTarget "10.10.0.1" 9111 "mm1-signer")
+                    (mkTarget "10.10.0.2" 9111 "mm2-signer")
                   ];
                 }
               ];

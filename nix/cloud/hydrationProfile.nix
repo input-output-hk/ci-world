@@ -265,10 +265,11 @@ in {
           # Cell Block local declared dashboards
           inherit
             (cell.alerts)
-            ci-world-loki
             ci-world-darwin
-            ci-world-spongix
+            ci-world-loki
+            ci-world-node-exporter
             ci-world-nomad-follower
+            ci-world-spongix
             # Upstream alerts which may have downstream deps can be imported here
             
             ;
@@ -346,6 +347,8 @@ in {
           # Cell block local declared dashboards
           inherit
             (cell.dashboards)
+            ci-world-mac-mini-zfs
+            ci-world-node-exporter
             ci-world-spongix
             ;
 

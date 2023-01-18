@@ -77,6 +77,72 @@
     ];
   };
 
+  ci-world-node-exporter = {
+    datasource = "vm";
+    rules = [
+      {
+        alert = "node_down";
+        expr = ''up  == 0'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} in job {{$labels.job}} has been down for more than 5 minutes.";
+          summary = "{{$labels.alias}}: Node is down.";
+        };
+      }
+      {
+        alert = "node_filesystem_full_90percent";
+        expr = ''sort(node_filesystem_free_bytes{device!="ramfs",fstype!="apfs"} < node_filesystem_size_bytes{device!="ramfs",fstype!="apfs"} * 0.1) / 1024^3'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} and device {{$labels.device}} on {{$labels.mountpoint}} has less than 10% space left on its filesystem.";
+          summary = "{{$labels.alias}}: Filesystem is running out of space soon.";
+        };
+      }
+      {
+        alert = "node_filesystem_full_in_4h";
+        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
+        for = "5m";
+        labels.severity = "warning";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} and  device {{$labels.device}} on {{$labels.mountpoint}} is running out of space of in approx. 4 hours";
+          summary = "{{$labels.alias}}: Filesystem is running out of space in 4 hours.";
+        };
+      }
+      {
+        alert = "node_ram_using_90percent";
+        expr = ''node_memory_MemFree_bytes + node_memory_Buffers_bytes + node_memory_Cached_bytes < node_memory_MemTotal_bytes * 0.10'';
+        for = "30m";
+        labels.severity = "critical";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} in job {{$labels.job}} is using at least 90% of its RAM for at least 30 minutes now.";
+          summary = "{{$labels.alias}}: High RAM utilization.";
+        };
+      }
+      {
+        alert = "node_swap_using_80percent";
+        expr = ''node_memory_SwapTotal_bytes - (node_memory_SwapFree_bytes + node_memory_SwapCached_bytes) > node_memory_SwapTotal_bytes * 0.8'';
+        for = "10m";
+        labels.severity = "warning";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} in job {{$labels.job}} is using 80% of its swap space for at least 10 minutes now.";
+          summary = "{{$labels.alias}}: Running out of swap soon.";
+        };
+      }
+      {
+        alert = "node_time_unsync";
+        expr = ''abs(node_timex_offset_seconds) > 0.500 or node_timex_sync_status != 1'';
+        for = "10m";
+        labels.severity = "warning";
+        annotations = {
+          description = "{{$labels.alias}} of instance {{$labels.instance}} in job {{$labels.job}} has local clock offset too large or out of sync with NTP";
+          summary = "{{$labels.alias}}: Clock out of sync with NTP";
+        };
+      }
+    ];
+  };
+
   # inherit (inputs.bitte-cells.bitte.alerts)
   # ;
 }

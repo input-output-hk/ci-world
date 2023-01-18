@@ -9,6 +9,8 @@
   # importGrafonnixToJson = ...;
 in {
   ci-world-spongix = importAsJson ./dashboards/spongix.json;
+  ci-world-mac-mini-zfs = importAsJson ./dashboards/mac-mini-zfs.json;
+  ci-world-node-exporter = importAsJson ./dashboards/node-exporter.json;
 
   # Upstream dashboards can be imported here, instead of directly
   # imported in the hydrationProfile.  This will allow easier
