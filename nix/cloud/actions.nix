@@ -34,7 +34,7 @@
   in {
     io = ''
       let push = {
-        #lib.io.github_push,
+        #lib.io.github_push
         #input: "${factNames.push}"
         #repo: "input-output-hk/cicero"
       }
