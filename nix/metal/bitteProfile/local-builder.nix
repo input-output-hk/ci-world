@@ -36,6 +36,8 @@
           "kvm" # even if KVM is not supported; better to run slow than to fail
         ];
 
+      experimental-features = ["ca-derivations"];
+
       trusted-users = ["root" "builder"];
 
       builders = "@/etc/nix/machines";
