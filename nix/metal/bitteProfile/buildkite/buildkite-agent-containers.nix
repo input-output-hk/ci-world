@@ -212,7 +212,7 @@ in
 
                 pre-exit = ''
                   # Clean up the scratch and tmp directories
-                  rm -rf /scratch/* &> /dev/null || true
+                  rm -rf /scratch/* /tmp/* &> /dev/null || true
                 '';
               };
 
