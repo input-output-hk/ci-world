@@ -103,100 +103,91 @@
   "cicero/handbook" = {
     config,
     lib,
+    pkgs,
     ...
   }: let
     factNames = {
-      ci = "Deploy Handbook";
-      push = "Push to repo";
+      ci = "CI passed";
+      push = "GitHub Push";
     };
 
-    handbook = "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}#handbook-entrypoint";
+    host = "handbook.cicero.ci.iog.io";
+
+    entrypoint = let
+      handbook =
+        (builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}")
+        .packages.${pkgs.system}.cicero-handbook;
+    in pkgs.writers.writeDashBin "serve-cicero-handbook" ''
+      exec ${lib.getExe pkgs.darkhttpd} ${handbook} --port "$NOMAD_PORT_http"
+    '';
   in {
     io = ''
-      let cfg = {
-        #lib.io.github_push,
+      let push = {
+        #lib.io.github_push
         #input: "${factNames.push}"
         #repo: "input-output-hk/cicero"
-        #default_branch: false
-        inputs: _final_inputs
+
+        // TODO only match default branch when handbook is merged:
+        // https://github.com/input-output-hk/cicero/pull/43
+        // #default_branch: true
+        #branch: "cic-81"
       }
 
-      _final_inputs: inputs
       inputs: {
-        cfg.inputs
+        push.inputs
 
         "${factNames.ci}": match: {
           ok: true
-          revision: cfg._revision
+          revision: push._revision
         }
       }
 
       output: {
-        success: deployed: true
-        failure: deployed: false
+        success: "handbook deployed": true
+        failure: "handbook deployed": false
         [string]: {
-          revision: cfg._revision
-
-          _sub: string
-          if cfg._branch == cfg._default_branch {
-            _sub: ""
-          }
-          if cfg._branch != cfg._default_branch {
-            _sub: "\(cfg._branch)."
-          }
-          url: "https://\(_sub)cicero.ci.iog.io"
+          revision: push._revision
+          url: "http://${host}"
         }
       }
     '';
 
-    job = {
-      ciceroHandbook = {
-        namespace = "cicero";
-        datacenters = [
-          "dc1"
-          "eu-central-1"
-          "us-east-2"
-        ];
-        group.handbook = {
-          networks = [
-            {
-              port.http = {};
-            }
-          ];
-          services = [
-            {
-              name = "cicero-handbook";
-              port = "http";
-              tags = [
-                "ingress"
-                "traefik.enable=true"
-                "traefik.http.routers.cicero-handbook.rule=Host(`cicero-handbook.ci.iog.io`) && PathPrefix(`/`)"
-                "traefik.http.routers.cicero-handbook.entrypoints=https"
-                "traefik.http.routers.cicero-handbook.middlewares=oauth-auth-redirect@file"
-                "traefik.http.routers.cicero-handbook.tls=true"
-                "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
-              ];
-              checks = [
-                {
-                  type = "tcp";
-                  port = "http";
-                  # 10s in nanoseconds
-                  interval = 10000000000;
-                  # 2s in nanoseconds
-                  timeout = 2000000000;
-                }
-              ];
-            }
-          ];
-          task.handbook = {
-            driver = "nix";
-            env.HOME = "/local";
-            config = {
-              packages = [handbook];
-              command = ["/bin/serve-cicero-handbook"];
-            };
+    prepare = [{
+      type = "nix";
+      derivations = map (p: p.drvPath) [entrypoint];
+    }];
+
+    job.ciceroHandbook = {
+      type = "service";
+      namespace = "cicero";
+      datacenters = ["eu-central-1"];
+      group.handbook = {
+        networks = [{port.http = {};}];
+        task.handbook = {
+          driver = "exec";
+          config = {
+            command = "/bin/serve-cicero-handbook";
+            nix_installables = [entrypoint];
           };
         };
+        services = [{
+          name = "cicero-handbook";
+          port = "http";
+          tags = [
+            "ingress"
+            "traefik.enable=true"
+            "traefik.http.routers.cicero-handbook.rule=Host(`${host}`) && PathPrefix(`/`)"
+          ];
+          checks = let
+            # one second in nanoseconds
+            second = 1000000000;
+          in [{
+            type = "tcp";
+            port = "http";
+            interval = 10 * second;
+            timeout = 2 * second;
+          }];
+        }];
       };
     };
   };
