@@ -211,8 +211,12 @@ in
                 '';
 
                 pre-exit = ''
-                  # Clean up the scratch and tmp directories
-                  rm -rf /scratch/* /tmp/* &> /dev/null || true
+                  # Clean up the scratch directory
+                  rm -rf /scratch/* &> /dev/null || true
+
+                  # Clean up tmp directory, being careful to avoid breaking the buildkite job itself
+                  (find /tmp/* -type f \( ! -iname "buildkite-agent*" \) | xargs rm) &> /dev/null || true
+                  find /tmp/* -empty -type d -delete &> /dev/null || true
                 '';
               };
 
