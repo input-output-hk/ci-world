@@ -135,7 +135,10 @@
             .job.TaskGroups[]?.Tasks[]? |=
               .Env.HOME as $home |
               if $home == null
-              then error("`.job.TaskGroups[].Tasks[].Env.HOME` must be set for the darwin-nix-remote-builders transformer")
+              then [
+                ("darwin-nix-remote-builders: warning: not adding remote darwin nix builders: `.job.TaskGroups[].Tasks[].Env.HOME` must be set\n" | stderr),
+                .
+              ][1]
               else .Templates |= (
                 . + (
                   $templates | @base64d | fromjson |
