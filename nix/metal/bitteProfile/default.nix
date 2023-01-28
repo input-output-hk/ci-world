@@ -581,17 +581,19 @@ in {
         ];
 
         mkEquinixBuildkite = name: hostIdSuffix: privateIP: queue: count: extra:
-          lib.recursiveUpdate {
-            inherit deployType node_class primaryInterface role privateIP;
-            equinix = {inherit plan project;};
+          lib.mkMerge [
+            {
+              inherit deployType node_class primaryInterface role privateIP;
+              equinix = {inherit plan project;};
 
-            modules =
-              baseEquinixModuleConfig
-              ++ (baseEquinixMachineConfig name)
-              ++ (buildkiteOnly hostIdSuffix queue count)
-              ++ [./buildkite/buildkite-agent-containers.nix];
-          }
-          extra;
+              modules =
+                baseEquinixModuleConfig
+                ++ (baseEquinixMachineConfig name)
+                ++ (buildkiteOnly hostIdSuffix queue count)
+                ++ [./buildkite/buildkite-agent-containers.nix];
+            }
+            extra
+          ];
       in {
         equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" "default" 5 {};
         equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" "default" 5 {};
