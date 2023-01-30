@@ -147,7 +147,7 @@
         failure: "handbook deployed": false
         [string]: {
           revision: push._revision
-          url: "http://${host}"
+          url: "https://${host}"
         }
       }
     '';
@@ -177,6 +177,9 @@
             "ingress"
             "traefik.enable=true"
             "traefik.http.routers.cicero-handbook.rule=Host(`${host}`) && PathPrefix(`/`)"
+            "traefik.http.routers.cicero-handbook.entrypoints=https"
+            "traefik.http.routers.cicero-handbook.tls=true"
+            "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
           ];
           checks = let
             # one second in nanoseconds
