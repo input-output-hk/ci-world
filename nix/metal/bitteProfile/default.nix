@@ -110,7 +110,7 @@ in {
         #   client-$REGION-$INSTANCE_TYPE-$ASG_SUFFIX
       in
         lib.listToAttrs (lib.forEach [
-            (mkAsgs "eu-central-1" 10 "m5.8xlarge" 500 "prod" "prod" {withPatroni = true;} {})
+            (mkAsgs "eu-central-1" 10 "m5.8xlarge" 1000 "prod" "prod" {withPatroni = true;} {})
             (mkAsgs "eu-central-1" 0 "m5.metal" 1000 "baremetal" "baremetal" {} {primaryInterface = "enp125s0";})
             (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "test" "test" {} {})
             (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "perf" "perf" {} {})
@@ -195,7 +195,7 @@ in {
           instanceType = "t3a.2xlarge";
           privateIP = "172.16.0.20";
           subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 300;
+          volumeSize = 1000;
           ebsOptimized = true;
 
           modules = [
@@ -377,7 +377,7 @@ in {
           instanceType = "m5n.4xlarge";
           privateIP = "172.16.0.52";
           subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 3000;
+          volumeSize = 4000;
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
