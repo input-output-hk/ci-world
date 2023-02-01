@@ -16,7 +16,7 @@
     newArgs = {
       inputs =
         inputs
-        // inputs.std.deSystemize inputs.cicero.defaultPackage.system {
+        // inputs.std.deSystemize inputs.cicero.packages.default.system {
           cicero = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}";
         };
 
