@@ -61,6 +61,9 @@ in {
               JobRunningTimeoutSec = "600s";
             };
 
+            # Remove once fixed: https://github.com/hashicorp/nomad/issues/12877
+            systemd.enableUnifiedCgroupHierarchy = false;
+
             # Remove when ZFS >= 2.1.5
             # Ref:
             #   https://github.com/openzfs/zfs/pull/12746
