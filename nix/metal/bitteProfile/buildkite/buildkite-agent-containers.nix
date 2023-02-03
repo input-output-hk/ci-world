@@ -215,7 +215,7 @@ in
                   rm -rf /scratch/* &> /dev/null || true
 
                   # Clean up tmp directory, being careful to avoid breaking the buildkite job itself
-                  (find /tmp/* -type f \( ! -iname "buildkite-agent*" \) | xargs rm) &> /dev/null || true
+                  (find /tmp/* -type f \( ! -iname "buildkite-agent*" -and ! -iname "job-env-*" \) | xargs -I{} rm -v {}) &> /dev/null || true
                   find /tmp/* -empty -type d -delete &> /dev/null || true
                 '';
               };
