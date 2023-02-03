@@ -508,6 +508,7 @@ in {
           (bitte + /profiles/client.nix)
           (bitte + /profiles/multicloud/aws-extended.nix)
           (bitte + /profiles/multicloud/equinix.nix)
+          (bitte + /modules/zfs-client-options.nix)
           openziti.nixosModules.ziti-edge-tunnel
           ({
             pkgs,
@@ -533,6 +534,12 @@ in {
               iptstate
               tshark
             ];
+
+            # Avoid zfs arc cache consuming up to 50% ram default; reduce to 10%
+            services.zfs-client-options = {
+              enable = lib.mkForce true;
+              enableZfsSnapshots = false;
+            };
           })
         ];
 
