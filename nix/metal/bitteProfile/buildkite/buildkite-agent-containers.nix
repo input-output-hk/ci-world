@@ -211,12 +211,28 @@ in
                 '';
 
                 pre-exit = ''
+                  echo "Cleaning up the /tmp directory..."
+
+                  # Some jobs leave /tmp directories which are not writeable, preventing direct deletion.
+                  echo "Change moding buildkite agent owned /tmp/* files and directories recursively in preparation for cleanup..."
+                  find /tmp/* -maxdepth 0 -type f,d -user buildkite-agent-iohk -print0 | xargs -0 -r chmod -R +w || true
+
+                  # Use print0 to handle special filenames and rm -rf to also unlink live and broken symlinks and other special file types.
+                  echo "Removing buildkite agent owned /tmp/* directories..."
+                  find /tmp/* -maxdepth 0 -type d -user buildkite-agent-iohk -print0 | xargs -0 -r rm -rvf || true
+
+                  echo "Removing buildkite agent owned /tmp top level files which are not buildkite agent job dependent..."
+                  find /tmp/* -maxdepth 0 -type f \( ! -iname "buildkite-agent*" -and ! -iname "job-env-*" \) -user buildkite-agent-iohk -print0 | xargs -0 -r rm -vf || true
+
+                  # Avoid prematurely deleting buildkite agent related job files and causing job failures.
+                  echo "Removing buildkite agent owned /tmp top level files older than 1 day..."
+                  find /tmp/* -maxdepth 0 -type f -mmin +1440 -user buildkite-agent-iohk -print0 | xargs -0 -r rm -vf || true
+
                   # Clean up the scratch directory
+                  echo "Cleaning up the /scratch directory..."
                   rm -rf /scratch/* &> /dev/null || true
 
-                  # Clean up tmp directory, being careful to avoid breaking the buildkite job itself
-                  (find /tmp/* -type f \( ! -iname "buildkite-agent*" -and ! -iname "job-env-*" \) | xargs -I{} rm -v {}) &> /dev/null || true
-                  find /tmp/* -empty -type d -delete &> /dev/null || true
+                  echo "Cleanup of /tmp and /scratch complete."
                 '';
               };
 
