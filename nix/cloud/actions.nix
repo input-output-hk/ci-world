@@ -126,11 +126,7 @@
         #lib.io.github_push
         #input: "${factNames.push}"
         #repo: "input-output-hk/cicero"
-
-        // TODO only match default branch when handbook is merged:
-        // https://github.com/input-output-hk/cicero/pull/43
-        // #default_branch: true
-        #branch: "cic-81"
+        #default_branch: true
       }
 
       inputs: {
