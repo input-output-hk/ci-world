@@ -7,11 +7,9 @@
   default_branch ? "main",
   branch ? default_branch,
 }: let
-  inherit (cell.library) ociNamer;
-  inherit (cell) oci-images;
-  inherit (inputs.cicero.packages) cicero-entrypoint;
   inherit (inputs.data-merge) merge append;
-  inherit (inputs.nixpkgs) runCommand writeText lib;
+  inherit (inputs.nixpkgs) lib runCommand;
+  inherit (inputs) nixpkgs;
 
   subdomain =
     lib.optionalString (branch != default_branch) "${branch}."
@@ -21,70 +19,89 @@
     "cicero"
     + lib.optionalString (branch != default_branch) "-${branch}";
 
-  nixConfig = ''
-    substituters = http://spongix.service.consul:7745?compression=none
-    extra-trusted-public-keys = ci-world-0:fdT/Z5YK5dxaV/kROE4EqaxwTcQSpVpVCSTKuTyIXFY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-    post-build-hook = /local/post-build-hook
-  '';
+  postBuildHook = nixpkgs.writeShellApplication {
+    name = "upload-to-cache";
+    text = ''
+      set -o noglob
+      IFS=' '
+      if [[ -v OUT_PATHS || -v DRV_PATH ]]; then
+        echo "Uploading to cache: $OUT_PATHS $DRV_PATH"
+        #shellcheck disable=SC2086
+        exec nix copy --to 'http://spongix.service.consul:7745?compression=none' $OUT_PATHS $DRV_PATH
+      fi
+    '';
+  };
 
-  postBuildHook = ''
-    #! /bin/bash
-    set -euf
-    export IFS=" "
-    if [[ -n "$OUT_PATHS" ]]; then
-      echo "Uploading to cache: $OUT_PATHS"
-      exec nix copy --to "http://spongix.service.consul:7745?compression=none" $OUT_PATHS
-    fi
+  # This does not include cache.iog.io because what URL it is available at depends on the environment.
+  nixConfig = ''
+    extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+    post-build-hook = ${lib.getExe postBuildHook}
   '';
 
   transformers = [
-    {
-      destination = "/local/transformer-prod.sh";
-      perms = "544";
-      data = let
+    (nixpkgs.writeShellApplication {
+      name = "transform-prod";
+      runtimeInputs = with nixpkgs; [jq];
+      text = let
         args = {
-          # arbitrary revision from nixpkgs-unstable
-          nixpkgsRev = "19574af0af3ffaf7c9e359744ed32556f34536bd";
           datacenters = ["eu-central-1"];
           ciceroWebUrl = "https://${subdomain}.${domain}";
           inherit nixConfig postBuildHook;
+          postBuildHookText = ''
+            #! /bin/bash
+            ${postBuildHook.text}
+          '';
         };
-      in ''
-        #! /bin/bash
-        /bin/jq --compact-output \
-          --argjson args ${lib.escapeShellArg (builtins.toJSON args)} \
-          '
-            .job |= (
-              .Datacenters += $args.datacenters |
-              .TaskGroups[]?.Tasks[]? |= (
-                .Env |= . + {
-                  NOMAD_ADDR: env.NOMAD_ADDR,
-                  NOMAD_TOKEN: env.NOMAD_TOKEN,
-                  CICERO_WEB_URL: $args.ciceroWebUrl,
-                  NIX_CONFIG: ($args.nixConfig + .NIX_CONFIG),
-                } |
-                .Templates += [{
-                  DestPath: "local/post-build-hook",
-                  Perms: "544",
-                  EmbeddedTmpl: $args.postBuildHook,
-                }]
-              ) |
-              if .Type != null and .Type != "batch" then . else (
-                .TaskGroups[]?.Tasks[]? |= (
-                  .Vault.Policies += ["cicero"] |
-                  if .Config.nix_host then
-                    .Env.NIX_CONFIG += "\nextra-substituters = http://cache:7745"
-                  else . end
-                )
-              ) end
+        filter = builtins.toFile "filter.jq" ''
+          .job |= (
+            .Datacenters += $args.datacenters |
+            .TaskGroups[]?.Tasks[]? |= (
+              .Env += {
+                CICERO_WEB_URL: $args.ciceroWebUrl,
+                NIX_CONFIG: ($args.nixConfig + "\n" + .NIX_CONFIG),
+              } |
+              if .Type == null or .Type == "batch" then
+                .Vault.Policies += ["cicero"] |
+
+                if .Driver == "exec" then
+                  # As prepare hooks from Cicero's Nix evaluator already ran
+                  # this won't cause the post-build-hook to be pushed to the cache.
+                  # However, since the Cicero job itself uses the same post-build-hook,
+                  # it should already be in the cache.
+                  .Config.nix_installables += [$args.postBuildHook]
+                else
+                  .Templates += [{
+                    DestPath: "local/post-build-hook",
+                    Perms: "544",
+                    EmbeddedTmpl: $args.postBuildHookText,
+                  }]
+                end |
+
+                # Add cache.iog.io as the URL it is available at
+                # in the respective environment depending on driver settings.
+                .Env.NIX_CONFIG += "\n" +
+                  if .Driver == "exec" and .Config.nix_host then
+                    # The host's Nix daemon only permits the caches it itself trusts.
+                    # Make sure the Nix client requests it so that it won't be dropped.
+                    "substituters = http://cache:7745"
+                  else
+                    # The container does not talk to the host's Nix daemon.
+                    "substituters = http://spongix.service.consul:7745?compression=none"
+                  end
+              else . end
             )
-          '
+          )
+        '';
+      in ''
+        jq --compact-output \
+          --from-file ${lib.escapeShellArg filter} \
+          --argjson args ${lib.escapeShellArg (builtins.toJSON args)}
       '';
-    }
-    {
-      destination = "/local/transformer-darwin-nix-remote-builders.sh";
-      perms = "544";
-      data = let
+    })
+    (nixpkgs.writeShellApplication {
+      name = "transform-darwin-nix-remote-builders";
+      runtimeInputs = with nixpkgs; [jq];
+      text = let
         templates = [
           {
             DestPathInHome = ".ssh/known_hosts";
@@ -125,52 +142,52 @@
           }
         ];
         templatesJsonBase64 = runCommand "templates.json.base64" {} ''
-          echo -n ${lib.escapeShellArg (builtins.toJSON templates)} | base64 --wrap 0 - > $out
+          printf '%s' ${lib.escapeShellArg (builtins.toJSON templates)} | base64 --wrap 0 - > $out
+        '';
+        filter = builtins.toFile "filter.jq" ''
+          .job.TaskGroups[]?.Tasks[]? |=
+            .Env.HOME as $home |
+            if $home == null
+            then [
+              ("darwin-nix-remote-builders: warning: not adding remote darwin nix builders: `.job.TaskGroups[].Tasks[].Env.HOME` must be set\n" | stderr),
+              .
+            ][1]
+            else .Templates |= (
+              . + (
+                $templates | @base64d | fromjson |
+                map(
+                  if has("DestPathInHome")
+                  then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
+                  else .
+                  end
+                )
+              ) |
+              group_by(.DestPath) |
+              map(
+                sort_by(.append) |
+                if .[length - 1].append | not
+                then .
+                else [reduce .[range(1; length)] as $tmpl (
+                  .[0];
+                  if $tmpl | .append | not
+                  then error("Multiple templates that are not meant to be appended have the same destination")
+                  else . + {EmbeddedTmpl: (.EmbeddedTmpl + "\n" + $tmpl.EmbeddedTmpl)}
+                  end
+                )]
+                end |
+                .[] |
+                del(.append)
+              ) |
+              unique
+            )
+            end
         '';
       in ''
-        #! /bin/bash
-        /bin/jq --compact-output \
-          --arg templates ${lib.escapeShellArg (lib.fileContents templatesJsonBase64)} \
-          '
-            .job.TaskGroups[]?.Tasks[]? |=
-              .Env.HOME as $home |
-              if $home == null
-              then [
-                ("darwin-nix-remote-builders: warning: not adding remote darwin nix builders: `.job.TaskGroups[].Tasks[].Env.HOME` must be set\n" | stderr),
-                .
-              ][1]
-              else .Templates |= (
-                . + (
-                  $templates | @base64d | fromjson |
-                  map(
-                    if has("DestPathInHome")
-                    then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
-                    else .
-                    end
-                  )
-                ) |
-                group_by(.DestPath) |
-                map(
-                  sort_by(.append) |
-                  if .[length - 1].append | not
-                  then .
-                  else [reduce .[range(1; length)] as $tmpl (
-                    .[0];
-                    if $tmpl | .append | not
-                    then error("Multiple templates that are not meant to be appended have the same destination")
-                    else . + {EmbeddedTmpl: (.EmbeddedTmpl + "\n" + $tmpl.EmbeddedTmpl)}
-                    end
-                  )]
-                  end |
-                  .[] |
-                  del(.append)
-                ) |
-                unique
-              )
-              end
-          '
+        jq --compact-output \
+          --from-file ${lib.escapeShellArg filter} \
+          --arg templates ${lib.escapeShellArg (lib.fileContents templatesJsonBase64)}
       '';
-    }
+    })
   ];
 
   commonGroup = {
@@ -195,16 +212,16 @@
     };
 
     task.cicero = {
-      driver = "podman";
+      driver = "exec";
 
       config = {
-        image = "${oci-images.cicero.imageName}:${branch}";
-        force_pull = true;
-        command = "${cell.entrypoints.cicero}/bin/entrypoint";
+        nix_host = true;
+        nix_installables = [cell.entrypoints.cicero postBuildHook] ++ transformers;
+        command = lib.getExe cell.entrypoints.cicero;
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
           ["--prometheus-addr" "http://monitoring.node.consul:3100"]
-          ["--transform" (map (t: t.destination) transformers)]
+          ["--transform" (map lib.getExe transformers)]
         ];
       };
 
@@ -224,8 +241,8 @@
 
         NIX_CONFIG = ''
           netrc-file = /secrets/netrc
-          sandbox = false # does not work inside podman
           ${nixConfig}
+          substituters = http://cache:7745
         '';
 
         # go-getter reads from the NETRC env var or $HOME/.netrc
@@ -235,11 +252,13 @@
         CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.${domain}";
         CICERO_EVALUATOR_NIX_BINARY_CACHE = "http://spongix.service.consul:7745?compression=none";
         REGISTRY_AUTH_FILE = "/secrets/docker";
+
+        # Required for the transformer that adds darwin nix remote builders.
+        HOME = "/local";
       };
 
       template =
-        transformers
-        ++ (let
+        (let
           data = ''
             machine github.com
             login git
@@ -294,24 +313,23 @@
           }
 
           {
-            destination = "/local/post-build-hook";
-            perms = "544";
-            data = postBuildHook;
-          }
-
-          {
             destination = "/local/env";
             data = ''
               CICERO_EVALUATOR_NIX_EXTRA_ARGS=${builtins.toJSON ''
                   {
+                    # XXX Ugly hack to get packages into the image
+                    # that are dependencies of scripts added by transformers.
+                    # This is only used by tullia for OCI images,
+                    # for example when using the podman driver.
                     rootDir = let
-                      nixpkgs = builtins.getFlake "github:NixOS/nixpkgs/93950edf017d6a64479069fbf271aa92b7e44d7f";
+                      # arbitrary revision, this one is from nixos-22.11
+                      nixpkgs = builtins.getFlake "github:NixOS/nixpkgs/913a47cd064cc06440ea84e5e0452039a85781f0";
                       pkgs = nixpkgs.legacyPackages.''
                 + "'$'"
                 + builtins.toJSON ''
                   {system};
                     in
-                      # for transformers
+                      # for the `postBuildHook`
                       pkgs.bash;
                   }
                 ''}
@@ -377,20 +395,15 @@ in {
         }
       ];
 
-      network.port.http.to = 8080;
+      network.port.http = {};
 
-      task.cicero.config = {
-        ports = ["http"];
-        args = append ["--web-listen" ":8080"];
-      };
+      task.cicero.config.args = append ["--web-listen" ":\${NOMAD_PORT_http}"];
     };
 
     group.cicero-nomad = merge commonGroup {
       count = 1;
 
-      task.cicero.config = {
-        args = append ["--" "nomad"];
-      };
+      task.cicero.config.args = append ["--" "nomad"];
     };
   };
 }

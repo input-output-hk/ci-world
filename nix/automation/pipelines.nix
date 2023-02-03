@@ -8,44 +8,97 @@
     pkgs,
     ...
   }: {
+    preset.nix.enable = true;
+
     command.text = ''
+      cd "$(git rev-parse --show-toplevel)"
+      set -x
+
+      # Set up temporary files for some secrets we'll need.
+      trap 'rm -rf "$basic" "$netrc"' EXIT
+      basic=$(mktemp)
+      netrc=$(mktemp)
+
+      # Decrypt the HTTP basic auth credentials and put them in a netrc file for Nix.
+      sops --decrypt --output "$basic" nix/metal/bitteProfile/encrypted/basic-auth
+      # Adapt this hacky snippet when the secret is changed.
+      cat > "$netrc" <<EOF
+      machine  cache.iog.io
+      login    $(head -n 1 "$basic" | cut -d \; -f 1 | cut -d : -f 2 | tr -d ' ')
+      password $(head -n 1 "$basic" | cut -d \; -f 2 | cut -d : -f 2 | tr -d ' ')
+      EOF
+
+      # We need to interpolate the system into the attribute path
+      # as std does not provide the entrypoint in an output path
+      # that is convenient to use from the Nix CLI.
       system=$(nix eval --raw --impure --expr __currentSystem)
-      nix run .#"$system".cloud.oci-images.cicero.copyToRegistry \
-        --override-input cicero github:input-output-hk/cicero/${config.preset.github.lib.readRevision "GitHub event" "HEAD"}
-      nix eval .#"$system".cloud.nomadEnvs.prod.cicero --json | nomad job run -
+
+      # Build the required packages so we can run transformers and copy them to the cache.
+      readarray -t installables < <(
+        # We can rely on word splitting because nix store paths do not contain spaces.
+        #shellcheck disable=SC2046
+        nix build --no-link --print-out-paths $(
+          nix eval .#"$system".cloud.nomadEnvs.prod.cicero.job.cicero.group.cicero.task.cicero.config.nix_installables \
+            --apply 'map (p: p.drvPath)' --json \
+          | jq --raw-output '.[]'
+        )
+      )
+
+      # Copy the required packages to the cache so that they will be available for the job.
+      nix copy --to https://cache.iog.io --netrc-file "$netrc" "''${installables[@]}"
+
+      # Evaluate the nomad job (as HCL-JSON).
+      job=$(nix eval .#"$system".cloud.nomadEnvs.prod.cicero --json)
+
+      # Canonicalize the job (convert to API JSON) and wrap it for transformers.
+      # Those are run when Cicero deploys itself and we need to run them as well
+      # as we do not want any difference between that deployment and this one.
+      # Most notably we want to get the darwin nix remote builders configured.
+      job=$(
+        <<< "$job" \
+        nomad job run -output - \
+        | jq '{job: .Job}'
+      )
+      for installable in "''${installables[@]}"; do
+        if [[ "$installable" = /nix/store/*-transform-* ]]; then
+          #shellcheck disable=SC2211
+          job=$(<<< "$job" "$installable"/bin/transform-*)
+        fi
+      done
+      # Unwrap the job from the dummy action definition.
+      job=$(<<< "$job" jq .job)
+
+      # Finally deploy to Nomad.
+      nomad job run -json - <<< "$job"
     '';
 
-    dependencies = with pkgs; [nomad];
-
-    nomad.templates = [
-      {
-        destination = "/secrets/auth.json";
-        data = ''
-          {
-            "auths": {
-              "registry.ci.iog.io": {
-                "auth": "{{with secret "kv/data/cicero/docker"}}{{with .Data.data}}{{base64Encode (print .user ":" .password)}}{{end}}{{end}}"
-              }
-            }
-          }
-        '';
-      }
+    dependencies = with inputs.bitte.legacyPackages; [
+      nomad
+      sops
+      jq
     ];
 
-    env.REGISTRY_AUTH_FILE = "/secrets/auth.json";
-
-    preset = {
-      nix.enable = true;
-      github.ci = {
-        enable = config.actionRun.facts != {};
-        repository = "input-output-hk/cicero";
-        remote = config.preset.github.lib.readRepository "GitHub event" null;
-        revision = config.preset.github.lib.readRevision "GitHub event" "HEAD";
+    nsjail = {
+      bindmount = {
+        ro = ["/etc/nix/netrc"];
+        rw = [
+          "/nix"
+          ''"$XDG_DATA_HOME"/nix/trusted-settings.json''
+          ''"$XDG_CACHE_HOME"/nix''
+        ];
       };
+
+      flags.env = [
+        "AWS_ACCESS_KEY_ID"
+        "AWS_SECRET_ACCESS_KEY"
+        "NOMAD_ADDR"
+        "NOMAD_TOKEN"
+        "XDG_DATA_HOME"
+        "XDG_CACHE_HOME"
+      ];
     };
 
-    memory = 1024 * 10;
-    nomad.resources.cpu = 2000;
+    memory = 0;
   };
 
   test-darwin-nix-remote-builders = {

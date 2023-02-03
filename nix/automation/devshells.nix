@@ -78,6 +78,7 @@ in {
         (ciWorld {package = lib.hiPrio bitte.legacyPackages.${system}.vault-bin;})
         (ciWorld {package = deploy-rs.defaultPackage;})
         (ciWorld {package = httpie;})
+        (ciWorld {package = inputs.tullia.packages.default;})
       ];
   };
 }

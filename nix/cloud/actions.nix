@@ -5,7 +5,6 @@
   "cicero/cd" = {
     config,
     lib,
-    ociRegistry,
     ...
   }: let
     factNames = {
@@ -20,17 +19,31 @@
           cicero = builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}";
         };
 
-      cell =
-        cell
-        // {
-          oci-images = import ./oci-images.nix newArgs;
-          entrypoints = import ./entrypoints newArgs;
-        };
+      cell = cell // {entrypoints = import ./entrypoints newArgs;};
     };
 
     pushBody = config.run.facts.${factNames.push}.value.github_body;
 
     branch = lib.removePrefix "refs/heads/" pushBody.ref;
+    inherit (pushBody.repository) default_branch;
+
+    jobName = "cicero" + lib.optionalString (branch != default_branch) "-${branch}";
+
+    job =
+      builtins.mapAttrs
+      (_: job:
+        {
+          # The job does not explicitely specify the type as it defaults to "service".
+          # However, if unset, Cicero sets "batch" as that is more appropriate for most actions.
+          # So we explicitely set "service" here to prevent Cicero from changing it to "batch".
+          type = "service";
+        }
+        // job)
+      (lib.callPackageWith cell.constants.args.prod ./nomadEnvs/cicero {
+        inherit (newArgs) inputs cell;
+        inherit branch default_branch;
+      })
+      .job;
   in {
     io = ''
       let push = {
@@ -66,37 +79,18 @@
       }
     '';
 
-    prepare = with newArgs.cell.oci-images.cicero; [
+    prepare = [
       {
-        type = "nix2container";
-        name = "${ociRegistry}/${lib.removePrefix "registry.ci.iog.io/" imageName}:${branch}";
-        imageDrv = drvPath;
+        type = "nix";
+        derivations = map (p: p.drvPath) job.${jobName}.group.cicero.task.cicero.config.nix_installables;
       }
     ];
 
     job = let
-      inherit (pushBody.repository) default_branch;
-
-      hcl =
-        (lib.callPackageWith cell.constants.args.prod ./nomadEnvs/cicero {
-          inherit (newArgs) inputs cell;
-          inherit branch default_branch;
-        })
-        .job;
-
-      hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {job = hcl;}));
-
+      hclFile = __toFile "job.hcl" (builtins.unsafeDiscardStringContext (__toJSON {inherit job;}));
       module = lib.nix-nomad.importNomadModule hclFile {};
-
-      jobName = "cicero" + lib.optionalString (branch != default_branch) "-${branch}";
     in {
-      ${jobName} = args:
-        (
-          __mapAttrs
-          (_: job: {type = "service";} // job)
-          (module args).job
-        )
-        .${jobName};
+      ${jobName} = args: (module args).job.${jobName};
     };
   };
 

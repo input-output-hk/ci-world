@@ -9,7 +9,7 @@ in {
   # jq < result '.layers | map({size: .size, paths: .paths | map(.path)}) | sort_by(.size) | .[11].paths[]' -r | xargs du -sch
   cicero = buildImage (
     cell.library.addN2cNixArgs {
-      inherit (cell.entrypoints) cicero;
+      inherit (cell.entrypoints) cicero-oci;
     } {
       name = "registry.ci.iog.io/cicero";
       tag = "main"; # keep in sync with branch name of flake input
