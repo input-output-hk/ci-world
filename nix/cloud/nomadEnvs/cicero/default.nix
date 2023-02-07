@@ -24,10 +24,10 @@
     text = ''
       set -o noglob
       IFS=' '
-      if [[ -v OUT_PATHS || -v DRV_PATH ]]; then
-        echo "Uploading to cache: $OUT_PATHS $DRV_PATH"
+      if [[ -v OUT_PATHS ]]; then
+        echo "Uploading to cache: $OUT_PATHS"
         #shellcheck disable=SC2086
-        exec nix copy --to 'http://spongix.service.consul:7745?compression=none' $OUT_PATHS $DRV_PATH
+        exec nix copy --to 'http://spongix.service.consul:7745?compression=none' $OUT_PATHS
       fi
     '';
   };
