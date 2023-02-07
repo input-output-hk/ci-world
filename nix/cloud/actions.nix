@@ -116,10 +116,13 @@
     entrypoint = let
       handbook =
         (builtins.getFlake "github:input-output-hk/cicero/${config.run.facts.${factNames.ci}.value.revision}")
-        .packages.${pkgs.system}.cicero-handbook;
-    in pkgs.writers.writeDashBin "serve-cicero-handbook" ''
-      exec ${lib.getExe pkgs.darkhttpd} ${handbook} --port "$NOMAD_PORT_http"
-    '';
+        .packages
+        .${pkgs.system}
+        .cicero-handbook;
+    in
+      pkgs.writers.writeDashBin "serve-cicero-handbook" ''
+        exec ${lib.getExe pkgs.darkhttpd} ${handbook} --port "$NOMAD_PORT_http"
+      '';
   in {
     io = ''
       let push = {
@@ -148,10 +151,12 @@
       }
     '';
 
-    prepare = [{
-      type = "nix";
-      derivations = map (p: p.drvPath) [entrypoint];
-    }];
+    prepare = [
+      {
+        type = "nix";
+        derivations = map (p: p.drvPath) [entrypoint];
+      }
+    ];
 
     job.ciceroHandbook = {
       type = "service";
@@ -166,27 +171,31 @@
             nix_installables = [entrypoint];
           };
         };
-        services = [{
-          name = "cicero-handbook";
-          port = "http";
-          tags = [
-            "ingress"
-            "traefik.enable=true"
-            "traefik.http.routers.cicero-handbook.rule=Host(`${host}`) && PathPrefix(`/`)"
-            "traefik.http.routers.cicero-handbook.entrypoints=https"
-            "traefik.http.routers.cicero-handbook.tls=true"
-            "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
-          ];
-          checks = let
-            # one second in nanoseconds
-            second = 1000000000;
-          in [{
-            type = "tcp";
+        services = [
+          {
+            name = "cicero-handbook";
             port = "http";
-            interval = 10 * second;
-            timeout = 2 * second;
-          }];
-        }];
+            tags = [
+              "ingress"
+              "traefik.enable=true"
+              "traefik.http.routers.cicero-handbook.rule=Host(`${host}`) && PathPrefix(`/`)"
+              "traefik.http.routers.cicero-handbook.entrypoints=https"
+              "traefik.http.routers.cicero-handbook.tls=true"
+              "traefik.http.routers.cicero-handbook.tls.certresolver=acme"
+            ];
+            checks = let
+              # one second in nanoseconds
+              second = 1000000000;
+            in [
+              {
+                type = "tcp";
+                port = "http";
+                interval = 10 * second;
+                timeout = 2 * second;
+              }
+            ];
+          }
+        ];
       };
     };
   };
