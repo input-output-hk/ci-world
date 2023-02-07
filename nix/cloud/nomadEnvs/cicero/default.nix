@@ -33,9 +33,9 @@
   };
 
   # This does not include cache.iog.io because what URL it is available at depends on the environment.
+  # This does not include the post-build-hook because its executable path depends on the environment.
   nixConfig = ''
     extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-    post-build-hook = ${lib.getExe postBuildHook}
   '';
 
   transformers = [
@@ -47,6 +47,7 @@
           datacenters = ["eu-central-1"];
           ciceroWebUrl = "https://${subdomain}.${domain}";
           inherit nixConfig postBuildHook;
+          postBuildHookExe = lib.getExe postBuildHook;
           postBuildHookText = ''
             #! /bin/bash
             ${postBuildHook.text}
@@ -63,18 +64,21 @@
               if .Type == null or .Type == "batch" then
                 .Vault.Policies += ["cicero"] |
 
+                # Add the post-build-hook.
                 if .Driver == "exec" then
                   # As prepare hooks from Cicero's Nix evaluator already ran
                   # this won't cause the post-build-hook to be pushed to the cache.
                   # However, since the Cicero job itself uses the same post-build-hook,
                   # it should already be in the cache.
-                  .Config.nix_installables += [$args.postBuildHook]
+                  .Config.nix_installables += [$args.postBuildHook] |
+                  .Env.NIX_CONFIG += "\npost-build-hook = " + $args.postBuildHookExe
                 else
                   .Templates += [{
                     DestPath: "local/post-build-hook",
                     Perms: "544",
                     EmbeddedTmpl: $args.postBuildHookText,
-                  }]
+                  }] |
+                  .Env.NIX_CONFIG += "\npost-build-hook = /local/post-build-hook"
                 end |
 
                 # Add cache.iog.io as the URL it is available at
@@ -243,6 +247,7 @@
           netrc-file = /secrets/netrc
           ${nixConfig}
           substituters = http://cache:7745
+          post-build-hook = ${lib.getExe postBuildHook}
         '';
 
         # go-getter reads from the NETRC env var or $HOME/.netrc
