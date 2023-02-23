@@ -57,7 +57,7 @@
           .job |= (
             .Datacenters += $args.datacenters |
             .TaskGroups[]?.Tasks[]? |= (
-              .Env += {
+              .Env |= . + {
                 CICERO_WEB_URL: $args.ciceroWebUrl,
                 NIX_CONFIG: ($args.nixConfig + "\n" + .NIX_CONFIG),
               } |
