@@ -500,7 +500,7 @@ in {
         plan = "m3.small.x86";
 
         baseEquinixMachineConfig = machineName:
-          if builtins.pathExists ./equinix/${machineName}/configuration.nix != false
+          if builtins.pathExists ./equinix/${machineName}/configuration.nix
           then [./equinix/${machineName}/configuration.nix]
           else [];
 
@@ -543,7 +543,7 @@ in {
           })
         ];
 
-        buildkiteOnly = hostIdSuffix: queue: count: [
+        buildkiteOnly = hostIdSuffix: tags: count: [
           ({
             lib,
             config,
@@ -578,11 +578,7 @@ in {
                 mkContainer = n: prio: {
                   containerName = "ci${cfg.hostIdSuffix}-${toString n}";
                   guestIp = "10.254.1.1${toString n}";
-                  inherit prio;
-                  tags = {
-                    inherit queue;
-                    system = "x86_64-linux";
-                  };
+                  inherit prio tags;
                 };
               in
                 map (n: mkContainer n (toString (10 - n))) (lib.range 1 count);
@@ -590,7 +586,7 @@ in {
           })
         ];
 
-        mkEquinixBuildkite = name: hostIdSuffix: privateIP: queue: count: extra:
+        mkEquinixBuildkite = name: hostIdSuffix: privateIP: tags: count: extra:
           lib.mkMerge [
             {
               inherit deployType node_class primaryInterface role privateIP;
@@ -599,16 +595,16 @@ in {
               modules =
                 baseEquinixModuleConfig
                 ++ (baseEquinixMachineConfig name)
-                ++ (buildkiteOnly hostIdSuffix queue count)
+                ++ (buildkiteOnly hostIdSuffix tags count)
                 ++ [./buildkite/buildkite-agent-containers.nix];
             }
             extra
           ];
       in {
-        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" "default" 5 {};
-        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" "default" 5 {};
-        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" "benchmark" 1 {};
-        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" "benchmark" 1 {};
+        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {system = "x86_64-linux"; queue = ["default" "core-tech"];} 5 {};
+        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {system = "x86_64-linux"; queue = ["default" "core-tech"];} 5 {};
+        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {system = "x86_64-linux"; queue = ["benchmark" "core-tech-bench"];} 1 {};
+        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" {system = "x86_64-linux"; queue = ["benchmark" "core-tech-bench"];} 1 {};
       };
     };
   };
