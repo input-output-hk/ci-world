@@ -79,6 +79,7 @@ in {
         (ciWorld {package = deploy-rs.defaultPackage;})
         (ciWorld {package = httpie;})
         (ciWorld {package = inputs.tullia.packages.default;})
+        (ciWorld {package = inputs.cells.metal.packages.darwin;})
       ];
   };
 }
