@@ -5,7 +5,7 @@ inputs: let
       overlays = [inputs.bitte.overlays.default];
     };
 in {
-  mkDarwinConfig = system: wgAddresses: extraModules:
+  mkDarwinConfig = darwinName: system: wgAddresses: extraModules:
     inputs.darwin.lib.darwinSystem {
       inputs = {
         inherit (inputs) darwin openziti;
@@ -23,6 +23,7 @@ in {
         [
           ./host.nix
           (import ./tunnels.nix wgAddresses)
+          (import ./send-keys.nix darwinName)
         ]
         ++ extraModules;
     };

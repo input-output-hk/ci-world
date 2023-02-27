@@ -11,7 +11,8 @@ MODE=${_arg_mode:?}
 CONFIG=${_arg_config:?}
 TARGET=${_arg_target:-}
 
-GREEN='\033[0;32m'
+GREEN='\033[1;92m'
+YELLOW='\033[1;93m'
 NC='\033[0m'
 STATUS="${GREEN}Status:${NC}"
 
@@ -27,8 +28,10 @@ fi
 if [ "$MODE" = "deploy" ]; then
   echo -e "$STATUS Preparing to $MODE darwinConfigurations.$CONFIG to ssh://$TARGET ..."
   echo
+
   echo -e "$STATUS Obtaining nix-darwin derivation path for #darwinConfigurations.$CONFIG ..."
   DRV=$(nix path-info --derivation ".#darwinConfigurations.$CONFIG.config.system.build.toplevel" 2>/dev/null)
+
   echo -e "$STATUS Obtaining nix-darwin derivation system out path for #darwinConfigurations.$CONFIG ..."
   OUT=$(nix-store -q --binding out "$DRV")
   echo
@@ -70,7 +73,55 @@ if [ "$MODE" = "deploy" ]; then
 fi
 
 if [ "$MODE" = "send-keys" ]; then
-  echo "TODO"
+  echo -e "$STATUS Preparing to $MODE for darwinConfigurations.$CONFIG to ssh://$TARGET ..."
+  echo
+  KEYS_JSON=$(nix eval --json ".#darwinConfigurations.$CONFIG.config.services.darwin-send-keys.$CONFIG.keys" 2>/dev/null)
+  mapfile -t KEYS < <(jq -r '. | keys[]' <<< "$KEYS_JSON")
+  KEYS_LENGTH=$(jq '. | length' <<< "$KEYS_JSON")
+  echo "Found key definitions for $CONFIG: $KEYS_LENGTH"
+  [ "$KEYS_LENGTH" -lt 1 ] && exit 0
+  echo
+
+  filename=""
+  mode=""
+  owner=""
+  postScript=""
+  preScript=""
+  encSrc=""
+  targetDir=""
+
+  for i in $(seq 0 $((KEYS_LENGTH - 1))); do
+    echo -n -e "$STATUS Sending key $((i + 1)) of $KEYS_LENGTH: $YELLOW${KEYS[$i]}${NC}... "
+    KEY_JSON=$(jq "[.[]] | .[$i]" <<< "$KEYS_JSON")
+    EXPORT_JSON=$(jq -r '. | to_entries[] | "\(.key)=\"\(.value)\""' <<< "$KEY_JSON")
+
+    # Slurp the json data into bash vars
+    # shellcheck disable=SC1090
+    . <(echo "$EXPORT_JSON")
+
+    # Strip any trailing slash so we don't end up with two in a row which causes an error
+    targetDir=${targetDir%/}
+
+    # Do the scripting plus key push
+    if [ -n "$preScript" ]; then
+      echo -n "Running preScript... "
+      ssh "$TARGET" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $preScript"\'
+    fi
+
+    echo -n "Pushing and setting ownership and mode... "
+    sops -d "$encSrc" \
+      | ssh "$TARGET" -- /run/current-system/sw/bin/bash \
+      -c \'"set -euo pipefail; cat > $targetDir/$filename; chown $owner $targetDir/$filename; chmod $mode $targetDir/$filename"\'
+
+    if [ -n "$postScript" ]; then
+      echo -n "Running postScript... "
+      ssh "$TARGET" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $postScript"\'
+    fi
+
+    echo "Done."
+  done
+
+  echo -e "${GREEN}Send keys complete.${NC}"
 fi
 
 exit 0
