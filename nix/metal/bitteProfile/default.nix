@@ -210,6 +210,11 @@ in {
               #   per_stream_rate_limit_burst = "30MB";
               # };
 
+              # For API requests with huge responses, see:
+              # - https://github.com/grafana/loki/issues/2271
+              # - https://github.com/grafana/loki/issues/6568
+              services.loki.configuration.server.grpc_server_max_recv_msg_size = 1024 * 1024 * 8; # 8 MiB
+
               services.prometheus.exporters.blackbox = lib.mkForce {
                 enable = true;
                 configFile = pkgs.toPrettyJSON "blackbox-exporter.yaml" {
