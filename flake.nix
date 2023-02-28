@@ -6,10 +6,7 @@
     data-merge.follows = "std/dmerge";
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte/equinix-2211";
-    # bitte.url = "path:/home/jlotoski/work/iohk/bitte-wt/equinix-2211";
-    # bitte.url = "path:/home/manveru/github/input-output-hk/bitte";
     bitte-cells.url = "github:input-output-hk/bitte-cells/patroni-token-rotation";
-    # bitte-cells.url = "path:/home/jlotoski/work/iohk/bitte-cells-wt/bitte-cells";
     bitte.inputs.nomad-follower.url = "github:input-output-hk/nomad-follower/3ff1d80324a3a716f008fbfc970a0e836c5b34db";
     bitte.inputs.capsules.follows = "capsules";
     # --------------------------------------------------------------
@@ -34,7 +31,6 @@
     cicero.inputs.spongix.follows = "spongix";
     tullia.url = "github:input-output-hk/tullia";
     openziti.url = "github:johnalotoski/openziti-bins";
-    # openziti.url = "path:/home/jlotoski/work/johnalotoski/openziti-bins-wt/openziti-bins";
     openziti.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
     # --------------------------------------------------------------
