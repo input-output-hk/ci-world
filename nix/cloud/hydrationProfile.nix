@@ -44,7 +44,7 @@ in {
 
     # cluster level (terraform)
     # --------------
-    tf.hydrate-cluster.configuration = {
+    tf.hydrate-cluster.configuration = tfHydrateCluster: {
       resource.vault_github_team.marlowe-devops = {
         backend = "\${vault_github_auth_backend.employee.path}";
         team = "plutus-devops";
@@ -61,6 +61,37 @@ in {
         backend = "\${vault_github_auth_backend.employee.path}";
         team = "performance-tracing";
         policies = ["perf"];
+      };
+
+      resource = {
+        aws_s3_bucket.cicero-public.bucket = "cicero-public";
+
+        aws_s3_bucket_ownership_controls =
+          lib.mkIf
+          (
+            lib.versionAtLeast
+            tfHydrateCluster.config.terraform.required_providers.aws.version
+            "3.68.0" # https://github.com/hashicorp/terraform-provider-aws/issues/21980#issuecomment-984631427
+          )
+          (
+            __trace ''
+              The Terraform AWS provider is recent enough to support S3 object ownership "BucketOwnerEnforced".
+              You can remove the version check for aws_s3_bucket_ownership_controls.cicero-public in nix/cloud/hydrationProfile.nix.
+            '' {
+              cicero-public = {
+                bucket = "\${aws_s3_bucket.cicero-public.bucket}";
+                rule.object_ownership = "BucketOwnerEnforced";
+              };
+            }
+          );
+
+        aws_s3_bucket_public_access_block.cicero-public = {
+          bucket = "\${aws_s3_bucket.cicero-public.bucket}";
+          block_public_acls = false;
+          block_public_policy = false;
+          ignore_public_acls = false;
+          restrict_public_buckets = false;
+        };
       };
 
       locals.policies = {
