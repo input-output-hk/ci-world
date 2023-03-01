@@ -92,6 +92,26 @@ in {
           ignore_public_acls = false;
           restrict_public_buckets = false;
         };
+
+        aws_s3_bucket_policy.cicero-public = {
+          bucket = "\${aws_s3_bucket.cicero-public.bucket}";
+          policy = "\${data.aws_iam_policy_document.cicero-public.json}";
+        };
+      };
+
+      data.aws_iam_policy_document = {
+        cicero-public.statement = [
+          {
+            principals = [
+              {
+                type = "*";
+                identifiers = ["*"];
+              }
+            ];
+            actions = ["s3:GetObject"];
+            resources = ["arn:aws:s3:::cicero-public/*"];
+          }
+        ];
       };
 
       locals.policies = {
