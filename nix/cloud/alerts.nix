@@ -198,19 +198,20 @@
           summary = "[System] Disk used / alert on {{ $labels.host }}";
         };
       }
+
       {
         alert = "SystemDiskUsedSlashPredictedAlert";
-        expr = ''predict_linear(disk_used_percent{path="/"}[1h], 12 * 3600) > 90'';
+        expr = ''predict_linear(disk_used_percent{path="/"}[1h], 12 * 3600) > 90 and on(host) disk_used_percent{path="/"} > 20'';
         for = "5m";
         labels.severity = "critical";
         annotations = {
-          description = "Linear extrapolation predicts disk usage on {{ $labels.host }} will be above 90% within 12 hours.";
+          description = "Linear extrapolation predicts disk usage on {{ $labels.host }} will be above 90% within 12 hours and is greater than 20% capacity utilized now.";
           summary = "[System] Predicted Disk used / alert on {{ $labels.host }}";
         };
       }
       {
         alert = "SystemDiskUsedVarClientAlert";
-        expr = ''disk_used_percent{host=~`^ip-.*$`,path="/var"} > 80'';
+        expr = ''disk_used_percent{path="/var"} > 80'';
         for = "5m";
         labels.severity = "critical";
         annotations = {
@@ -220,11 +221,11 @@
       }
       {
         alert = "SystemDiskUsedVarClientPredictedAlert";
-        expr = ''predict_linear(disk_used_percent{host=~`^ip-.*$`,path="/var"}[12h], 12 * 3600) > 90'';
+        expr = ''predict_linear(disk_used_percent{path="/var"}[1h], 12 * 3600) > 90 and on(host) disk_used_percent{path="/var"} > 20'';
         for = "5m";
         labels.severity = "critical";
         annotations = {
-          description = "Linear extrapolation predicts client disk usage on /var on {{ $labels.host }} will be above 90% within 12 hours.";
+          description = "Linear extrapolation predicts client disk usage on /var on {{ $labels.host }} will be above 90% within 12 hours and is greater than 20% capacity utilized now.";
           summary = "[System] Predicted Disk used clients /var alert on {{ $labels.host }}";
         };
       }
