@@ -262,7 +262,7 @@ in {
         inputs.bitte-cells._utils.library.mkMonitoring
         # Alert attrset
         {
-          # Cell Block local declared dashboards
+          # Cell block local declared alerts
           inherit
             (cell.alerts)
             ci-world-darwin
@@ -270,10 +270,9 @@ in {
             ci-world-node-exporter
             ci-world-nomad-follower
             ci-world-spongix
-            # Upstream alerts which may have downstream deps can be imported here
-            
+            bitte-system-modified
             ;
-          # Upstream alerts not having downstream deps can be directly imported here
+
           inherit
             (inputs.bitte-cells.bitte.alerts)
             bitte-consul
@@ -283,54 +282,6 @@ in {
             bitte-vm-standalone
             bitte-vmagent
             ;
-          # Modified upstream alerts
-          bitte-system-modified = {
-            datasource = "vm";
-            rules =
-              (builtins.filter (e: !(builtins.elem e.alert ["SystemCpuUsedAlert" "SystemMemoryUsedAlert"])) inputs.bitte-cells.bitte.alerts.bitte-system.rules)
-              ++ [
-                {
-                  alert = "SystemCpuUsedAlert";
-                  expr = ''100 - cpu_usage_idle{cpu="cpu-total",host!~"ip-.*|equinix.*"} > 90'';
-                  for = "5m";
-                  labels.severity = "critical";
-                  annotations = {
-                    description = "CPU has been above 90% on {{ $labels.host }} for more than 5 minutes.";
-                    summary = "[System] CPU Used alert on {{ $labels.host }}";
-                  };
-                }
-                {
-                  alert = "SystemCpuUsedAlertEquinix";
-                  expr = ''100 - cpu_usage_idle{cpu="cpu-total",host=~"equinix.*"} > 90'';
-                  for = "4h";
-                  labels.severity = "critical";
-                  annotations = {
-                    description = "CPU has been above 90% on {{ $labels.host }} for more than 4 hours.";
-                    summary = "[System] CPU Used alert on {{ $labels.host }}";
-                  };
-                }
-                {
-                  alert = "SystemMemoryUsedAlert";
-                  expr = ''mem_used_percent{host!~"equinix.*"} > 90'';
-                  for = "5m";
-                  labels.severity = "critical";
-                  annotations = {
-                    description = "Memory used has been above 90% for more than 5 minutes.";
-                    summary = "[System] Memory Used alert on {{ $labels.host }}";
-                  };
-                }
-                {
-                  alert = "SystemMemoryUsedAlertEquinix";
-                  expr = ''mem_used_percent{host=~"equinix.*"} > 90'';
-                  for = "4h";
-                  labels.severity = "critical";
-                  annotations = {
-                    description = "Memory used has been above 90% for more than 4 hours.";
-                    summary = "[System] Memory Used alert on {{ $labels.host }}";
-                  };
-                }
-              ];
-          };
 
           inherit
             (inputs.bitte-cells.patroni.alerts)

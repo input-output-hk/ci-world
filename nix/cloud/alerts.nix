@@ -143,6 +143,94 @@
     ];
   };
 
+  # We are customizing just about every bitte-cells bitte-system alert rule now, so no point filtering from upstream.
+  # We'll define our own full set here instead.
+  bitte-system-modified = {
+    datasource = "vm";
+    rules = [
+      {
+        alert = "SystemCpuUsedAlert";
+        expr = ''100 - cpu_usage_idle{cpu="cpu-total",host!~"ip-.*|equinix.*"} > 90'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "CPU has been above 90% on {{ $labels.host }} for more than 5 minutes.";
+          summary = "[System] CPU Used alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemCpuUsedAlertEquinix";
+        expr = ''100 - cpu_usage_idle{cpu="cpu-total",host=~"equinix.*"} > 90'';
+        for = "4h";
+        labels.severity = "critical";
+        annotations = {
+          description = "CPU has been above 90% on {{ $labels.host }} for more than 4 hours.";
+          summary = "[System] CPU Used alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemMemoryUsedAlert";
+        expr = ''mem_used_percent{host!~"equinix.*"} > 90'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Memory used has been above 90% for more than 5 minutes.";
+          summary = "[System] Memory Used alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemMemoryUsedAlertEquinix";
+        expr = ''mem_used_percent{host=~"equinix.*"} > 90'';
+        for = "4h";
+        labels.severity = "critical";
+        annotations = {
+          description = "Memory used has been above 90% for more than 4 hours.";
+          summary = "[System] Memory Used alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemDiskUsedSlashAlert";
+        expr = ''disk_used_percent{path="/"} > 80'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Disk used on {{ $labels.host }} on mount / has been above 80% for more than 5 minutes.";
+          summary = "[System] Disk used / alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemDiskUsedSlashPredictedAlert";
+        expr = ''predict_linear(disk_used_percent{path="/"}[1h], 12 * 3600) > 90'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Linear extrapolation predicts disk usage on {{ $labels.host }} will be above 90% within 12 hours.";
+          summary = "[System] Predicted Disk used / alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemDiskUsedVarClientAlert";
+        expr = ''disk_used_percent{host=~`^ip-.*$`,path="/var"} > 80'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Disk used on client {{ $labels.host }} /var has been above 80% for more than 5 minutes.";
+          summary = "[System] Disk used Clients /var alert on {{ $labels.host }}";
+        };
+      }
+      {
+        alert = "SystemDiskUsedVarClientPredictedAlert";
+        expr = ''predict_linear(disk_used_percent{host=~`^ip-.*$`,path="/var"}[12h], 12 * 3600) > 90'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Linear extrapolation predicts client disk usage on /var on {{ $labels.host }} will be above 90% within 12 hours.";
+          summary = "[System] Predicted Disk used clients /var alert on {{ $labels.host }}";
+        };
+      }
+    ];
+  };
+
   # inherit (inputs.bitte-cells.bitte.alerts)
   # ;
 }
