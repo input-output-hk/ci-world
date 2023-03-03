@@ -137,15 +137,21 @@
     };
   };
 
-  test-cicero-public-bucket = {
+  test-cicero-public-bucket = {pkgs, ...}: {
     preset.nix.enable = true;
 
     command.text = ''
       set -x
       sleep 15s # wait for AWS creds to become usable
+
       nix build --file "$NOMAD_TASK_DIR"
       nix store copy-log ./result --to 's3://cicero-public?region=eu-central-1'
+
+      aws s3 cp --region eu-central-1 ./result s3://cicero-public/test
+      aws s3 cp --region eu-central-1 ./result s3://cicero-public/test
     '';
+
+    dependencies = with pkgs; [awscli2];
 
     nomad = {
       driver = "exec";
