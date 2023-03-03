@@ -97,6 +97,13 @@ in {
           bucket = "\${aws_s3_bucket.cicero-public.bucket}";
           policy = "\${data.aws_iam_policy_document.cicero-public.json}";
         };
+
+        vault_aws_secret_backend_role.cicero = {
+          backend = "aws";
+          name = "cicero";
+          credential_type = "iam_user";
+          policy_document = "\${data.aws_iam_policy_document.cicero.json}";
+        };
       };
 
       data.aws_iam_policy_document = {
@@ -109,6 +116,13 @@ in {
               }
             ];
             actions = ["s3:GetObject"];
+            resources = ["arn:aws:s3:::cicero-public/*"];
+          }
+        ];
+
+        cicero.statement = [
+          {
+            actions = ["s3:PutObject"];
             resources = ["arn:aws:s3:::cicero-public/*"];
           }
         ];
@@ -152,6 +166,7 @@ in {
             "kv/data/cicero/*" = [r l];
             "kv/metadata/cicero/*" = [r l];
             "nomad/creds/cicero" = [r u];
+            "aws/creds/cicero" = [r u];
           };
 
           client.path = caps {
