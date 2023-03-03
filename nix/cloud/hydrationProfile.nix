@@ -91,6 +91,11 @@ in {
           block_public_policy = false;
           ignore_public_acls = false;
           restrict_public_buckets = false;
+
+          depends_on = [
+            # https://github.com/hashicorp/terraform-provider-aws/issues/7628#issuecomment-469825984
+            "aws_s3_bucket_policy.cicero-public"
+          ];
         };
 
         aws_s3_bucket_policy.cicero-public = {
