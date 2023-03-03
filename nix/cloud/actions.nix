@@ -205,4 +205,16 @@
       }
     '';
   };
+
+  "ci-world/test-cicero-public-bucket" = rec {
+    task = "test-cicero-public-bucket";
+    io = ''
+      inputs: trigger: match: "ci-world/${task}": "trigger"
+
+      output: {
+        success: "cicero-public bucket works": true
+        failure: "cicero-public bucket works": false
+      }
+    '';
+  };
 }

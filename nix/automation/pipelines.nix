@@ -136,4 +136,46 @@
       driver = "exec";
     };
   };
+
+  test-cicero-public-bucket = {
+    preset.nix.enable = true;
+
+    command.text = ''
+      set -x
+      sleep 15s # wait for AWS creds to become usable
+      nix build --file "$NOMAD_TASK_DIR"
+      nix store copy-log ./result --to 's3://cicero-public?region=eu-central-1'
+    '';
+
+    nomad = {
+      driver = "exec";
+
+      templates = [
+        {
+          destination = "secrets/aws.env";
+          env = true;
+          data = ''
+            {{with secret "aws/creds/cicero"}}
+            AWS_ACCESS_KEY_ID={{.Data.access_key}}
+            AWS_SECRET_ACCESS_KEY={{.Data.secret_key}}
+            {{end}}
+          '';
+        }
+        {
+          destination = "local/default.nix";
+          data = ''
+            let
+              nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9;
+              pkgs = nixpkgs.legacyPackages.x86_64-linux;
+            in
+              pkgs.runCommand "foo" {} '''
+                set -x
+                echo '{{timestamp}}' > $out # force a new build
+                set +x
+              '''
+          '';
+        }
+      ];
+    };
+  };
 }
