@@ -30,7 +30,7 @@
     cicero.url = "github:input-output-hk/cicero";
     cicero.inputs.spongix.follows = "spongix";
     tullia.url = "github:input-output-hk/tullia";
-    openziti.url = "github:johnalotoski/openziti-bins/darwin";
+    openziti.url = "github:johnalotoski/openziti-bins";
     # openziti.url = "path:/home/jlotoski/work/johnalotoski/openziti-bins-wt/openziti-bins";
     openziti.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";

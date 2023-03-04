@@ -2,6 +2,19 @@
 # Shebang above to satisfy standalone shellcheck outside of writeShellApplication wrapper
 # set mode is -euo pipefail by default
 
+ERRORS="$(mktemp -t darwin-errors-XXXXXX)"
+err_report() {
+  echo
+  echo -e "${RED}ERROR:${NC}"
+  echo "Error on line $1 on $(readlink -e "${BASH_SOURCE[0]}")"
+  echo
+  echo -e "${RED}Error output may additionally include:${NC}"
+  cat "$ERRORS"
+  rm -f "$ERRORS"
+}
+
+trap 'err_report $LINENO' ERR
+
 # For parsing template updates:
 # nix run nixpkgs#argbash -- parser.sh -o parser.sh --strip user-content
 # shellcheck disable=SC1091,SC2154
@@ -11,6 +24,7 @@ MODE=${_arg_mode:?}
 CONFIG=${_arg_config:?}
 TARGET=${_arg_target:-}
 
+RED='\033[1;91m'
 GREEN='\033[1;92m'
 YELLOW='\033[1;93m'
 NC='\033[0m'
@@ -30,10 +44,10 @@ if [ "$MODE" = "deploy" ]; then
   echo
 
   echo -e "$STATUS Obtaining nix-darwin derivation path for #darwinConfigurations.$CONFIG ..."
-  DRV=$(nix path-info --derivation ".#darwinConfigurations.$CONFIG.config.system.build.toplevel" 2>/dev/null)
+  DRV=$(nix path-info --derivation ".#darwinConfigurations.$CONFIG.config.system.build.toplevel" 2>"$ERRORS")
 
   echo -e "$STATUS Obtaining nix-darwin derivation system out path for #darwinConfigurations.$CONFIG ..."
-  OUT=$(nix-store -q --binding out "$DRV")
+  OUT=$(nix-store -q --binding out "$DRV" 2>"$ERRORS")
   echo
 
   echo "Derivation path to deploy is:"
@@ -75,9 +89,9 @@ fi
 if [ "$MODE" = "send-keys" ]; then
   echo -e "$STATUS Preparing to $MODE for darwinConfigurations.$CONFIG to ssh://$TARGET ..."
   echo
-  KEYS_JSON=$(nix eval --json ".#darwinConfigurations.$CONFIG.config.services.darwin-send-keys.$CONFIG.keys" 2>/dev/null)
-  mapfile -t KEYS < <(jq -r '. | keys[]' <<< "$KEYS_JSON")
-  KEYS_LENGTH=$(jq '. | length' <<< "$KEYS_JSON")
+  KEYS_JSON=$(nix eval --json ".#darwinConfigurations.$CONFIG.config.services.darwin-send-keys.$CONFIG.keys" 2>"$ERRORS")
+  mapfile -t KEYS < <(jq -r '. | keys[]' <<<"$KEYS_JSON" 2>"$ERRORS")
+  KEYS_LENGTH=$(jq '. | length' <<<"$KEYS_JSON" 2>"$ERRORS")
   echo "Found key definitions for $CONFIG: $KEYS_LENGTH"
   [ "$KEYS_LENGTH" -lt 1 ] && exit 0
   echo
@@ -92,8 +106,8 @@ if [ "$MODE" = "send-keys" ]; then
 
   for i in $(seq 0 $((KEYS_LENGTH - 1))); do
     echo -n -e "$STATUS Sending key $((i + 1)) of $KEYS_LENGTH: $YELLOW${KEYS[$i]}${NC}... "
-    KEY_JSON=$(jq "[.[]] | .[$i]" <<< "$KEYS_JSON")
-    EXPORT_JSON=$(jq -r '. | to_entries[] | "\(.key)=\"\(.value)\""' <<< "$KEY_JSON")
+    KEY_JSON=$(jq "[.[]] | .[$i]" <<<"$KEYS_JSON" 2>"$ERRORS")
+    EXPORT_JSON=$(jq -r '. | to_entries[] | "\(.key)=\"\(.value)\""' <<<"$KEY_JSON" 2>"$ERRORS")
 
     # Slurp the json data into bash vars
     # shellcheck disable=SC1090
@@ -109,9 +123,9 @@ if [ "$MODE" = "send-keys" ]; then
     fi
 
     echo -n "Pushing and setting ownership and mode... "
-    sops -d "$encSrc" \
-      | ssh "$TARGET" -- /run/current-system/sw/bin/bash \
-      -c \'"set -euo pipefail; cat > $targetDir/$filename; chown $owner $targetDir/$filename; chmod $mode $targetDir/$filename"\'
+    sops -d "$encSrc" |
+      ssh "$TARGET" -- /run/current-system/sw/bin/bash \
+        -c \'"set -euo pipefail; cat > $targetDir/$filename; chown $owner $targetDir/$filename; chmod $mode $targetDir/$filename"\'
 
     if [ -n "$postScript" ]; then
       echo -n "Running postScript... "
@@ -124,4 +138,5 @@ if [ "$MODE" = "send-keys" ]; then
   echo -e "${GREEN}Send keys complete.${NC}"
 fi
 
+rm -f "$ERRORS"
 exit 0

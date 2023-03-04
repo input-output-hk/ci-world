@@ -22,6 +22,7 @@ in {
     nix-diff
     nix-top
     ripgrep
+    utm
     vim
   ];
 

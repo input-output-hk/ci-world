@@ -1,4 +1,6 @@
 inputs: let
+  inherit (inputs.nixpkgs) lib;
+
   bittePkgs = system:
     import inputs.nixpkgs-darwin {
       inherit system;
@@ -24,6 +26,9 @@ in {
           ./host.nix
           (import ./tunnels.nix wgAddresses)
           (import ./send-keys.nix darwinName)
+        ]
+        ++ lib.optionals (system == "aarch64-darwin") [
+          ./aarch64.nix
         ]
         ++ extraModules;
     };
