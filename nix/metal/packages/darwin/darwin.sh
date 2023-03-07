@@ -60,7 +60,7 @@ if [ "$MODE" = "deploy" ]; then
 
   # ssh:// for the copy is much faster than ssh-ng://
   echo -e "$STATUS Copying the darwinConfiguration derivation closure to the target machine ..."
-  export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new PATH=/nix/var/nix/profiles/system/sw/bin/:\$PATH"
+  export NIX_SSHOPTS='-o StrictHostKeyChecking=accept-new PATH=/nix/var/nix/profiles/system/sw/bin/:$PATH'
   echo "nix copy -L -v -s --to ssh://$TARGET --derivation $DRV"
   nix copy -L -v -s --to "ssh://$TARGET" --derivation "$DRV"
   echo

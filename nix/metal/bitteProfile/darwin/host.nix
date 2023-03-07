@@ -13,6 +13,8 @@ in {
   services.nix-daemon.enable = true;
 
   environment.systemPackages = with pkgs; [
+    bittePkgs.utm
+
     bat
     fd
     glances
@@ -22,7 +24,6 @@ in {
     nix-diff
     nix-top
     ripgrep
-    utm
     vim
   ];
 
@@ -95,11 +96,27 @@ in {
     };
   };
 
-  launchd.daemons.prometheus-node-exporter = {
-    script = "exec ${pkgs.prometheus-node-exporter}/bin/node_exporter";
-    serviceConfig.KeepAlive = true;
-    serviceConfig.StandardErrorPath = "/var/log/prometheus-node-exporter.log";
-    serviceConfig.StandardOutPath = "/var/log/prometheus-node-exporter.log";
+  launchd.daemons = {
+    caffeinate = {
+      script = ''
+        exec /usr/bin/caffeinate -s
+      '';
+      serviceConfig = {
+        RunAtLoad = true;
+        UserName = "root";
+        GroupName = "admin";
+        KeepAlive = true;
+      };
+    };
+
+    prometheus-node-exporter = {
+      script = "exec ${pkgs.prometheus-node-exporter}/bin/node_exporter";
+      serviceConfig = {
+        KeepAlive = true;
+        StandardErrorPath = "/var/log/prometheus-node-exporter.log";
+        StandardOutPath = "/var/log/prometheus-node-exporter.log";
+      };
+    };
   };
 
   system.stateVersion = 4;

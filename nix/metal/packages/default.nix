@@ -2,7 +2,7 @@
   inputs,
   cell,
 }: let
-  inherit (inputs) nixpkgs;
+  inherit (inputs) nixpkgs nixpkgs-darwin;
 in {
-  darwin = nixpkgs.callPackage ./darwin/darwin.nix {};
+  darwin = nixpkgs.callPackage ./darwin {};
 }

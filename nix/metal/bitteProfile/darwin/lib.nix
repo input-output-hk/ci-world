@@ -4,7 +4,10 @@ inputs: let
   bittePkgs = system:
     import inputs.nixpkgs-darwin {
       inherit system;
-      overlays = [inputs.bitte.overlays.default];
+      overlays = [
+        inputs.bitte.overlays.default
+        (import ../../../../overlay.nix inputs)
+      ];
     };
 in {
   mkDarwinConfig = darwinName: system: wgAddresses: extraModules:
