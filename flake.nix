@@ -42,6 +42,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     nix-darwin.url = "github:NixOS/nix/2.13-maintenance";
+    cachecache.url = "github:johnalotoski/cachecache";
     # --------------------------------------------------------------
   };
 

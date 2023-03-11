@@ -13,7 +13,7 @@ in {
   mkDarwinConfig = darwinName: system: wgAddresses: extraModules:
     inputs.darwin.lib.darwinSystem {
       inputs = {
-        inherit (inputs) darwin openziti;
+        inherit (inputs) darwin cachecache openziti;
         nixpkgs = inputs.nixpkgs-darwin;
         nix = inputs.nix-darwin;
       };

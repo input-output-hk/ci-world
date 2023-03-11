@@ -8,7 +8,22 @@
   ...
 }: let
   inherit (bittePkgs.ssh-keys) ciInfra buildSlaveKeys;
+
   nixPkg = inputs.nix.packages.${system}.nix;
+  cachecache = inputs.cachecache.packages.${system}.cachecache;
+
+  # This forces an x86_64-linux deployer; TODO: make generic
+  guestApply = builtins.toFile "apply.sh" (builtins.readFile (inputs.nixpkgs.legacyPackages.x86_64-linux.substituteAll {
+    src = ./guests/apply.sh;
+    isExecutable = true;
+
+    nixDarwinUrl = "https://github.com/LnL7/nix-darwin/archive/${inputs.darwin.rev}.tar.gz";
+    host = "192.168.64.1";
+    port = "1514";
+    hostname = "MacStudio001-ci";
+  }));
+
+  guestConfig = builtins.toFile "darwin-configuration.nix" (builtins.readFile ./guests/darwin-configuration.nix);
 in {
   services.nix-daemon.enable = true;
 
@@ -24,6 +39,8 @@ in {
     nix-diff
     nix-top
     ripgrep
+    screen
+    tmux
     vim
   ];
 
@@ -33,7 +50,19 @@ in {
     zsh.enable = true;
   };
 
-  environment.etc."per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
+  environment.etc = {
+    "per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
+
+    "newsyslog.d/org.nixos.cachecache.conf".text = ''
+      # logfilename                   [owner:group]  mode  count  size    when  flags [/pid_file]                 [sig_num]
+      /var/log/cachecache.log                        644   10     102400  *     RJ    "pkill -af cachecache"
+    '';
+
+    "newsyslog.d/org.nixos.ncl-ci.conf".text = ''
+      # logfilename                   [owner:group]  mode  count  size    when  flags [/pid_file]                 [sig_num]
+      /var/log/ncl-ci.log                            644   10     1024    *     RJ    "pkill -af ncl-ci-start"
+    '';
+  };
 
   system.activationScripts.postActivation.text = ''
     # Create a ~/.bashrc containing `source /etc/profile`.
@@ -66,6 +95,13 @@ in {
             echo "nothing to do"
         fi
     done
+
+    # Ensure guest scripts are set up properly for guests to access
+    mkdir -p /etc/guests/ci /etc/guests/signing
+    cp ${guestApply} /etc/guests/ci/apply.sh
+    cp ${guestConfig} /etc/guests/ci/darwin-configuration.nix
+    chmod 0555 /etc/guests/ci/apply.sh
+    chmod 0444 /etc/guests/ci/darwin-configuration.nix
   '';
 
   nix = {
@@ -97,20 +133,50 @@ in {
   };
 
   launchd.daemons = {
-    caffeinate = {
+    cachecache = {
       script = ''
-        exec /usr/bin/caffeinate -s
+        set -euxo pipefail
+        mkdir -p /var/lib/cachecache
+        cd /var/lib/cachecache
+        ${cachecache}/bin/cachecache
       '';
+
+      # See newsyslog drop in above for log rotation
       serviceConfig = {
-        RunAtLoad = true;
-        UserName = "root";
-        GroupName = "admin";
         KeepAlive = true;
+        StandardErrorPath = "/var/log/cachecache.log";
+        StandardOutPath = "/var/log/cachecache.log";
       };
+    };
+
+    ncl-ci = let
+      ncl = pkgs.writeScript "ncl" ''
+        #!/bin/sh
+        set -euxo pipefail
+        ${pkgs.netcat}/bin/nc -dklun 1514 | ${pkgs.coreutils}/bin/tr '<' $'\n'
+      '';
+    in {
+      script = ''
+        set -euxo pipefail
+        ${pkgs.expect}/bin/unbuffer ${ncl}
+      '';
+
+      # See newsyslog drop in above for log rotation
+      serviceConfig = {
+        KeepAlive = true;
+        StandardErrorPath = "/var/log/ncl-ci.log";
+        StandardOutPath = "/var/log/ncl-ci.log";
+      };
+    };
+
+    caffeinate = {
+      script = "exec /usr/bin/caffeinate -s";
+      serviceConfig.KeepAlive = true;
     };
 
     prometheus-node-exporter = {
       script = "exec ${pkgs.prometheus-node-exporter}/bin/node_exporter";
+
       serviceConfig = {
         KeepAlive = true;
         StandardErrorPath = "/var/log/prometheus-node-exporter.log";
