@@ -104,10 +104,12 @@
     // {
       darwinConfigurations = {
         # Name = mkDarwinConfig system wgAddresses extraModules
-        mm3 = mkDarwinConfig "mm3" "x86_64-darwin" ["10.10.0.3/32" "10.10.0.103/32"] [];
-        mm4 = mkDarwinConfig "mm4" "x86_64-darwin" ["10.10.0.4/32" "10.10.0.104/32"] [];
-        mm-arm1 = mkDarwinConfig "mm-arm1" "aarch64-darwin" ["10.10.0.51/32" "10.10.0.151/32"] [];
-        mm-arm2 = mkDarwinConfig "mm-arm2" "aarch64-darwin" ["10.10.0.52/32" "10.10.0.152/32"] [];
+        # mac mini
+        mm-intel3 = mkDarwinConfig "mm-intel3" "x86_64-darwin" ["10.10.0.3/32" "10.10.0.103/32"] [];
+        mm-intel4 = mkDarwinConfig "mm-intel4" "x86_64-darwin" ["10.10.0.4/32" "10.10.0.104/32"] [];
+        # mac studio
+        ms-arm1 = mkDarwinConfig "ms-arm1" "aarch64-darwin" ["10.10.0.51/32" "10.10.0.151/32"] [];
+        ms-arm2 = mkDarwinConfig "ms-arm2" "aarch64-darwin" ["10.10.0.52/32" "10.10.0.152/32"] [];
       };
     };
 

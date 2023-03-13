@@ -107,8 +107,8 @@ in {
         '';
       };
 
-      "${darwinName}.mmfarm.bitte-world.ziti.json" = {
-        encSrc = ../encrypted/darwin/zt/${darwinName}.mmfarm.bitte-world.ziti.json;
+      "${darwinName}.darwin.bitte-world.ziti.json" = {
+        encSrc = ../encrypted/darwin/zt/${darwinName}.darwin.bitte-world.ziti.json;
         targetDir = "/var/root/ziti/identity";
         preScript = ''
           mkdir -p /var/root/ziti/identity
