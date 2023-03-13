@@ -3,6 +3,7 @@
 # set mode is -euo pipefail by default
 
 ERRORS="$(mktemp -t darwin-errors-XXXXXX)"
+SSH_TMP="$(mktemp -t -d ssh-tmp-XXXXXX)"
 err_report() {
   echo
   echo -e "${RED}ERROR:${NC}"
@@ -13,7 +14,13 @@ err_report() {
   rm -f "$ERRORS"
 }
 
+cleanup() {
+  rm -f "$ERRORS"
+  rm -rf "$SSH_TMP"
+}
+
 trap 'err_report $LINENO' ERR
+trap 'cleanup' EXIT
 
 # For parsing template updates:
 # nix run nixpkgs#argbash -- parser.sh -o parser.sh --strip user-content
@@ -39,6 +46,9 @@ if ! [[ $MODE =~ ^deploy|send-keys$ ]]; then
   exit 1
 fi
 
+SSH_ARGS=("-o ControlMaster=auto" "-o ControlPath=$SSH_TMP/%L-%r@%h" "-o ControlPersist=5m")
+SSH_CMD=("ssh" "${SSH_ARGS[@]}" "$TARGET")
+
 if [ "$MODE" = "deploy" ]; then
   echo -e "$STATUS Preparing to $MODE darwinConfigurations.$CONFIG to ssh://$TARGET ..."
   echo
@@ -60,7 +70,7 @@ if [ "$MODE" = "deploy" ]; then
 
   # ssh:// for the copy is much faster than ssh-ng://
   echo -e "$STATUS Copying the darwinConfiguration derivation closure to the target machine ..."
-  export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new PATH=/nix/var/nix/profiles/system/sw/bin/:\$PATH"
+  export NIX_SSHOPTS="${SSH_ARGS[*]} -o StrictHostKeyChecking=accept-new PATH=/nix/var/nix/profiles/system/sw/bin/:\$PATH"
   echo "nix copy -L -v -s --to ssh://$TARGET --derivation $DRV"
   nix copy -L -v -s --to "ssh://$TARGET" --derivation "$DRV"
   echo
@@ -72,15 +82,15 @@ if [ "$MODE" = "deploy" ]; then
   echo
 
   echo -e "$STATUS Setting the system profile on the remote target to derivation system out path ..."
-  echo "ssh $TARGET -- /run/current-system/sw/bin/nix-env -p /nix/var/nix/profiles/system --set $OUT"
-  ssh "$TARGET" -- "/run/current-system/sw/bin/nix-env -p /nix/var/nix/profiles/system --set $OUT"
+  echo "${SSH_CMD[*]} -- /run/current-system/sw/bin/nix-env -p /nix/var/nix/profiles/system --set $OUT"
+  "${SSH_CMD[@]}" -- "/run/current-system/sw/bin/nix-env -p /nix/var/nix/profiles/system --set $OUT"
   echo
 
   echo -e "$STATUS Switching to the deployed profile on the target ..."
   echo "activating user..."
-  ssh "$TARGET" -- "$OUT/activate-user"
+  "${SSH_CMD[@]}" -- "$OUT/activate-user"
   echo "activating system..."
-  ssh "$TARGET" -- "$OUT/activate"
+  "${SSH_CMD[@]}" -- "$OUT/activate"
   echo
 
   echo -e "${GREEN}Deployment complete.${NC}"
@@ -119,17 +129,17 @@ if [ "$MODE" = "send-keys" ]; then
     # Do the scripting plus key push
     if [ -n "$preScript" ]; then
       echo -n "Running preScript... "
-      ssh "$TARGET" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $preScript"\'
+      "${SSH_CMD[@]}" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $preScript"\'
     fi
 
     echo -n "Pushing and setting ownership and mode... "
     sops -d "$encSrc" |
-      ssh "$TARGET" -- /run/current-system/sw/bin/bash \
+      "${SSH_CMD[@]}" -- /run/current-system/sw/bin/bash \
         -c \'"set -euo pipefail; cat > $targetDir/$filename; chown $owner $targetDir/$filename; chmod $mode $targetDir/$filename"\'
 
     if [ -n "$postScript" ]; then
       echo -n "Running postScript... "
-      ssh "$TARGET" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $postScript"\'
+      "${SSH_CMD[@]}" -- /run/current-system/sw/bin/bash -c \'"set -euo pipefail; $postScript"\'
     fi
 
     echo "Done."
