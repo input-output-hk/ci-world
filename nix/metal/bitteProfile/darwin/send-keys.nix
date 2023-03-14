@@ -116,20 +116,26 @@ in {
         '';
       };
 
-      # Keys to be shared with guests can't go directly to the destination as symlinked files won't get shared over virtiofs
-      # So place them in a common dir to be copied to the virtiofs share on system activation
+      # Keys to be shared with guests can't go directly to the destination as symlinked files won't get shared over virtiofs.
+      # So place them in a common dir to be copied to the virtiofs share on system activation.
+      # Virtiofs shares require o+r object perms as uid:gid doesn't get passed and the guest sees ownership as unknown user and group.
+      "netrc" = {
+        encSrc = ../encrypted/darwin/common/netrc.enc;
+        targetDir = "/etc/decrypted/guests";
+        mode = "0644";
+        preScript = "mkdir -p /etc/decrypted/guests";
+      };
+
       "guest-ci-ssh_host_ed25519_key" = {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_ed25519_key.enc;
         filename = "ssh_host_ed25519_key";
         targetDir = "/etc/decrypted/guests/ci/ssh";
-        preScript = ''
-          mkdir -p /etc/decrypted/guests/ci/ssh
-          chmod 0700 /etc/decrypted/guests/ci/ssh
-        '';
+        preScript = "mkdir -p /etc/decrypted/guests/ci/ssh";
 
         postScript = ''
           cd /etc/decrypted/guests/ci/ssh
           ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_key.pub
+          chmod 0644 ssh_host_ed25519_key
         '';
       };
 
@@ -137,14 +143,12 @@ in {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_rsa_key.enc;
         filename = "ssh_host_rsa_key";
         targetDir = "/etc/decrypted/guests/ci/ssh";
-        preScript = ''
-          mkdir -p /etc/decrypted/guests/ci/ssh
-          chmod 0700 /etc/decrypted/guests/ci/ssh
-        '';
+        preScript = "mkdir -p /etc/decrypted/guests/ci/ssh";
 
         postScript = ''
           cd /etc/decrypted/guests/ci/ssh
           ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_key.pub
+          chmod 0644 ssh_host_rsa_key
         '';
       };
 
@@ -152,14 +156,12 @@ in {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/signing/ssh/ssh_host_ed25519_key.enc;
         filename = "ssh_host_ed25519_key";
         targetDir = "/etc/decrypted/guests/signing/ssh";
-        preScript = ''
-          mkdir -p /etc/decrypted/guests/signing/ssh
-          chmod 0700 /etc/decrypted/guests/signing/ssh
-        '';
+        preScript = "mkdir -p /etc/decrypted/guests/signing/ssh";
 
         postScript = ''
           cd /etc/decrypted/guests/signing/ssh
           ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_key.pub
+          chmod 0644 ssh_host_ed25519_key
         '';
       };
 
@@ -167,14 +169,12 @@ in {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/signing/ssh/ssh_host_rsa_key.enc;
         filename = "ssh_host_rsa_key";
         targetDir = "/etc/decrypted/guests/signing/ssh";
-        preScript = ''
-          mkdir -p /etc/decrypted/guests/signing/ssh
-          chmod 0700 /etc/decrypted/guests/signing/ssh
-        '';
+        preScript = "mkdir -p /etc/decrypted/guests/signing/ssh";
 
         postScript = ''
           cd /etc/decrypted/guests/signing/ssh
           ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_key.pub
+          chmod 0644 ssh_host_rsa_key
         '';
       };
     };

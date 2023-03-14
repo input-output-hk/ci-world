@@ -21,6 +21,7 @@ in {
       inherit system;
       specialArgs = {
         inherit system;
+        self = inputs.self;
         bittePkgs = bittePkgs system;
       };
 

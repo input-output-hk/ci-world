@@ -1,4 +1,5 @@
 darwinName: {
+  self,
   inputs,
   system,
   bittePkgs,
@@ -88,28 +89,14 @@ in {
         fi
     done
 
-    # Ensure guest scripts are available for guest bootstrapping
+    # Ensure required guest files are available for guest bootstrapping
+    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh
     echo $(hostname -s) > /etc/guests/host-hostname
-    cp ${guestApply} /etc/guests/apply.sh
-    cp ${guestConfig} /etc/guests/darwin-configuration.nix
-    chmod 0555 /etc/guests/apply.sh
-    chmod 0444 /etc/guests/darwin-configuration.nix
+    cp -Rf ${self}/nix/metal/bitteProfile/darwin/guests/* /etc/guests/
 
-    if [ -d /etc/decrypted/guests/ci/ssh ]; then
-      cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
-
-      # Requires r+go for virtiofs share as the originating uid:gid is shown as unknown
-      chmod 0555 /etc/guests/ci/ssh
-      chmod 0644 /etc/guests/ci/ssh/*
-    fi
-
-    if [ -d /etc/decrypted/guests/signing/ssh ]; then
-      cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
-
-      # Requires r+go for virtiofs share as the originating uid:gid is shown as unknown
-      chmod 0555 /etc/guests/signing/ssh
-      chmod 0644 /etc/guests/signing/ssh/*
-    fi
+    [ -f /etc/decrypted/guests/netrc ] && cp -f /etc/decrypted/guests/netrc /etc/guests/
+    [ -d /etc/decrypted/guests/ci/ssh ] && cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
+    [ -d /etc/decrypted/guests/signing/ssh ] && cp -Rf /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh
   '';
 
   nix = {

@@ -81,7 +81,7 @@ launchctl stop com.openssh.sshd
 
 cp -rf /var/root/bootstrap/$ROLE/ssh/ssh_host_* /etc/ssh
 chown root:wheel /etc/ssh/ssh_host_*
-chmod 600 /etc/ssh/ssh_host_*
+chmod 0600 /etc/ssh/ssh_host_*_key
 launchctl start com.openssh.sshd
 cd /
 
@@ -116,6 +116,7 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
   cat <<EOF >/etc/nix/nix.conf
 substituters = http://$HOST_IP:8081
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+experimental-features = nix-command flakes
 EOF
 
   # shellcheck disable=SC1091
@@ -140,7 +141,7 @@ EOF
   echo $?
   sudo launchctl kickstart system/org.nixos.nix-daemon
   set -e
-  sleep 30
+  sleep 10
 )
 # (
 #     if [ -d /Volumes/CONFIG/buildkite ]
@@ -166,20 +167,29 @@ EOF
   # shellcheck disable=SC1091
   . /etc/static/bashrc
   cp -vf /var/root/bootstrap/darwin-configuration.nix ~nixos/.nixpkgs/darwin-configuration.nix
-  # cp -vrf /var/root/bootstrap/ci-ops ~nixos/.nixpkgs/ci-ops
+  cp -vRf /var/root/bootstrap/{modules,roles} ~nixos/.nixpkgs/
+  ln -svf ~nixos/.nixpkgs/roles/$ROLE.nix ~nixos/.nixpkgs/roles/active-role.nix
   chown -R nixos ~nixos/.nixpkgs
   sudo -iHu nixos -- darwin-rebuild -I /nix/var/nix/profiles/per-user/nixos/channels -I darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix build
   rm -f /etc/nix/nix.conf
-  # test -f /Volumes/CONFIG/nix/netrc && cp /Volumes/CONFIG/nix/netrc /etc/nix
+  cp -vf /var/root/bootstrap/netrc /etc/nix
+  chmod 0600 /etc/nix/netrc
   sudo -iHu nixos -- darwin-rebuild -I /nix/var/nix/profiles/per-user/nixos/channels -I darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix switch
 
   # Restart the nix-daemon to ensure it is reading the current nix.conf file
   launchctl kickstart -kp system/org.nixos.nix-daemon
 
   # Remove the initially installed nix profiles which may version conflict with the nix-darwin config activation
+  mv /etc/bashrc /etc/bashrc.orig
+  mv /etc/zshrc /etc/zshrc.orig
+  mv /etc/zprofile /etc/zprofile.orig
+  /nix/var/nix/profiles/system/activate
+
   nix profile remove 0 1
+  # shellcheck disable=SC1091
+  . /etc/profile
   nix doctor
-  rm install-nix
+  rm ~nixos/install-nix
 )
 # (
 #     if [ -f /Volumes/CONFIG/signing-config.json ]; then
@@ -240,5 +250,6 @@ EOF
 # )
 (
   # Prevent another bootstrap cycle if the same guest is rebooted
+  echo "Bootstrap finished successfully."
   touch /etc/.bootstrap-done
 )

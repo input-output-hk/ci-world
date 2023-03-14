@@ -12,22 +12,16 @@ with lib; let
     john = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCogRPMTKyOIQcbS/DqbYijPrreltBHf5ctqFOVAlehvpj8enEE51VSjj4Xs/JEsPWpOJL7Ldp6lDNgFzyuL2AOUWE7wlHx2HrfeCOVkPEzC3uL4OjRTCdsNoleM3Ny2/Qxb0eX2SPoSsEGvpwvTMfUapEa1Ak7Gf39voTYOucoM/lIB/P7MKYkEYiaYaZBcTwjxZa3E+v7At4umSZzv8x24NV60fAyyYmt5hVZRYgoMW+nTU4J/Oq9JGgY7o+WPsOWcgFoSretRnGDwjM1IAUFVpI45rQH2HTKNJ6Bp6ncKwtVaP2dvPdBFe3x2LLEhmh1jDwmbtSXfoVZxbONtub2i/D8DuDhLUNBx/ROgal7N2RgYPcPuNdzfp8hMPjPGZVcSmszC/J1Gz5LqLfWbKKKti4NiSX+euy+aYlgW8zQlUS7aGxzRC/JSgk2KJynFEKJjhj7L9KzsE8ysIgggxYdk18ozDxz2FMPMV5PD1+8x4anWyfda6WR8CXfHlshTwhe+BkgSbsYNe6wZRDGqL2no/PY+GTYRNLgzN721Nv99htIccJoOxeTcs329CppqRNFeDeJkGOnJGc41ze+eVNUkYxOP0O+pNwT7zNDKwRwBnT44F0nNwRByzj2z8i6/deNPmu2sd9IZie8KCygqFiqZ8LjlWTD6JAXPKtTo5GHNQ== john.lotoski@iohk.io";
     jmgilman = "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIMo1U8c0SeSoe/vyRW7T6ogh9WjLJZFmcuHuASi9XMDFAAAABHNzaDo= josh@nixos";
   };
-  environment =
-    concatStringsSep " "
-    [
-      "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-    ];
+
+  environment = concatStringsSep " " ["NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
 
   authorizedNixStoreKey = key: "command=\"${environment} ${config.nix.package}/bin/nix-store --serve --write\" ${key}";
 in {
-  # imports = [ ./ci-ops/nix-darwin/roles/active-role.nix ];
-
-  environment.systemPackages = [
-    config.nix.package
-  ];
+  imports = [./roles/active-role.nix];
 
   programs.bash.enable = true;
   programs.bash.enableCompletion = false;
+  programs.zsh.enable = true;
 
   services.nix-daemon.enable = true;
 
@@ -41,11 +35,6 @@ in {
     ];
 
   system.activationScripts.postActivation.text = ''
-    printf "disabling spotlight indexing... "
-    mdutil -i off -d / &> /dev/null
-    mdutil -E / &> /dev/null
-    echo "ok"
-
     printf "configuring ssh keys for hydra on the root account... "
     mkdir -p ~root/.ssh
     cp -f /etc/per-user/root/ssh/authorized_keys ~root/.ssh/authorized_keys
@@ -58,8 +47,10 @@ in {
       exec ${pkgs.prometheus-node-exporter}/bin/node_exporter
     '';
 
-    serviceConfig.KeepAlive = true;
-    serviceConfig.StandardErrorPath = "/var/log/prometheus-node-exporter.log";
-    serviceConfig.StandardOutPath = "/var/log/prometheus-node-exporter.log";
+    serviceConfig = {
+      KeepAlive = true;
+      StandardErrorPath = "/var/log/prometheus-node-exporter.log";
+      StandardOutPath = "/var/log/prometheus-node-exporter.log";
+    };
   };
 }
