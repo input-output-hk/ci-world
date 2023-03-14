@@ -1,45 +1,72 @@
 #!/bin/bash
-set -x
-echo "apply started at $(date)" /dev/udp/@host@/@port@
-
-echo "Bootstrap files:"
-mkdir -p /var/root/bootstrap
-cp -a /var/root/share/ci/* /var/root/bootstrap/
-ls -la /var/root/bootstrap
-
-# Set up syslog config
-printf '\n*.*\t@@host@:@port@\n' >>/etc/syslog.conf
-
-scutil --set HostName @hostname@
-scutil --set LocalHostName @hostname@
-scutil --set ComputerName @hostname@
-dscacheutil -flushcache
-
-echo "Duplicating bootstrap script log output to the host"
-echo "See /var/log/ncl-* on the host"
-exec 3>&1
-exec 2> >(nc -u @host@ @port@)
-exec 1>&2
-
-pkill syslog
-pkill asl
-sudo systemsetup -setcomputersleep Never
-echo "preventing sleep with caffeinate"
-sudo caffeinate -s &
+set -exo pipefail
 
 PS4='${BASH_SOURCE}::${FUNCNAME[0]}::$LINENO '
-set -o pipefail
-set -ex
-date
+
+if [ -f /etc/.bootstrap-done ]; then
+  echo "Darwin guest bootstrap already complete... exiting"
+  umount -f /var/root/share
+  exit 0
+else
+  echo "Darwin guest bootstrap started at $(date)"
+fi
+
+NAME=$(hostname -s)
+if [[ $NAME =~ ^.*-ci.*$ ]]; then
+  echo "Darwin guest image role is ci..."
+  ROLE="ci"
+  PORT="1514"
+  HOSTNAME="@hostname@-ci"
+elif [[ $NAME =~ ^.*-signing.*$ ]]; then
+  echo "Darwin guest image role is signing..."
+  ROLE="signing"
+  PORT="1515"
+  HOSTNAME="@hostname@-signing"
+else
+  echo "Error: the hostname from the image needs to have '-ci' or '-signing' in the name for bootstrap role selection."
+  exit 1
+fi
+
+# Some of the bootstrap activity seems to disrupt the virtiofs driver,
+# making files fail to retreive later on in the script, so we'll grab them now.
+echo "Copying bootstrap files locally..."
+mkdir -p /var/root/bootstrap
+cp -a /var/root/share/guests/* /var/root/bootstrap/
+chown -R root:wheel /var/root/bootstrap/
+ls -laR /var/root/bootstrap
+
+echo "Redirecting bootstrap script log output to the host udp @host@:$PORT"
+echo "See /var/log/ncl-* on the host for further bootstrap script logs..."
+exec 3>&1
+exec 2> >(nc -u @host@ $PORT)
+exec 1>&2
+
+# Restart the log system with the new syslog config and machine naming
+echo "Updating darwin guest logging..."
+printf '\n*.*\t@@host@:%s\n' "$PORT" >>/etc/syslog.conf
+scutil --set HostName "$HOSTNAME"
+scutil --set LocalHostName "$HOSTNAME"
+scutil --set ComputerName "$HOSTNAME"
+dscacheutil -flushcache
+pkill syslog
+pkill asl
+
+echo "Preventing darwin guest sleep and unneccessary resource consumption..."
+launchctl unload /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
+softwareupdate --schedule off
+systemsetup -setcomputersleep Never
+caffeinate -s &
 
 function finish {
   set +e
   cd /
   sleep 1
   umount -f /var/root/share
+  # rm -rf /var/root/bootstrap
 }
 trap finish EXIT
 
+echo "Setting up darwin guest ssh config..."
 cat <<EOF >>/etc/ssh/sshd_config
 PermitRootLogin prohibit-password
 PasswordAuthentication no
@@ -49,23 +76,17 @@ EOF
 
 launchctl stop com.openssh.sshd
 
-# Stop spotlight resource consumption
-launchctl unload /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
-
-softwareupdate --schedule off
-
-# TODO: Fix ssh
-# cd /Volumes/CONFIG
-#
-# cp -rf ./etc/ssh/ssh_host_* /etc/ssh
-# chown root:wheel /etc/ssh/ssh_host_*
-# chmod 600 /etc/ssh/ssh_host_*
-# launchctl start com.openssh.sshd
+cp -rf /var/root/bootstrap/$ROLE/ssh/ssh_host_* /etc/ssh
+chown root:wheel /etc/ssh/ssh_host_*
+chmod 600 /etc/ssh/ssh_host_*
+launchctl start com.openssh.sshd
 cd /
 
 echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
 
 (
+  echo
+  echo "Installing nix..."
   # Make this thing work as root
   # shellcheck disable=SC2030,SC2031
   export USER=root
@@ -80,6 +101,8 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
 )
 
 (
+  echo
+  echo "Installing nix-darwin..."
   # Make this thing work as root
   # shellcheck disable=SC2030,SC2031
   export USER=root
@@ -127,6 +150,9 @@ EOF
 #     fi
 # )
 (
+  echo
+  echo "Switching into nix-darwin..."
+
   # shellcheck disable=SC2031
   export USER=root
   # shellcheck disable=SC2031
@@ -137,7 +163,7 @@ EOF
   # shellcheck disable=SC1091
   . /etc/static/bashrc
   cp -vf /var/root/bootstrap/darwin-configuration.nix ~nixos/.nixpkgs/darwin-configuration.nix
-  # cp -vrf /var/root/share/guests/ci-ops ~nixos/.nixpkgs/ci-ops
+  # cp -vrf /var/root/bootstrap/ci-ops ~nixos/.nixpkgs/ci-ops
   chown -R nixos ~nixos/.nixpkgs
   sudo -iHu nixos -- darwin-rebuild -I /nix/var/nix/profiles/per-user/nixos/channels -I darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix build
   rm -f /etc/nix/nix.conf
@@ -146,6 +172,11 @@ EOF
 
   # Restart the nix-daemon to ensure it is reading the current nix.conf file
   launchctl kickstart -kp system/org.nixos.nix-daemon
+
+  # Remove the initially installed nix profiles which may version conflict with the nix-darwin config activation
+  nix profile remove 0 1
+  nix doctor
+  rm install-nix
 )
 # (
 #     if [ -f /Volumes/CONFIG/signing-config.json ]; then
@@ -204,3 +235,7 @@ EOF
 #         set -x
 #     fi
 # )
+(
+  # Prevent another bootstrap cycle if the same guest is rebooted
+  touch /etc/.bootstrap-done
+)

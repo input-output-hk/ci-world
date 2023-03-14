@@ -115,6 +115,68 @@ in {
           chmod 0700 /var/root/ziti/identity
         '';
       };
+
+      # Keys to be shared with guests can't go directly to the destination as symlinked files won't get shared over virtiofs
+      # So place them in a common dir to be copied to the virtiofs share on system activation
+      "guest-ci-ssh_host_ed25519_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_ed25519_key.enc;
+        filename = "ssh_host_ed25519_key";
+        targetDir = "/etc/decrypted/guests/ci/ssh";
+        preScript = ''
+          mkdir -p /etc/decrypted/guests/ci/ssh
+          chmod 0700 /etc/decrypted/guests/ci/ssh
+        '';
+
+        postScript = ''
+          cd /etc/decrypted/guests/ci/ssh
+          ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_key.pub
+        '';
+      };
+
+      "guest-ci-ssh_host_rsa_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_rsa_key.enc;
+        filename = "ssh_host_rsa_key";
+        targetDir = "/etc/decrypted/guests/ci/ssh";
+        preScript = ''
+          mkdir -p /etc/decrypted/guests/ci/ssh
+          chmod 0700 /etc/decrypted/guests/ci/ssh
+        '';
+
+        postScript = ''
+          cd /etc/decrypted/guests/ci/ssh
+          ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_key.pub
+        '';
+      };
+
+      "guest-signing-ssh_host_ed25519_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/signing/ssh/ssh_host_ed25519_key.enc;
+        filename = "ssh_host_ed25519_key";
+        targetDir = "/etc/decrypted/guests/signing/ssh";
+        preScript = ''
+          mkdir -p /etc/decrypted/guests/signing/ssh
+          chmod 0700 /etc/decrypted/guests/signing/ssh
+        '';
+
+        postScript = ''
+          cd /etc/decrypted/guests/signing/ssh
+          ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_key.pub
+        '';
+      };
+
+      "guest-signing-ssh_host_rsa_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/signing/ssh/ssh_host_rsa_key.enc;
+        filename = "ssh_host_rsa_key";
+        targetDir = "/etc/decrypted/guests/signing/ssh";
+        preScript = ''
+          mkdir -p /etc/decrypted/guests/signing/ssh
+          chmod 0700 /etc/decrypted/guests/signing/ssh
+        '';
+
+        postScript = ''
+          cd /etc/decrypted/guests/signing/ssh
+          ssh-keygen -y -f ssh_host_rsa_key > ssh_host_rsa_key.pub
+        '';
+      };
     };
   };
 }

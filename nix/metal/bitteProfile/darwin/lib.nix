@@ -26,7 +26,7 @@ in {
 
       modules =
         [
-          ./host.nix
+          (import ./host.nix darwinName)
           (import ./tunnels.nix wgAddresses)
           (import ./send-keys.nix darwinName)
         ]

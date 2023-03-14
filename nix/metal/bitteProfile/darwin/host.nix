@@ -1,4 +1,4 @@
-{
+darwinName: {
   inputs,
   system,
   bittePkgs,
@@ -19,8 +19,7 @@
 
     nixDarwinUrl = "https://github.com/LnL7/nix-darwin/archive/${inputs.darwin.rev}.tar.gz";
     host = "192.168.64.1";
-    port = "1514";
-    hostname = "MacStudio001-ci";
+    hostname = darwinName;
   }));
 
   guestConfig = builtins.toFile "darwin-configuration.nix" (builtins.readFile ./guests/darwin-configuration.nix);
@@ -41,6 +40,7 @@ in {
     ripgrep
     screen
     tmux
+    tree
     vim
   ];
 
@@ -97,11 +97,17 @@ in {
     done
 
     # Ensure guest scripts are set up properly for guests to access
-    mkdir -p /etc/guests/ci /etc/guests/signing
-    cp ${guestApply} /etc/guests/ci/apply.sh
-    cp ${guestConfig} /etc/guests/ci/darwin-configuration.nix
-    chmod 0555 /etc/guests/ci/apply.sh
-    chmod 0444 /etc/guests/ci/darwin-configuration.nix
+    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh
+    cp ${guestApply} /etc/guests/apply.sh
+    cp ${guestConfig} /etc/guests/darwin-configuration.nix
+    chmod 0555 /etc/guests/apply.sh
+    chmod 0444 /etc/guests/darwin-configuration.nix
+    cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
+    cp -Rf /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh
+
+    # Requires r+go for virtiofs share as the originating uid:gid is shown as unknown
+    chmod 0555 /etc/guests/ci/ssh /etc/guests/signing
+    chmod 0644 /etc/guests/ci/ssh/* /etc/guests/signing/ssh/*
   '';
 
   nix = {

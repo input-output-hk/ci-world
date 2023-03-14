@@ -21,14 +21,13 @@ with lib; let
   authorizedNixStoreKey = key: "command=\"${environment} ${config.nix.package}/bin/nix-store --serve --write\" ${key}";
 in {
   # imports = [ ./ci-ops/nix-darwin/roles/active-role.nix ];
+
   environment.systemPackages = [
-    #config.nix.package
+    config.nix.package
   ];
 
   programs.bash.enable = true;
   programs.bash.enableCompletion = false;
-
-  #services.activate-system.enable = true;
 
   services.nix-daemon.enable = true;
 
