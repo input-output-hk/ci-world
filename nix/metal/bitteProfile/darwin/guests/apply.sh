@@ -1,6 +1,7 @@
 #!/bin/bash
 set -exo pipefail
 
+NIX_DARWIN_BOOTSTRAP_URL="https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
 PS4='${BASH_SOURCE}::${FUNCNAME[0]}::$LINENO '
 
 if [ -f /etc/.bootstrap-done ]; then
@@ -12,16 +13,18 @@ else
 fi
 
 NAME=$(hostname -s)
+HOST_HOSTNAME=$(cat /var/root/share/guests/host-hostname)
+HOST_IP="192.168.64.1"
 if [[ $NAME =~ ^.*-ci.*$ ]]; then
   echo "Darwin guest image role is ci..."
   ROLE="ci"
   PORT="1514"
-  HOSTNAME="@hostname@-ci"
+  HOSTNAME="$HOST_HOSTNAME-ci"
 elif [[ $NAME =~ ^.*-signing.*$ ]]; then
   echo "Darwin guest image role is signing..."
   ROLE="signing"
   PORT="1515"
-  HOSTNAME="@hostname@-signing"
+  HOSTNAME="$HOST_HOSTNAME-signing"
 else
   echo "Error: the hostname from the image needs to have '-ci' or '-signing' in the name for bootstrap role selection."
   exit 1
@@ -35,15 +38,15 @@ cp -a /var/root/share/guests/* /var/root/bootstrap/
 chown -R root:wheel /var/root/bootstrap/
 ls -laR /var/root/bootstrap
 
-echo "Redirecting bootstrap script log output to the host udp @host@:$PORT"
+echo "Redirecting bootstrap script log output to the host udp $HOST_IP:$PORT"
 echo "See /var/log/ncl-* on the host for further bootstrap script logs..."
 exec 3>&1
-exec 2> >(nc -u @host@ $PORT)
+exec 2> >(nc -u $HOST_IP $PORT)
 exec 1>&2
 
 # Restart the log system with the new syslog config and machine naming
 echo "Updating darwin guest logging..."
-printf '\n*.*\t@@host@:%s\n' "$PORT" >>/etc/syslog.conf
+printf '\n*.*\t@%s:%s\n' "$HOST_IP" "$PORT" >>/etc/syslog.conf
 scutil --set HostName "$HOSTNAME"
 scutil --set LocalHostName "$HOSTNAME"
 scutil --set ComputerName "$HOSTNAME"
@@ -111,7 +114,7 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
 
   mkdir -pv /etc/nix
   cat <<EOF >/etc/nix/nix.conf
-substituters = http://@host@:8081
+substituters = http://$HOST_IP:8081
 trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 EOF
 
@@ -123,15 +126,15 @@ EOF
   ls -la /private/var/run || true
   nix-channel --add https://nixos.org/channels/nixos-22.11 nixpkgs
   nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs-unstable
-  nix-channel --add @nixDarwinUrl@ darwin
+  nix-channel --add "$NIX_DARWIN_BOOTSTRAP_URL" darwin
   nix-channel --update
 
   sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixos-22.11 nixpkgs
   sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs-unstable
-  sudo -i -H -u nixos -- nix-channel --add @nixDarwinUrl@ darwin
+  sudo -i -H -u nixos -- nix-channel --add "$NIX_DARWIN_BOOTSTRAP_URL" darwin
   sudo -i -H -u nixos -- nix-channel --update
 
-  installer=$(nix-build @nixDarwinUrl@ -A installer --no-out-link)
+  installer=$(nix-build "$NIX_DARWIN_BOOTSTRAP_URL" -A installer --no-out-link)
   set +e
   yes | sudo -i -H -u nixos -- "$installer/bin/darwin-installer"
   echo $?
