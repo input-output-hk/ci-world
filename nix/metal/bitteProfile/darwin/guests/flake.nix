@@ -17,7 +17,7 @@
   outputs = inputs: {
     darwinConfigurations.GUEST = inputs.darwin.lib.darwinSystem rec {
       inherit inputs;
-      system = "x86_64-darwin";
+      system = "SYSTEM";
       specialArgs = {inherit system;};
       modules = [./configuration.nix];
     };

@@ -1,10 +1,12 @@
 {
+  inputs,
+  system,
   config,
   lib,
   pkgs,
   ...
 }: let
-  nixpkgs-unstable = import <nixpkgs-unstable> {};
+  nixPkg = inputs.nix.packages.${system}.nix;
 
   # ssh-keys = import ../../lib/ssh-keys.nix lib;
 
@@ -16,7 +18,7 @@ in {
 
   environment.systemPackages = with pkgs;
     [
-      nixpkgs-unstable.nix
+      nixPkg
       tmux
       ncdu
       git
@@ -37,7 +39,7 @@ in {
   system.stateVersion = 4;
 
   nix = {
-    package = nixpkgs-unstable.nix;
+    package = nixPkg;
 
     extraOptions = ''
       gc-keep-derivations = true

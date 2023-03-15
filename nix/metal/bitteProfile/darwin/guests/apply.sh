@@ -12,9 +12,10 @@ else
   echo "Darwin guest bootstrap started at $(date)"
 fi
 
-NAME=$(hostname -s)
 HOST_HOSTNAME=$(cat /var/root/share/guests/host-hostname)
 HOST_IP="192.168.64.1"
+
+NAME=$(hostname -s)
 if [[ $NAME =~ ^.*-ci.*$ ]]; then
   echo "Darwin guest image role is ci..."
   ROLE="ci"
@@ -34,7 +35,7 @@ fi
 # making files fail to retreive later on in the script, so we'll grab them now.
 echo "Copying bootstrap files locally..."
 mkdir -p /var/root/bootstrap
-cp -a /var/root/share/guests/* /var/root/bootstrap/
+cp -Rf /var/root/share/guests/* /var/root/bootstrap/
 chown -R root:wheel /var/root/bootstrap/
 ls -laR /var/root/bootstrap
 
@@ -53,6 +54,17 @@ scutil --set ComputerName "$HOSTNAME"
 dscacheutil -flushcache
 pkill syslog
 pkill asl
+
+# Determine the architecture
+ARCH=$(arch)
+if [ "$ARCH" = "i386" ]; then
+  SYSTEM="x86_64-darwin"
+elif [ "$ARCH" = "arm64" ]; then
+  SYSTEM="aarch64-darwin"
+else
+  echo "Error: architecture $ARCH is an unrecognized architecture."
+  exit 1
+fi
 
 echo "Preventing darwin guest sleep and unneccessary resource consumption..."
 launchctl unload /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
@@ -83,6 +95,7 @@ cp -rf /var/root/bootstrap/$ROLE/ssh/ssh_host_* /etc/ssh
 chown root:wheel /etc/ssh/ssh_host_*
 chmod 0600 /etc/ssh/ssh_host_*_key
 launchctl start com.openssh.sshd
+rm -rf /var/root/bootstrap/{ci,signing}
 cd /
 
 echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
@@ -95,7 +108,6 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
   export USER=root
   # shellcheck disable=SC2030,SC2031
   export HOME=~root
-  export ALLOW_PREEXISTING_INSTALLATION=1
   env
 
   # Installing nix will install a system profile nix of this version.
@@ -121,10 +133,6 @@ EOF
 
   # shellcheck disable=SC1091
   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-  env
-  ls -la /private || true
-  ls -la /private/var || true
-  ls -la /private/var/run || true
   nix-channel --add https://nixos.org/channels/nixos-22.11 nixpkgs
   nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs-unstable
   nix-channel --add "$NIX_DARWIN_BOOTSTRAP_URL" darwin
@@ -162,33 +170,40 @@ EOF
   # shellcheck disable=SC2031
   export HOME=~root
 
-  rm -f /etc/bashrc
-  ln -s /etc/static/bashrc /etc/bashrc
+  # rm -f /etc/bashrc
+  # ln -s /etc/static/bashrc /etc/bashrc
   # shellcheck disable=SC1091
   . /etc/static/bashrc
-  cp -vf /var/root/bootstrap/darwin-configuration.nix ~nixos/.nixpkgs/darwin-configuration.nix
+  nix profile install nixpkgs#git
+  cp -vf /var/root/bootstrap/flake.* ~nixos/.nixpkgs/
+  cp -vf /var/root/bootstrap/darwin-configuration.nix ~nixos/.nixpkgs/configuration.nix
   cp -vRf /var/root/bootstrap/{modules,roles} ~nixos/.nixpkgs/
-  ln -svf ~nixos/.nixpkgs/roles/$ROLE.nix ~nixos/.nixpkgs/roles/active-role.nix
+  cp -vf /var/root/bootstrap/roles/$ROLE.nix ~nixos/.nixpkgs/roles/active-role.nix
+  rm ~nixos/.nixpkgs/darwin-configuration.nix
+  sed -i "" -e "s/GUEST/$(hostname -s)/g" -e "s/SYSTEM/$SYSTEM/g" ~nixos/.nixpkgs/flake.nix
   chown -R nixos ~nixos/.nixpkgs
-  sudo -iHu nixos -- darwin-rebuild -I /nix/var/nix/profiles/per-user/nixos/channels -I darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix build
+  sudo -iHu nixos -- bash -c 'nix profile install nixpkgs#git; cd .nixpkgs; git init; git add -Av'
+  sudo -iHu nixos -- nix build -L ".nixpkgs#darwinConfigurations.$(hostname -s).system"
+  sudo -iHu nixos -- result/sw/bin/darwin-rebuild switch --flake .nixpkgs
   rm -f /etc/nix/nix.conf
   cp -vf /var/root/bootstrap/netrc /etc/nix
   chmod 0600 /etc/nix/netrc
-  sudo -iHu nixos -- darwin-rebuild -I /nix/var/nix/profiles/per-user/nixos/channels -I darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix switch
+  sudo -iHu nixos -- darwin-rebuild switch --flake .nixpkgs
 
   # Restart the nix-daemon to ensure it is reading the current nix.conf file
   launchctl kickstart -kp system/org.nixos.nix-daemon
 
-  # Remove the initially installed nix profiles which may version conflict with the nix-darwin config activation
   mv /etc/bashrc /etc/bashrc.orig
   mv /etc/zshrc /etc/zshrc.orig
   mv /etc/zprofile /etc/zprofile.orig
   /nix/var/nix/profiles/system/activate
 
-  nix profile remove 0 1
+  # Remove the initially installed nix profiles which may version conflict with the nix-darwin config activation
+  nix profile remove 0 1 2
   # shellcheck disable=SC1091
   . /etc/profile
   nix doctor
+  sudo -iHu nixos -- nix profile remove 0
   rm ~nixos/install-nix
 )
 # (
