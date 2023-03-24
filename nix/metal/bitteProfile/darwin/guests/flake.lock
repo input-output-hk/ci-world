@@ -109,11 +109,11 @@
     "ops-lib": {
       "flake": false,
       "locked": {
-        "lastModified": 1678705739,
-        "narHash": "sha256-d0Ync04L4xxQiQK3SJErvCt/TfGP1WH4IddQpsMOkuM=",
+        "lastModified": 1678916246,
+        "narHash": "sha256-sYbqntsjwIk/ogI0ZYfzs1nEIxVkVmYZf1Tm/V7a7iw=",
         "owner": "input-output-hk",
         "repo": "ops-lib",
-        "rev": "b51ebac83bd9fddff9d9a4bd29f4c48b5371263f",
+        "rev": "dfcd3b90a16cc2068114d85f740e46ce05946d07",
         "type": "github"
       },
       "original": {

@@ -114,7 +114,6 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
   curl https://releases.nixos.org/nix/nix-2.13.3/install >~nixos/install-nix
   sudo -i -H -u nixos -- sh ~nixos/install-nix --daemon --darwin-use-unencrypted-nix-store-volume </dev/null
 )
-
 (
   echo
   echo "Installing nix-darwin..."
@@ -151,16 +150,13 @@ EOF
   set -e
   sleep 10
 )
-# (
-#     if [ -d /Volumes/CONFIG/buildkite ]
-#     then
-#       cp -a /Volumes/CONFIG/buildkite /Users/nixos/buildkite
-#       pushd /Users/nixos/buildkite
-#       mv buildkite-ssh-iohk-devops-public-* buildkite-ssh-iohk-devops-public
-#       mv buildkite-ssh-iohk-devops-private-* buildkite-ssh-iohk-devops-private
-#       popd
-#     fi
-# )
+(
+  echo
+  echo "Preparing for buildkite service..."
+  cp -a /var/root/bootstrap/buildkite /Users/nixos/buildkite
+  chmod o+rx /Users/nixos
+  chmod 0440 /Users/nixos/buildkite/*
+)
 (
   echo
   echo "Switching into nix-darwin..."
@@ -176,10 +172,9 @@ EOF
   . /etc/static/bashrc
   nix profile install nixpkgs#git
   cp -vf /var/root/bootstrap/flake.* ~nixos/.nixpkgs/
-  cp -vf /var/root/bootstrap/darwin-configuration.nix ~nixos/.nixpkgs/configuration.nix
+  cp -vf /var/root/bootstrap/configuration.nix ~nixos/.nixpkgs/configuration.nix
   cp -vRf /var/root/bootstrap/{modules,roles} ~nixos/.nixpkgs/
   cp -vf /var/root/bootstrap/roles/$ROLE.nix ~nixos/.nixpkgs/roles/active-role.nix
-  rm ~nixos/.nixpkgs/darwin-configuration.nix
   sed -i "" -e "s/GUEST/$(hostname -s)/g" -e "s/SYSTEM/$SYSTEM/g" ~nixos/.nixpkgs/flake.nix
   chown -R nixos ~nixos/.nixpkgs
   sudo -iHu nixos -- bash -c 'nix profile install nixpkgs#git; cd .nixpkgs; git init; git add -Av'

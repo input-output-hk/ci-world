@@ -7,21 +7,26 @@
   ...
 }: let
   nixPkg = inputs.nix.packages.${system}.nix;
-
-  # ssh-keys = import ../../lib/ssh-keys.nix lib;
-
-  allowedKeys = [];
-  # allowedKeys = ssh-keys.allKeysFrom (ssh-keys.remoteBuilderKeys // ssh-keys.devOps);
-  # nix-darwin = (import ../test.nix { host = null; port = null; hostname = null; }).nix-darwin;
 in {
   imports = [./double-builder-gc.nix];
 
   environment.systemPackages = with pkgs;
     [
-      nixPkg
-      tmux
-      ncdu
+      bat
+      bottom
+      fd
       git
+      htop
+      icdiff
+      jq
+      ncdu
+      nix-diff
+      nixPkg
+      nix-top
+      ripgrep
+      tmux
+      tree
+      vim
     ]
     ++ (
       if pkgs.stdenv.isDarwin
@@ -59,9 +64,9 @@ in {
     '';
 
     nixPath = [
-      "nixpkgs=/nix/var/nix/profiles/per-user/root/channels/nixpkgs"
-      "darwin-config=/Users/nixos/.nixpkgs/darwin-configuration.nix"
-      # "darwin=${nix-darwin}"
+      "nixpkgs=${inputs.nixpkgs}"
+      "darwin-config=/Users/nixos/.nixpkgs/flake.nix"
+      "darwin=${inputs.darwin}"
     ];
 
     settings = {
@@ -80,13 +85,6 @@ in {
     };
   };
 
-  environment.etc = {
-    "per-user/root/ssh/authorized_keys".text = lib.concatStringsSep "\n" allowedKeys + "\n";
-    "per-user/nixos/ssh/authorized_keys".text = lib.concatStringsSep "\n" allowedKeys + "\n";
-  };
-
-  services.nix-daemon.enable = true;
-
   launchd.daemons.caffeinate = {
     script = "exec /usr/bin/caffeinate -s";
     serviceConfig.KeepAlive = true;
@@ -100,7 +98,7 @@ in {
     printf "disabling screensaver..."
     defaults write /Library/Preferences/com.apple.screensaver loginWindowIdleTime 0
     echo "ok"
-    for user in admin nixos buildkite builder; do
+    for user in nixos buildkite builder; do
         authorized_keys=/etc/per-user/$user/ssh/authorized_keys
         user_home=/Users/$user
         printf "configuring ssh keys for $user... "

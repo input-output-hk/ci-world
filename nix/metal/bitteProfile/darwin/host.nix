@@ -23,6 +23,7 @@ in {
     bittePkgs.utm
 
     bat
+    bottom
     fd
     glances
     htop
@@ -90,11 +91,13 @@ in {
     done
 
     # Ensure required guest files are available for guest bootstrapping
-    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh
+    rm -rf /etc/guests
+    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh /etc/guests/buildkite
     echo $(hostname -s) > /etc/guests/host-hostname
     cp -Rf ${self}/nix/metal/bitteProfile/darwin/guests/* /etc/guests/
 
     [ -f /etc/decrypted/guests/netrc ] && cp -f /etc/decrypted/guests/netrc /etc/guests/
+    [ -d /etc/decrypted/guests/buildkite ] && cp -f /etc/decrypted/guests/buildkite/* /etc/guests/buildkite
     [ -d /etc/decrypted/guests/ci/ssh ] && cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
     [ -d /etc/decrypted/guests/signing/ssh ] && cp -Rf /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh
   '';

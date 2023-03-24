@@ -126,6 +126,48 @@ in {
         preScript = "mkdir -p /etc/decrypted/guests";
       };
 
+      # Buildkite
+      "buildkite_token" = {
+        encSrc = ../encrypted/buildkite/buildkite_token;
+        targetDir = "/etc/decrypted/guests/buildkite";
+        mode = "0644";
+        preScript = "mkdir -p /etc/decrypted/guests/buildkite";
+      };
+
+      "buildkite_aws_creds_ci" = {
+        encSrc = ../encrypted/buildkite/buildkite-hook;
+        targetDir = "/etc/decrypted/guests/buildkite";
+        mode = "0644";
+        preScript = "mkdir -p /etc/decrypted/guests/buildkite";
+      };
+
+      "buildkite-ssh-iohk-devops-private" = {
+        encSrc = ../encrypted/buildkite/buildkite-iohk-devops-ssh;
+        targetDir = "/etc/decrypted/guests/buildkite";
+        preScript = "mkdir -p /etc/decrypted/guests/buildkite";
+
+        postScript = ''
+          cd /etc/decrypted/guests/buildkite
+          ssh-keygen -y -f buildkite-ssh-iohk-devops-private > buildkite-ssh-iohk-devops-public
+          chmod 0644 buildkite-ssh-iohk-devops-private
+        '';
+      };
+
+      "catalyst-env.sh" = {
+        encSrc = ../encrypted/buildkite/catalyst-env.sh;
+        targetDir = "/etc/decrypted/guests/buildkite";
+        mode = "0644";
+        preScript = "mkdir -p /etc/decrypted/guests/buildkite";
+      };
+
+      "catalyst-sentry.properties" = {
+        encSrc = ../encrypted/buildkite/catalyst-sentry.properties;
+        targetDir = "/etc/decrypted/guests/buildkite";
+        mode = "0644";
+        preScript = "mkdir -p /etc/decrypted/guests/buildkite";
+      };
+
+      # Ssh
       "guest-ci-ssh_host_ed25519_key" = {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_ed25519_key.enc;
         filename = "ssh_host_ed25519_key";

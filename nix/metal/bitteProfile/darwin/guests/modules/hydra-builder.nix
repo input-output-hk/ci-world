@@ -1,12 +1,16 @@
 {
+  inputs,
   config,
   lib,
   pkgs,
   ...
 }: let
-  # ssh-keys = import ../../lib/ssh-keys.nix lib;
-  allowedKeys = [];
-  # allowedKeys = ssh-keys.allKeysFrom (ssh-keys.remoteBuilderKeys // ssh-keys.devOps);
+  inherit (sshKeyLib) allKeysFrom devOps csl-developers remoteBuilderKeys;
+
+  sshKeyLib = import (inputs.ops-lib + "/overlays/ssh-keys.nix") lib;
+  sshKeys =
+    allKeysFrom (devOps // {inherit (csl-developers) angerman;})
+    ++ allKeysFrom remoteBuilderKeys;
 
   environment = lib.concatStringsSep " " [
     "NIX_REMOTE=daemon"
@@ -34,6 +38,7 @@ in {
     dscl . -list /Groups | grep -q com.apple.access_ssh-disabled || dseditgroup -o edit -a builder -t user com.apple.access_ssh
   '';
 
+  # Guest builder ssh keys
   environment.etc."per-user/builder/ssh/authorized_keys".text =
-    lib.concatMapStringsSep "\n" (key: ''command="${environment} ${config.nix.package}/bin/nix-store --serve --write" ${key}'') allowedKeys + "\n";
+    lib.concatMapStringsSep "\n" (key: ''command="${environment} ${config.nix.package}/bin/nix-store --serve --write" ${key}'') sshKeys + "\n";
 }

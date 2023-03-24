@@ -36,11 +36,11 @@ in
           nix
         ];
         meta-data = cfg.metadata;
-        tokenPath = "${keys}/buildkite_token_*";
+        tokenPath = "${keys}/buildkite_token";
         openssh.privateKeyPath = "${keys}/buildkite-ssh-iohk-devops-private";
         openssh.publicKeyPath = "${keys}/buildkite-ssh-iohk-devops-public";
         hooks.pre-command = ''
-          creds=${keys}/buildkite_aws_creds_*
+          creds=${keys}/buildkite_aws_creds
           if [ -e $creds ]; then
             source $creds
           else
