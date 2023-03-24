@@ -1,16 +1,11 @@
 #!/bin/bash
 set -exo pipefail
 
+LC_TIME=C
+echo "Darwin guest bootstrap started at $(date -u)..."
+
 NIX_DARWIN_BOOTSTRAP_URL="https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
 PS4='${BASH_SOURCE}::${FUNCNAME[0]}::$LINENO '
-
-if [ -f /etc/.bootstrap-done ]; then
-  echo "Darwin guest bootstrap already complete... exiting"
-  umount -f /var/root/share
-  exit 0
-else
-  echo "Darwin guest bootstrap started at $(date)"
-fi
 
 HOST_HOSTNAME=$(cat /var/root/share/guests/host-hostname)
 HOST_IP="192.168.64.1"
@@ -31,14 +26,6 @@ else
   exit 1
 fi
 
-# Some of the bootstrap activity seems to disrupt the virtiofs driver,
-# making files fail to retreive later on in the script, so we'll grab them now.
-echo "Copying bootstrap files locally..."
-mkdir -p /var/root/bootstrap
-cp -Rf /var/root/share/guests/* /var/root/bootstrap/
-chown -R root:wheel /var/root/bootstrap/
-ls -laR /var/root/bootstrap
-
 echo "Redirecting bootstrap script log output to the host udp $HOST_IP:$PORT"
 echo "See /var/log/ncl-* on the host for further bootstrap script logs..."
 exec 3>&1
@@ -54,6 +41,20 @@ scutil --set ComputerName "$HOSTNAME"
 dscacheutil -flushcache
 pkill syslog
 pkill asl
+
+if [ -f /etc/.bootstrap-done ]; then
+  echo "Darwin guest bootstrap already complete... exiting"
+  umount -f /var/root/share
+  exit 0
+fi
+
+# Some of the bootstrap activity seems to disrupt the virtiofs driver,
+# making files fail to retreive later on in the script, so we'll grab them now.
+echo "Copying bootstrap files locally..."
+mkdir -p /var/root/bootstrap
+cp -Rf /var/root/share/guests/* /var/root/bootstrap/
+chown -R root:wheel /var/root/bootstrap/
+ls -laR /var/root/bootstrap
 
 # Determine the architecture
 ARCH=$(arch)

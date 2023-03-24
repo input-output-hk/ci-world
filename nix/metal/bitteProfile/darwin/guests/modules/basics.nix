@@ -16,6 +16,9 @@ in {
       bottom
       fd
       git
+      glances
+      gnused # Use expected GNU pattern matching behavior
+      gnutar # Apple tar version does not support sparse files
       htop
       icdiff
       jq

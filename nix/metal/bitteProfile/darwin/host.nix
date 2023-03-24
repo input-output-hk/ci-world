@@ -26,9 +26,12 @@ in {
     bottom
     fd
     glances
+    gnused # Use expected GNU pattern matching behavior
+    gnutar # Apple tar version does not support sparse files
     htop
     icdiff
     jq
+    ncdu
     nix-diff
     nix-top
     ripgrep
@@ -48,13 +51,18 @@ in {
     "per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
 
     "newsyslog.d/org.nixos.cachecache.conf".text = ''
-      # logfilename                   [owner:group]  mode  count  size    when  flags [/pid_file]                 [sig_num]
-      /var/log/cachecache.log                        644   10     *       $D0   RJ    "pkill -af cachecache"
+      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
+      /var/log/cachecache.log                        644   10     *       $D0   RJ     "pkill -af cachecache"
     '';
 
     "newsyslog.d/org.nixos.ncl-ci.conf".text = ''
-      # logfilename                   [owner:group]  mode  count  size    when  flags [/pid_file]                 [sig_num]
-      /var/log/ncl-ci.log                            644   10     *       $D0   RJ    "pkill -af ncl-ci-start"
+      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
+      /var/log/ncl-ci.log                            644   10     *       $D0   RJ     "pkill -af ncl-ci-start"
+    '';
+
+    "newsyslog.d/org.nixos.ncl-signing.conf".text = ''
+      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
+      /var/log/ncl-signing.log                       644   10     *       $D0   RJ     "pkill -af ncl-signing-start"
     '';
   };
 
@@ -91,6 +99,7 @@ in {
     done
 
     # Ensure required guest files are available for guest bootstrapping
+    printf "configuring guest secrets... "
     rm -rf /etc/guests
     mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh /etc/guests/buildkite
     echo $(hostname -s) > /etc/guests/host-hostname
@@ -100,6 +109,7 @@ in {
     [ -d /etc/decrypted/guests/buildkite ] && cp -f /etc/decrypted/guests/buildkite/* /etc/guests/buildkite
     [ -d /etc/decrypted/guests/ci/ssh ] && cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
     [ -d /etc/decrypted/guests/signing/ssh ] && cp -Rf /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh
+    echo "ok"
   '';
 
   nix = {
@@ -130,7 +140,28 @@ in {
     };
   };
 
-  launchd.daemons = {
+  launchd.daemons = let
+    ncl = port:
+      pkgs.writeScript "ncl" ''
+        #!/bin/sh
+        set -euxo pipefail
+        ${pkgs.netcat}/bin/nc -dklun ${toString port} | ${pkgs.coreutils}/bin/tr '<' $'\n'
+      '';
+
+    mkNetCatLogger = guestService: port: {
+      script = ''
+        set -euxo pipefail
+        ${pkgs.expect}/bin/unbuffer ${ncl port}
+      '';
+
+      # See newsyslog drop in above for log rotation
+      serviceConfig = {
+        KeepAlive = true;
+        StandardErrorPath = "/var/log/ncl-${guestService}.log";
+        StandardOutPath = "/var/log/ncl-${guestService}.log";
+      };
+    };
+  in {
     cachecache = {
       script = ''
         set -euxo pipefail
@@ -147,25 +178,8 @@ in {
       };
     };
 
-    ncl-ci = let
-      ncl = pkgs.writeScript "ncl" ''
-        #!/bin/sh
-        set -euxo pipefail
-        ${pkgs.netcat}/bin/nc -dklun 1514 | ${pkgs.coreutils}/bin/tr '<' $'\n'
-      '';
-    in {
-      script = ''
-        set -euxo pipefail
-        ${pkgs.expect}/bin/unbuffer ${ncl}
-      '';
-
-      # See newsyslog drop in above for log rotation
-      serviceConfig = {
-        KeepAlive = true;
-        StandardErrorPath = "/var/log/ncl-ci.log";
-        StandardOutPath = "/var/log/ncl-ci.log";
-      };
-    };
+    ncl-ci = mkNetCatLogger "ci" 1514;
+    ncl-signing = mkNetCatLogger "signing" 1515;
 
     caffeinate = {
       script = "exec /usr/bin/caffeinate -s";
