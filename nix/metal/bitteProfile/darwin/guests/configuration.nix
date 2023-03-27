@@ -47,7 +47,9 @@ in {
   '';
 
   launchd.daemons.prometheus-node-exporter = {
-    script = "exec ${pkgs.prometheus-node-exporter}/bin/node_exporter";
+    # Bind guest node exporter to 9101 instead of default 9100 which the host uses.
+    # This will allow requests to both host and guest without conflict under existing pfctl packet routing.
+    script = "exec ${pkgs.prometheus-node-exporter}/bin/node_exporter --web.listen-address=:9101";
 
     serviceConfig = {
       KeepAlive = true;

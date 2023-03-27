@@ -17,9 +17,9 @@ in {
     privateKeyFile = "/var/root/.keys/wireguard-private.key";
     peers = [
       {
-        endpoint = "zt.bitte.aws.iohkdev.io:51820";
+        endpoint = "zt.ci.iog.io:51820";
         allowedIPs = ["10.10.0.254/32"];
-        publicKey = "WDbI9dSxkddMlqUDpm4teKwdtTCzLQWQsi1ecUqlgks=";
+        publicKey = "ET2Hbi1sywNSCWhGYGqBham7ZhNdMYyuhUNRiOqILlQ=";
         persistentKeepalive = 30;
       }
     ];
@@ -61,8 +61,10 @@ in {
   system.activationScripts.postActivation.text = let
     appendLines = "$'\\n''rdr-anchor \"org.nixos.vm-rdr\"'$'\\\n''load anchor \"org.nixos.vm-rdr\" from \"/etc/pf.anchors/org.nixos.vm-rdr\"'";
     anchorText = ''
-      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port ssh -> 192.168.64.2/32 port ssh
-      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port ssh -> 192.168.64.3/32 port ssh'';
+      # Pass ssh and node exporter requests to the guests
+      # Host node exporter can still be requested at port 9100
+      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port {22, 9101} -> 192.168.64.2/32
+      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32'';
   in ''
     # Ensure packet forwarding to vm guests is enabled
     printf "applying darwin guest packet redirection... "

@@ -64,6 +64,9 @@ in
         preCommands = ''
           source /var/lib/buildkite-agent/signing.sh
           security unlock-keychain -p "$SIGNING" /var/lib/buildkite-agent/ci-signing.keychain-db
+
+          # For buildkite access to ioreg utility for unique machine id
+          PATH=$PATH:/usr/sbin
         '';
       };
 

@@ -78,7 +78,7 @@ function finish {
   cd /
   sleep 1
   umount -f /var/root/share
-  # rm -rf /var/root/bootstrap
+  rm -rf /var/root/bootstrap
 }
 trap finish EXIT
 
@@ -96,7 +96,6 @@ cp -rf /var/root/bootstrap/$ROLE/ssh/ssh_host_* /etc/ssh
 chown root:wheel /etc/ssh/ssh_host_*
 chmod 0600 /etc/ssh/ssh_host_*_key
 launchctl start com.openssh.sshd
-rm -rf /var/root/bootstrap/{ci,signing}
 cd /
 
 echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
@@ -167,8 +166,6 @@ EOF
   # shellcheck disable=SC2031
   export HOME=~root
 
-  # rm -f /etc/bashrc
-  # ln -s /etc/static/bashrc /etc/bashrc
   # shellcheck disable=SC1091
   . /etc/static/bashrc
   nix profile install nixpkgs#git
@@ -202,63 +199,62 @@ EOF
   sudo -iHu nixos -- nix profile remove 0
   rm ~nixos/install-nix
 )
-# (
-#     if [ -f /Volumes/CONFIG/signing-config.json ]; then
-#         set +x
-#         echo Setting up signing...
-#         # shellcheck disable=SC1091
-#         source /Volumes/CONFIG/signing.sh
-#         # shellcheck disable=SC1091
-#         source /Volumes/CONFIG/signing-catalyst.sh
-#         security create-keychain -p "$KEYCHAIN" ci-signing.keychain
-#         security default-keychain -s ci-signing.keychain
-#         security set-keychain-settings ci-signing.keychain
-#         security list-keychains -d user -s login.keychain ci-signing.keychain
-#         security unlock-keychain -p "$KEYCHAIN"
-#         security show-keychain-info ci-signing.keychain
-#         security import /Volumes/CONFIG/iohk-sign.p12 -P "$SIGNING" -k "ci-signing.keychain" -T /usr/bin/productsign
-#         security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN" "ci-signing.keychain"
-#         security import /Volumes/CONFIG/iohk-codesign.cer -k /Library/Keychains/System.keychain
-#         security import /Volumes/CONFIG/dev.cer -k /Library/Keychains/System.keychain
-#         security import /Volumes/CONFIG/dist.cer -k /Library/Keychains/System.keychain
-#         security import /Volumes/CONFIG/AppleWWDRCAG3.cer -k /Library/Keychains/System.keychain
-#         security import /Volumes/CONFIG/iohk-codesign.p12 -P "$CODESIGNING" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
-#         security import /Volumes/CONFIG/catalyst-ios-dev.p12 -P "$CATALYST" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
-#         security import /Volumes/CONFIG/catalyst-ios-dist.p12 -P "$CATALYSTDIST" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
-#
-#
-#         cp /private/var/root/Library/Keychains/ci-signing.keychain-db /Users/nixos/Library/Keychains/
-#         chown nixos:staff /Users/nixos/Library/Keychains/ci-signing.keychain-db
-#         mkdir -p /var/lib/buildkite-agent/.private_keys
-#         cp /private/var/root/Library/Keychains/ci-signing.keychain-db /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/signing.sh /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/signing-catalyst.sh /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/signing-config.json /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/code-signing-config.json /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/catalyst-ios-build.json /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/catalyst-env.sh /var/lib/buildkite-agent/
-#         cp /Volumes/CONFIG/catalyst-sentry.properties /var/lib/buildkite-agent/
-#         cp "/Volumes/CONFIG/AuthKey_${CATALYSTKEY}.p8" "/var/lib/buildkite-agent/.private_keys/AuthKey_${CATALYSTKEY}.p8"
-#         chown buildkite-agent:admin /var/lib/buildkite-agent/{ci-signing.keychain-db,signing.sh,signing-config.json,code-signing-config.json}
-#         chown -R buildkite-agent:admin /var/lib/buildkite-agent/{signing-catalyst.sh,catalyst-ios-build.json,catalyst-env.sh,.private_keys}
-#         chmod 0700 /var/lib/buildkite-agent/.private_keys
-#         chmod 0400 /var/lib/buildkite-agent/{signing.sh,signing-catalyst.sh} /var/lib/buildkite-agent/.private_keys/*
-#
-#         export KEYCHAIN
-#         sudo -Eu nixos -- security unlock-keychain -p "$KEYCHAIN" /Users/nixos/Library/Keychains/ci-signing.keychain-db
-#         sudo -Eu buildkite-agent -- security unlock-keychain -p "$KEYCHAIN" /var/lib/buildkite-agent/ci-signing.keychain-db
-#         security unlock-keychain -p "$KEYCHAIN"
-#
-#         mkdir -p "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/"
-#         mkdir -p /var/lib/buildkite-agent/Library/Developer
-#         UUID=$(strings /Volumes/CONFIG/catalyst-dev.mobileprovision | grep -A1 UUID | tail -n 1 | egrep -io "[-A-F0-9]{36}")
-#         cp /Volumes/CONFIG/catalyst-dev.mobileprovision "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
-#         UUID=$(strings /Volumes/CONFIG/catalyst-dist.mobileprovision | grep -A1 UUID | tail -n 1 | egrep -io "[-A-F0-9]{36}")
-#         cp /Volumes/CONFIG/catalyst-dist.mobileprovision "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
-#         chown -R buildkite-agent:admin /var/lib/buildkite-agent/Library
-#         set -x
-#     fi
-# )
+(
+  if [ "$ROLE" = "signing" ]; then
+    set +x
+    echo Setting up signing...
+    # shellcheck disable=SC1091
+    source /var/root/bootstrap/signing/deps/signing.sh
+    # shellcheck disable=SC1091
+    source /var/root/bootstrap/signing/deps/signing-catalyst.sh
+    security create-keychain -p "$KEYCHAIN" ci-signing.keychain
+    security default-keychain -s ci-signing.keychain
+    security set-keychain-settings ci-signing.keychain
+    security list-keychains -d user -s login.keychain ci-signing.keychain
+    security unlock-keychain -p "$KEYCHAIN"
+    security show-keychain-info ci-signing.keychain
+    security import /var/root/bootstrap/signing/deps/iohk-sign.p12 -P "$SIGNING" -k "ci-signing.keychain" -T /usr/bin/productsign
+    security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN" "ci-signing.keychain"
+    security import /var/root/bootstrap/signing/deps/iohk-codesign.cer -k /Library/Keychains/System.keychain
+    security import /var/root/bootstrap/signing/deps/dev.cer -k /Library/Keychains/System.keychain
+    security import /var/root/bootstrap/signing/deps/dist.cer -k /Library/Keychains/System.keychain
+    security import /var/root/bootstrap/signing/deps/AppleWWDRCAG3.cer -k /Library/Keychains/System.keychain
+    security import /var/root/bootstrap/signing/deps/iohk-codesign.p12 -P "$CODESIGNING" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
+    security import /var/root/bootstrap/signing/deps/catalyst-ios-dev.p12 -P "$CATALYST" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
+    security import /var/root/bootstrap/signing/deps/catalyst-ios-dist.p12 -P "$CATALYSTDIST" -k /Library/Keychains/System.keychain -T /usr/bin/codesign
+
+    cp /Library/Keychains/ci-signing.keychain /Users/nixos/Library/Keychains/ci-signing.keychain-db
+    chown nixos:staff /Users/nixos/Library/Keychains/ci-signing.keychain-db
+    mkdir -p /var/lib/buildkite-agent/.private_keys
+    cp /Library/Keychains/ci-signing.keychain /var/lib/buildkite-agent/ci-signing.keychain-db
+    cp /var/root/bootstrap/signing/deps/signing.sh /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/signing-catalyst.sh /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/signing-config.json /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/code-signing-config.json /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/catalyst-ios-build.json /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/catalyst-env.sh /var/lib/buildkite-agent/
+    cp /var/root/bootstrap/signing/deps/catalyst-sentry.properties /var/lib/buildkite-agent/
+    cp "/var/root/bootstrap/signing/deps/AuthKey_${CATALYSTKEY}.p8" "/var/lib/buildkite-agent/.private_keys/AuthKey_${CATALYSTKEY}.p8"
+    chown buildkite-agent:admin /var/lib/buildkite-agent/{ci-signing.keychain-db,signing.sh,signing-config.json,code-signing-config.json}
+    chown -R buildkite-agent:admin /var/lib/buildkite-agent/{signing-catalyst.sh,catalyst-ios-build.json,catalyst-env.sh,.private_keys}
+    chmod 0700 /var/lib/buildkite-agent/.private_keys
+    chmod 0400 /var/lib/buildkite-agent/{signing.sh,signing-catalyst.sh} /var/lib/buildkite-agent/.private_keys/*
+
+    export KEYCHAIN
+    sudo -Eu nixos -- security unlock-keychain -p "$KEYCHAIN" /Users/nixos/Library/Keychains/ci-signing.keychain-db
+    sudo -Eu buildkite-agent -- security unlock-keychain -p "$KEYCHAIN" /var/lib/buildkite-agent/ci-signing.keychain-db
+    security unlock-keychain -p "$KEYCHAIN"
+
+    mkdir -p "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/"
+    mkdir -p /var/lib/buildkite-agent/Library/Developer
+    UUID=$(strings /var/root/bootstrap/signing/deps/catalyst-dev.mobileprovision | grep -A1 UUID | tail -n 1 | grep -Eio "[-A-F0-9]{36}")
+    cp /var/root/bootstrap/signing/deps/catalyst-dev.mobileprovision "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+    UUID=$(strings /var/root/bootstrap/signing/deps/catalyst-dist.mobileprovision | grep -A1 UUID | tail -n 1 | grep -Eio "[-A-F0-9]{36}")
+    cp /var/root/bootstrap/signing/deps/catalyst-dist.mobileprovision "/var/lib/buildkite-agent/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+    chown -R buildkite-agent:admin /var/lib/buildkite-agent/Library
+    set -x
+  fi
+)
 (
   # Prevent another bootstrap cycle if the same guest is rebooted
   echo "Bootstrap finished successfully."

@@ -134,7 +134,7 @@ in {
         preScript = "mkdir -p /etc/decrypted/guests/buildkite";
       };
 
-      "buildkite_aws_creds_ci" = {
+      "buildkite_aws_creds" = {
         encSrc = ../encrypted/buildkite/buildkite-hook;
         targetDir = "/etc/decrypted/guests/buildkite";
         mode = "0644";

@@ -13,7 +13,6 @@ darwinName: {
   nixPkg = inputs.nix.packages.${system}.nix;
   cachecache = inputs.cachecache.packages.${system}.cachecache;
 
-  # This forces an x86_64-linux deployer; TODO: make generic
   guestApply = builtins.toFile "apply.sh" (builtins.readFile ./guests/apply.sh);
   guestConfig = builtins.toFile "darwin-configuration.nix" (builtins.readFile ./guests/darwin-configuration.nix);
 in {
@@ -52,17 +51,17 @@ in {
 
     "newsyslog.d/org.nixos.cachecache.conf".text = ''
       # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/cachecache.log                        644   10     *       $D0   RJ     "pkill -af cachecache"
+      /var/log/cachecache.log                        644   10     *       $D0   NJ
     '';
 
     "newsyslog.d/org.nixos.ncl-ci.conf".text = ''
       # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/ncl-ci.log                            644   10     *       $D0   RJ     "pkill -af ncl-ci-start"
+      /var/log/ncl-ci.log                            644   10     *       $D0   NJ
     '';
 
     "newsyslog.d/org.nixos.ncl-signing.conf".text = ''
       # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/ncl-signing.log                       644   10     *       $D0   RJ     "pkill -af ncl-signing-start"
+      /var/log/ncl-signing.log                       644   10     *       $D0   NJ
     '';
   };
 
@@ -101,14 +100,15 @@ in {
     # Ensure required guest files are available for guest bootstrapping
     printf "configuring guest secrets... "
     rm -rf /etc/guests
-    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/ssh /etc/guests/buildkite
+    mkdir -p /etc/guests/ci/ssh /etc/guests/signing/{ssh,deps} /etc/guests/buildkite
     echo $(hostname -s) > /etc/guests/host-hostname
     cp -Rf ${self}/nix/metal/bitteProfile/darwin/guests/* /etc/guests/
 
-    [ -f /etc/decrypted/guests/netrc ] && cp -f /etc/decrypted/guests/netrc /etc/guests/
-    [ -d /etc/decrypted/guests/buildkite ] && cp -f /etc/decrypted/guests/buildkite/* /etc/guests/buildkite
-    [ -d /etc/decrypted/guests/ci/ssh ] && cp -Rf /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh
-    [ -d /etc/decrypted/guests/signing/ssh ] && cp -Rf /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh
+    [ -f /etc/decrypted/guests/netrc ] && cp -f /etc/decrypted/guests/netrc /etc/guests/ || echo "ERROR: Skipping guest netrc token setup: missing"
+    [ -d /etc/decrypted/guests/buildkite ] && cp -f /etc/decrypted/guests/buildkite/* /etc/guests/buildkite/ || echo "ERROR: Skipping guest buildkite setup: missing"
+    [ -d /etc/decrypted/guests/ci/ssh ] && cp -f /etc/decrypted/guests/ci/ssh/* /etc/guests/ci/ssh/ || echo "ERROR: Skipping guest ci ssh setup: missing"
+    [ -d /etc/decrypted/guests/signing/ssh ] && cp -f /etc/decrypted/guests/signing/ssh/* /etc/guests/signing/ssh/ || echo "ERROR: Skipping guest signing ssh setup: missing"
+    [ -d /etc/decrypted/guests/signing/deps ] && cp -f /etc/decrypted/guests/signing/deps/* /etc/guests/signing/deps || echo "ERROR: Skipping guest signing deps setup: missing"
     echo "ok"
   '';
 
@@ -198,29 +198,4 @@ in {
   };
 
   system.stateVersion = 4;
-
-  # --- TMP MODS FOR BUILD ON HOST LEVEL
-
-  users.knownUsers = ["builder"];
-  users.users.builder = {
-    # Start nix-darwin installed users at 1000 (nixos -- reserved), then builder @ 1001
-    uid = 1001;
-
-    # Staff
-    gid = 20;
-
-    description = "builder";
-    home = "/Users/builder";
-    shell = "/bin/bash";
-  };
-
-  nix.settings.trusted-users = ["root" "builder"];
-
-  environment.etc."per-user/builder/ssh/authorized_keys".text = let
-    environment = lib.concatStringsSep " " [
-      "NIX_REMOTE=daemon"
-      "NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"
-    ];
-  in
-    lib.concatMapStringsSep "\n" (key: ''command="${environment} ${config.nix.package}/bin/nix-store --serve --write" ${key}'') buildSlaveKeys.macos + "\n";
 }
