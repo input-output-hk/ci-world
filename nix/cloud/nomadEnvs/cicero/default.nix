@@ -225,6 +225,9 @@
         args = lib.flatten [
           ["--victoriametrics-addr" "http://monitoring.node.consul:8428"]
           ["--prometheus-addr" "http://monitoring.node.consul:3100"]
+          ["--web-cookie-auth" "/secrets/cookie/authentication"]
+          ["--web-cookie-enc" "/secrets/cookie/encryption"]
+          ["--web-oidc-providers" "/secrets/oidc-providers"]
           ["--transform" (map lib.getExe transformers)]
         ];
       };
@@ -302,6 +305,30 @@
               DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/${ciceroName}?target_session_attrs=read-write
             '';
             env = true;
+          }
+
+          {
+            destination = "/secrets/cookie/authentication";
+            data = ''{{(secret "kv/data/cicero/cookie").Data.data.authentication}}'';
+          }
+          {
+            destination = "/secrets/cookie/encryption";
+            data = ''{{(secret "kv/data/cicero/cookie").Data.data.encryption}}'';
+          }
+          {
+            destination = "/secrets/oidc-providers";
+            data = ''
+              {
+                "google": {
+                  {{with (secret "kv/data/cicero/oauth/google").Data.data -}}
+                  "issuer": "https://accounts.google.com",
+                  "callback-url": "https://${subdomain}.${domain}/login/oidc/google/callback",
+                  "client-id": "{{index . "client-id"}}",
+                  "client-secret": "{{index . "client-secret"}}"
+                  {{- end}}
+                }
+              }
+            '';
           }
 
           {

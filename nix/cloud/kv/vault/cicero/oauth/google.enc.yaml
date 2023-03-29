@@ -1,0 +1,18 @@
+client-id: ENC[AES256_GCM,data:R0i+cD8glyrf2xokItfNZUOowqykZ761Rep0XQIeBio/x2GMGpSjYIlDZ7Q3ENXCG/m2SxDeGUpT9ehA+MreRL90/9i89ObEgA==,iv:X6Zaptal1J0KIUho6kW2ECQXm0FvDxUFFCCPzHccBmo=,tag:fVWHXVozZvscLK7wMFwBEw==,type:str]
+client-secret: ENC[AES256_GCM,data:6dU9Ge8Kefz93M2qigv9ddUy91yVmmVhtCEmUdJqxB4OB1s=,iv:CAd7fHIOaHbeB7QLOczXcoc3qjNhniPtoSbRJ881PVM=,tag:hYmUFOaZXKwfk5/efq5j6A==,type:str]
+sops:
+  kms: []
+  gcp_kms: []
+  azure_kv: []
+  hc_vault:
+    - vault_address: https://vault.ci.iog.io
+      engine_path: sops
+      key_name: ops
+      created_at: "2022-04-22T16:31:48Z"
+      enc: vault:v1:NKNt0+n8/ij6bjpHqxgMu+M4bsF+RasH1yzL2H7lBlnltXuQYFMPCvrfCsd/B+/LAw4Nc3N7sTHBlSlO
+  age: []
+  lastmodified: "2023-03-29T13:42:00Z"
+  mac: ENC[AES256_GCM,data:kpC2TbtaXyZkDfBrUVjFWCALRfHDsSvVP2rVJyjQTD01op5MTaOEH504E62G6Qisi1NoYvHRWNJXVc3sQ/jbI++ULgDgHAlagKzJlV5xsWPGQFety5wtPTWNKnOGF5dIqkDtk176XVrsAYDGdE022gRtuogq/M4rMNZ8oyBKl8c=,iv:iChKvb9862zma4k7ZG2Gw+yCgbhcxwsn7sGzpwYiTRc=,tag:gkZP2it7Ah/I7Kuz+PEq4g==,type:str]
+  pgp: []
+  unencrypted_suffix: _unencrypted
+  version: 3.7.3
