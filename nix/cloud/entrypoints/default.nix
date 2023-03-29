@@ -7,10 +7,10 @@
   mkCicero = f:
     inputs.nixpkgs.writeShellApplication (f {
       name = "entrypoint";
-      runtimeInputs = with inputs.nixpkgs; [
+      runtimeInputs = with inputs.cicero.inputs.nixpkgs.legacyPackages.${inputs.nixpkgs.system}; [
         inputs.cicero.packages.cicero
         inputs.cicero.packages.cicero-evaluator-nix
-        inputs.cicero.inputs.nixpkgs.legacyPackages.${system}.nix
+        nix
         bashInteractive
         coreutils
         gitMinimal
