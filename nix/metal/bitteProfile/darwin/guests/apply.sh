@@ -39,22 +39,8 @@ scutil --set HostName "$HOSTNAME"
 scutil --set LocalHostName "$HOSTNAME"
 scutil --set ComputerName "$HOSTNAME"
 dscacheutil -flushcache
-pkill syslog
-pkill asl
-
-if [ -f /etc/.bootstrap-done ]; then
-  echo "Darwin guest bootstrap already complete... exiting"
-  umount -f /var/root/share
-  exit 0
-fi
-
-# Some of the bootstrap activity seems to disrupt the virtiofs driver,
-# making files fail to retreive later on in the script, so we'll grab them now.
-echo "Copying bootstrap files locally..."
-mkdir -p /var/root/bootstrap
-cp -Rf /var/root/share/guests/* /var/root/bootstrap/
-chown -R root:wheel /var/root/bootstrap/
-ls -laR /var/root/bootstrap
+pkill syslog || true
+pkill asl || true
 
 # Determine the architecture
 ARCH=$(arch)
@@ -67,6 +53,22 @@ else
   exit 1
 fi
 
+if [ -f /etc/.bootstrap-done ]; then
+  echo "Darwin guest bootstrap already complete... exiting"
+  finish "0"
+fi
+
+# The org.nixos.bootup.plist of the pre-bootstrapped image will make sure that
+# both intel and arm machines mount guest dependencies to the same location.
+#
+# Some of the bootstrap activity seems to disrupt the virtiofs driver for arm64 macs,
+# making files fail to retreive later on in the script, so we'll grab everything now.
+echo "Copying bootstrap files locally..."
+mkdir -p /var/root/bootstrap
+cp -Rf /var/root/share/guests/* /var/root/bootstrap/
+chown -R root:wheel /var/root/bootstrap/
+ls -laR /var/root/bootstrap
+
 echo "Preventing darwin guest sleep and unneccessary resource consumption..."
 launchctl unload /System/Library/LaunchDaemons/com.apple.metadata.mds.plist
 softwareupdate --schedule off
@@ -74,11 +76,25 @@ systemsetup -setcomputersleep Never
 caffeinate -s &
 
 function finish {
+  # Allow finish calls directly with a code or from a trap
+  LAST="$?"
+  if [ "$#" = "0" ]; then
+    RC="$LAST"
+  else
+    RC="$1"
+  fi
+
   set +e
   cd /
   sleep 1
-  umount -f /var/root/share
+  if [ "$ARCH" = "arm64" ]; then
+    umount -f /var/root/share
+  else
+    rm -rf /var/root/share
+    umount -f /Volumes/share
+  fi
   rm -rf /var/root/bootstrap
+  exit "$RC"
 }
 trap finish EXIT
 
@@ -98,6 +114,7 @@ chmod 0600 /etc/ssh/ssh_host_*_key
 launchctl start com.openssh.sshd
 cd /
 
+mkdir -p /etc/sudoers.d
 echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
 
 (
@@ -171,8 +188,9 @@ EOF
   nix profile install nixpkgs#git
   cp -vf /var/root/bootstrap/flake.* ~nixos/.nixpkgs/
   cp -vf /var/root/bootstrap/configuration.nix ~nixos/.nixpkgs/configuration.nix
-  cp -vRf /var/root/bootstrap/{modules,roles} ~nixos/.nixpkgs/
+  cp -vRf /var/root/bootstrap/{modules,roles,arch} ~nixos/.nixpkgs/
   cp -vf /var/root/bootstrap/roles/$ROLE.nix ~nixos/.nixpkgs/roles/active-role.nix
+  cp -vf /var/root/bootstrap/arch/$SYSTEM.nix ~nixos/.nixpkgs/arch/active-arch.nix
   sed -i "" -e "s/GUEST/$(hostname -s)/g" -e "s/SYSTEM/$SYSTEM/g" ~nixos/.nixpkgs/flake.nix
   chown -R nixos ~nixos/.nixpkgs
   sudo -iHu nixos -- bash -c 'nix profile install nixpkgs#git; cd .nixpkgs; git init; git add -Av'

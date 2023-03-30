@@ -11,12 +11,27 @@ in
     options = {
       services.buildkite-services-darwin = {
         metadata = mkOption {
-          type = types.str;
-          default = "system=x86_64-darwin";
+          type = types.listOf types.str;
+          default = ["system=x86_64-darwin"];
           description = ''
             Metadata associated with a buildkite agent.
           '';
-          example = "system=x86_64-darwin";
+        };
+
+        arch = mkOption {
+          type = types.str;
+          default = null;
+          description = ''
+            An architecture string, used to make a disambiguation queue tag.
+          '';
+        };
+
+        role = mkOption {
+          type = types.str;
+          default = null;
+          description = ''
+            A role string, used to make a disambiguation queue tag.
+          '';
         };
       };
     };
@@ -35,7 +50,7 @@ in
           git-lfs
           nix
         ];
-        meta-data = cfg.metadata;
+        meta-data = lib.concatStringsSep "," cfg.metadata;
         tokenPath = "${keys}/buildkite_token";
         openssh.privateKeyPath = "${keys}/buildkite-ssh-iohk-devops-private";
         openssh.publicKeyPath = "${keys}/buildkite-ssh-iohk-devops-public";

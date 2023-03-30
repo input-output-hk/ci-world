@@ -19,7 +19,10 @@
 
   authorizedNixStoreKey = key: "command=\"${environment} ${config.nix.package}/bin/nix-store --serve --write\" ${key}";
 in {
-  imports = [./roles/active-role.nix];
+  imports = [
+    ./roles/active-role.nix
+    ./arch/active-arch.nix
+  ];
 
   programs.bash.enable = true;
   programs.bash.enableCompletion = false;

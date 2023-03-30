@@ -9,6 +9,17 @@ wgAddresses: {
 in {
   environment.systemPackages = [zet];
 
+  environment.etc = let
+    #                        logfilename                [owner:group]  mode  count  size    when  flags  [/pid_file]  [sig_num]
+    mkLogRotation = logFile: "/var/log/${logFile}                      640   10     *       $D0   NJ";
+  in {
+    # Can't use this mechanism without introducing pid signaling and rotation,
+    # and unfortunately newsyslog doesn't have the `R` flag implemented in darwin to make this easy.
+    # "newsyslog.d/org.nixos.pfctl-vm-rdr.conf".text = mkLogRotation "pfctl-vm-rdr.log";
+    # "newsyslog.d/org.nixos.wg-quick-wg.conf".text = mkLogRotation "wg-quick-wg.log";
+    # "newsyslog.d/org.nixos.ziti-edge-tunnel.conf".text = mkLogRotation "ziti-edge-tunnel.log";
+  };
+
   networking.wg-quick.interfaces.wg = {
     preUp = [''echo "Starting wireguard wg interface at $(date)"''];
     autostart = true;

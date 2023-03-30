@@ -21,6 +21,7 @@ in {
   environment.systemPackages = with pkgs; [
     bittePkgs.utm
 
+    bashInteractive
     bat
     bottom
     fd
@@ -46,23 +47,17 @@ in {
     zsh.enable = true;
   };
 
-  environment.etc = {
+  environment.etc = let
+    #                        logfilename                [owner:group]  mode  count  size    when  flags  [/pid_file]  [sig_num]
+    mkLogRotation = logFile: "/var/log/${logFile}                      640   10     *       $D0   NJ";
+  in {
     "per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
 
-    "newsyslog.d/org.nixos.cachecache.conf".text = ''
-      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/cachecache.log                        644   10     *       $D0   NJ
-    '';
-
-    "newsyslog.d/org.nixos.ncl-ci.conf".text = ''
-      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/ncl-ci.log                            644   10     *       $D0   NJ
-    '';
-
-    "newsyslog.d/org.nixos.ncl-signing.conf".text = ''
-      # logfilename                   [owner:group]  mode  count  size    when  flags  [/pid_file]                    [sig_num]
-      /var/log/ncl-signing.log                       644   10     *       $D0   NJ
-    '';
+    # Can't use this mechanism without introducing pid signaling and rotation,
+    # and unfortunately newsyslog doesn't have the `R` flag implemented in darwin to make this easy.
+    # "newsyslog.d/org.nixos.cachecache.conf".text = mkLogRotation "cachecache.log";
+    # "newsyslog.d/org.nixos.ncl-ci.conf".text = mkLogRotation "ncl-ci.log";
+    # "newsyslog.d/org.nixos.ncl-signing.conf".text = mkLogRotation "ncl-signing.log";
   };
 
   system.activationScripts.postActivation.text = ''

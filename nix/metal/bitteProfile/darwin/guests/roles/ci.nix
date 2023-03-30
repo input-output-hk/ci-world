@@ -9,6 +9,12 @@
     ../modules/hydra-builder.nix
     ../modules/buildkite-agent.nix
   ];
-  services.buildkite-services-darwin.metadata = "system=aarch64-darwin,system=x86_64-darwin,queue=default-test,queue=core-tech-test";
-  # services.buildkite-services-darwin.metadata = "system=x86_64-darwin,queue=default,queue=core-tech";
+
+  services.buildkite-services-darwin = {
+    # When ready to switch to prod:
+    # metadata = ["queue=default" "queue=core-tech"];
+    metadata = ["queue=default-test" "queue=core-tech-test"];
+
+    role = "ci";
+  };
 }
