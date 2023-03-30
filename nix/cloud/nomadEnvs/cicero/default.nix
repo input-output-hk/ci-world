@@ -378,39 +378,13 @@ in {
     group.cicero = merge commonGroup {
       service = [
         {
-          name = "${ciceroName}-internal";
-          address_mode = "auto";
-          port = "http";
-          tags = [
-            "ingress"
-            "traefik.enable=true"
-            "traefik.http.routers.${ciceroName}-internal.rule=Host(`${subdomain}.${domain}`, `${subdomain}.iog.io`) && HeadersRegexp(`Authorization`, `Basic`)"
-            "traefik.http.routers.${ciceroName}-internal.middlewares=cicero-auth@consulcatalog"
-            "traefik.http.middlewares.cicero-auth.basicauth.users=cicero:$2y$05$lcwzbToms.S83xjBFlHSvO.Lt3Y37b8SLd/9aYuqoSxBOxR9693.2"
-            "traefik.http.middlewares.cicero-auth.basicauth.realm=Cicero"
-            "traefik.http.routers.${ciceroName}-internal.entrypoints=https"
-            "traefik.http.routers.${ciceroName}-internal.tls=true"
-            "traefik.http.routers.${ciceroName}-internal.tls.certresolver=acme"
-          ];
-          canary_tags = [ciceroName];
-          check = [
-            {
-              type = "tcp";
-              port = "http";
-              interval = "10s";
-              timeout = "2s";
-            }
-          ];
-        }
-        {
           name = ciceroName;
           address_mode = "auto";
           port = "http";
           tags = [
             "ingress"
             "traefik.enable=true"
-            "traefik.http.routers.${ciceroName}.rule=Host(`${subdomain}.${domain}`, `${subdomain}.iog.io`)"
-            "traefik.http.routers.${ciceroName}.middlewares=oauth-auth-redirect@file"
+            "traefik.http.routers.${ciceroName}.rule=Host(`${subdomain}.${domain}`)"
             "traefik.http.routers.${ciceroName}.entrypoints=https"
             "traefik.http.routers.${ciceroName}.tls=true"
             "traefik.http.routers.${ciceroName}.tls.certresolver=acme"
