@@ -73,6 +73,11 @@ in {
               '';
               deps = [];
             };
+
+            # We generally don't need to be zfs snapshotting in ci-world.
+            # For the prod builders this mostly amounts to large nix store changes anyway.
+            # Disable snapshotting for all clients in ci-world.
+            services.zfs-client-options.enableZfsSnapshots = false;
           })
         ];
 
@@ -90,6 +95,16 @@ in {
                     path = "/nix";
                     read_only = false;
                   };
+
+                  # Prod builders currently have ~1 TiB gp3 capacity, so start auto-gc on prod clients
+                  # with tuning of a 750 GiB trigger threshold which will stay under the 80% storage
+                  # capacity alert and gc to 500 GiB.
+                  nix.extraOptions = let
+                    GiB = num: toString (num * 1024 * 1024 * 1024);
+                  in ''
+                    min-free = ${GiB (1000 - 750)}
+                    max-free = ${GiB 500}
+                  '';
                 })
               ];
           }
