@@ -9,17 +9,6 @@ wgAddresses: {
 in {
   environment.systemPackages = [zet];
 
-  environment.etc = let
-    #                        logfilename                [owner:group]  mode  count  size    when  flags  [/pid_file]  [sig_num]
-    mkLogRotation = logFile: "/var/log/${logFile}                      640   10     *       $D0   NJ";
-  in {
-    # Can't use this mechanism without introducing pid signaling and rotation,
-    # and unfortunately newsyslog doesn't have the `R` flag implemented in darwin to make this easy.
-    # "newsyslog.d/org.nixos.pfctl-vm-rdr.conf".text = mkLogRotation "pfctl-vm-rdr.log";
-    # "newsyslog.d/org.nixos.wg-quick-wg.conf".text = mkLogRotation "wg-quick-wg.log";
-    # "newsyslog.d/org.nixos.ziti-edge-tunnel.conf".text = mkLogRotation "ziti-edge-tunnel.log";
-  };
-
   networking.wg-quick.interfaces.wg = {
     preUp = [''echo "Starting wireguard wg interface at $(date)"''];
     autostart = true;
@@ -29,7 +18,16 @@ in {
     peers = [
       {
         endpoint = "zt.ci.iog.io:51820";
-        allowedIPs = ["10.10.0.254/32"];
+        allowedIPs = [
+          "10.10.0.254/32"
+          # The CIDRs below could be source NATd at the zt gateway, but since they are
+          # currently non-collisional with existing mac CIDR ranges in use,
+          # we'll use them unNATed for easier packet debug.
+          "10.24.0.0/16"
+          "10.32.0.0/16"
+          "10.52.0.0/16"
+          "172.16.0.0/16"
+        ];
         publicKey = "ET2Hbi1sywNSCWhGYGqBham7ZhNdMYyuhUNRiOqILlQ=";
         persistentKeepalive = 30;
       }
@@ -70,19 +68,20 @@ in {
 
   # Required rules for wireguard and ziti ip redirection from host to guest
   system.activationScripts.postActivation.text = let
-    appendLines = "$'\\n''rdr-anchor \"org.nixos.vm-rdr\"'$'\\\n''load anchor \"org.nixos.vm-rdr\" from \"/etc/pf.anchors/org.nixos.vm-rdr\"'";
+    appendLines = "$'\\n''rdr-anchor \"org.nixos.pfctl-vm-rdr\"'$'\\\n''load anchor \"org.nixos.pfctl-vm-rdr\" from \"/etc/pf.anchors/org.nixos.pfctl-vm-rdr\"'";
     anchorText = ''
-      # Pass ssh and node exporter requests to the guests
-      # Host node exporter can still be requested at port 9100
-      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port {22, 9101} -> 192.168.64.2/32
-      rdr pass on { utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32'';
+      # Pass ssh and node exporter requests to the guests.
+      # Host node exporter can still be requested at port 9100.
+      # wg, ziti each use a tunnel in an undetermined order, and if one fails during initial startup, may use a third tunnel interface.
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port {22, 9101} -> 192.168.64.2/32
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32'';
   in ''
     # Ensure packet forwarding to vm guests is enabled
     printf "applying darwin guest packet redirection... "
     mkdir -p /etc/pf.anchors
-    echo '${anchorText}' > /etc/pf.anchors/org.nixos.vm-rdr
+    echo '${anchorText}' > /etc/pf.anchors/org.nixos.pfctl-vm-rdr
 
-    if ! grep --quiet --no-messages 'org.nixos.vm-rdr' /etc/pf.conf; then
+    if ! grep --quiet --no-messages 'org.nixos.pfctl-vm-rdr' /etc/pf.conf; then
       cp /etc/pf.conf /etc/pf.conf-orig
 
       APPEND_LINES=${appendLines}

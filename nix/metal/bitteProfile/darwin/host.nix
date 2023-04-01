@@ -47,18 +47,7 @@ in {
     zsh.enable = true;
   };
 
-  environment.etc = let
-    #                        logfilename                [owner:group]  mode  count  size    when  flags  [/pid_file]  [sig_num]
-    mkLogRotation = logFile: "/var/log/${logFile}                      640   10     *       $D0   NJ";
-  in {
-    "per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
-
-    # Can't use this mechanism without introducing pid signaling and rotation,
-    # and unfortunately newsyslog doesn't have the `R` flag implemented in darwin to make this easy.
-    # "newsyslog.d/org.nixos.cachecache.conf".text = mkLogRotation "cachecache.log";
-    # "newsyslog.d/org.nixos.ncl-ci.conf".text = mkLogRotation "ncl-ci.log";
-    # "newsyslog.d/org.nixos.ncl-signing.conf".text = mkLogRotation "ncl-signing.log";
-  };
+  environment.etc."per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
 
   system.activationScripts.postActivation.text = ''
     # Create a ~/.bashrc containing `source /etc/profile`.

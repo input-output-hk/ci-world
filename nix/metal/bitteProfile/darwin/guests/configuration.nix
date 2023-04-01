@@ -60,4 +60,39 @@ in {
       StandardOutPath = "/var/log/prometheus-node-exporter.log";
     };
   };
+
+  launchd.daemons.guest-ip-assignment = {
+    script = ''
+      NAME=$(/bin/hostname -s)
+      if [[ $NAME =~ ^.*-ci.*$ ]]; then
+        ASSIGNED_IP="192.168.64.2"
+      elif [[ $NAME =~ ^.*-signing.*$ ]]; then
+        ASSIGNED_IP="192.168.64.3"
+      else
+        echo "Error: the hostname of this guest needs to have '-ci' or '-signing' in the name."
+        exit 1
+      fi
+
+      IP=$(/usr/sbin/ipconfig getifaddr en0)
+
+      # Ensure interface en0 is already allocated before trying to take action
+      [ "$?" = "0" ] || { echo "$(/bin/date -u): Interface en0 is not yet ip allocated..."; exit 0; }
+
+      # Ensure interface en0 is already UTM bridge allocated on subnet 192.168.64.0/24 before trying to take action
+      [[ $IP =~ ^192\.168\.64\..*$ ]] || { echo "$(/bin/date -u): Interface en0 is not yet a bridge allocated: $IP..."; exit 0; }
+
+      # Ensure the allocated bridge ip is correct
+      if [ "$IP" != "$ASSIGNED_IP" ]; then
+        echo "$(/bin/date -u): Updating current ip of $IP to assigned IP of $ASSIGNED_IP"
+        ipconfig set en0 INFORM "$ASSIGNED_IP"
+      fi
+    '';
+
+    serviceConfig = {
+      # Run every minute
+      StartInterval = 60;
+      StandardErrorPath = "/var/log/guest-ip-assignment.log";
+      StandardOutPath = "/var/log/guest-ip-assignment.log";
+    };
+  };
 }

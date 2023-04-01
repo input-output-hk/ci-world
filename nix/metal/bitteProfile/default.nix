@@ -218,100 +218,7 @@ in {
 
           modules = [
             bitte.profiles.monitoring
-            ({lib, ...}: {
-              # If this is needed, check there isn't a rogue logger first
-              # services.loki.configuration.limits_config = {
-              #   per_stream_rate_limit = "10MB";
-              #   per_stream_rate_limit_burst = "30MB";
-              # };
-
-              # For API requests with huge responses, see:
-              # - https://github.com/grafana/loki/issues/2271
-              # - https://github.com/grafana/loki/issues/6568
-              services.loki.configuration.server.grpc_server_max_recv_msg_size = 1024 * 1024 * 8; # 8 MiB
-
-              services.prometheus.exporters.blackbox = lib.mkForce {
-                enable = true;
-                configFile = pkgs.toPrettyJSON "blackbox-exporter.yaml" {
-                  modules = {
-                    ssh_banner = {
-                      prober = "tcp";
-                      timeout = "10s";
-                      tcp = {
-                        preferred_ip_protocol = "ip4";
-                        query_response = [
-                          {
-                            expect = "^SSH-2.0-";
-                            send = "SSH-2.0-blackbox-ssh-check";
-                          }
-                        ];
-                      };
-                    };
-                  };
-                };
-              };
-
-              services.vmagent.promscrapeConfig = let
-                mkTarget = ip: port: machine: {
-                  targets = ["${ip}:${toString port}"];
-                  labels.alias = machine;
-                };
-              in [
-                {
-                  job_name = "blackbox-ssh-darwin";
-                  scrape_interval = "60s";
-                  metrics_path = "/probe";
-                  params.module = ["ssh_banner"];
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 22 "mm1-builder")
-                    (mkTarget "10.10.0.2" 22 "mm2-builder")
-                    (mkTarget "10.10.0.101" 22 "mm1-signer")
-                    (mkTarget "10.10.0.102" 22 "mm2-signer")
-                  ];
-                  relabel_configs = [
-                    {
-                      source_labels = ["__address__"];
-                      target_label = "__param_target";
-                    }
-                    {
-                      source_labels = ["__param_target"];
-                      target_label = "instance";
-                    }
-                    {
-                      replacement = "127.0.0.1:9115";
-                      target_label = "__address__";
-                    }
-                  ];
-                }
-                {
-                  job_name = "mm-hosts";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/host";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-host")
-                    (mkTarget "10.10.0.2" 9111 "mm2-host")
-                  ];
-                }
-                {
-                  job_name = "mm-ci";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/ci";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-builder")
-                    (mkTarget "10.10.0.2" 9111 "mm2-builder")
-                  ];
-                }
-                {
-                  job_name = "mm-signing";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/signing";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-signer")
-                    (mkTarget "10.10.0.2" 9111 "mm2-signer")
-                  ];
-                }
-              ];
-            })
+            ./monitoring.nix
           ];
 
           securityGroupRules = {
@@ -466,7 +373,7 @@ in {
                         allowedIPs = ["10.10.0.3/32" "10.10.0.103/32"];
                         persistentKeepalive = 30;
                       }
-                      # mm-intel3
+                      # mm-intel4
                       {
                         publicKey = "v9tIACN9BsUzy5dx82EW0ruFJUHmyLyTzkxLA5dCbiI=";
                         allowedIPs = ["10.10.0.4/32" "10.10.0.104/32"];
