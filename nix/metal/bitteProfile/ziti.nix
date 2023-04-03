@@ -1,12 +1,7 @@
 {lib, ...}: let
   awsExt-to-equinix-host-v1 = builtins.toJSON {
     allowedAddresses = ["10.12.10.0/24"];
-    allowedPortRanges = [
-      {
-        low = 0;
-        high = 65535;
-      }
-    ];
+    allowedPortRanges = [{low = 0; high = 65535;}];
     allowedProtocols = ["tcp" "udp"];
     forwardAddress = true;
     forwardPort = true;
@@ -20,12 +15,7 @@
       connectTimeoutSeconds = 15;
       identity = "$dst_ip";
     };
-    portRanges = [
-      {
-        low = 0;
-        high = 65535;
-      }
-    ];
+    portRanges = [{low = 0; high = 65535;}];
     protocols = ["tcp" "udp"];
     sourceIp = "";
   };
@@ -37,12 +27,7 @@
       "10.32.0.0/16"
       "10.52.0.0/16"
     ];
-    allowedPortRanges = [
-      {
-        low = 0;
-        high = 65535;
-      }
-    ];
+    allowedPortRanges = [{low = 0; high = 65535;}];
     allowedProtocols = ["tcp" "udp"];
     forwardAddress = true;
     forwardPort = true;
@@ -60,15 +45,35 @@
       connectTimeoutSeconds = 15;
       identity = "";
     };
-    portRanges = [
-      {
-        low = 0;
-        high = 65535;
-      }
-    ];
+    portRanges = [{low = 0; high = 65535;}];
     protocols = ["tcp" "udp"];
     sourceIp = "";
   };
+
+  darwin-ci-world-host-v1 = builtins.toJSON {
+    address = "127.0.0.1";
+    allowedPortRanges = [
+      {low = 22; high = 22;}
+      {low = 5900; high = 5900;}
+      {low = 9100; high = 9100;}
+    ];
+    allowedProtocols = ["tcp"];
+    forwardPort = true;
+    forwardProtocol = true;
+    listenOptions.identity = "$tunneler_id.name";
+  };
+
+  darwin-ci-world-intercept-v1 = builtins.toJSON {
+    addresses = ["*.darwin.ci-world.ziti"];
+    dialOptions.identity = "$dst_hostname";
+    portRanges = [
+      {low = 22; high = 22;}
+      {low = 5900; high = 5900;}
+      {low = 9100; high = 9100;}
+    ];
+    protocols = ["tcp"];
+  };
+
 in {
   boot.kernel.sysctl."net.ipv4.conf.all.forwarding" = true;
 
@@ -80,6 +85,7 @@ in {
     ziti-controller = {
       enable = true;
       extraBootstrapPost = ''
+        # NOTE: Currently wg is preferred for darwin services until zet stabilizes for continous use, high bandwidth use case
         # Create mac-mini-1 builder service
         ziti edge create config mm1-builder-host.v1 \
           host.v1 \
@@ -216,6 +222,36 @@ in {
           Bind \
           --identity-roles '#gw-zet' \
           --service-roles '@equinix-to-awsExt' \
+          --semantic "AnyOf"
+
+        # ----------------------------------------------
+
+        # Create darwin access service
+        # shellcheck disable=SC2016
+        ziti edge create config "darwin.ci-world.host.v1" host.v1 '${darwin-ci-world-host-v1}'
+
+        # shellcheck disable=SC2016
+        ziti edge create config "darwin.ci-world.intercept.v1" intercept.v1 '${darwin-ci-world-intercept-v1}'
+
+        ziti edge create service \
+          darwin \
+          --configs darwin.ci-world.host.v1 \
+          --configs darwin.ci-world.intercept.v1 \
+          --encryption ON \
+          --role-attributes darwin
+
+        ziti edge create service-policy \
+          darwin-dial \
+          Dial \
+          --identity-roles '#devOps,#gw-zet' \
+          --service-roles '@darwin' \
+          --semantic "AnyOf"
+
+        ziti edge create service-policy \
+          darwin-bind \
+          Bind \
+          --identity-roles '#darwin' \
+          --service-roles '@darwin' \
           --semantic "AnyOf"
       '';
     };

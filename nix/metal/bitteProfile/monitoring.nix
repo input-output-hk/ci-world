@@ -83,7 +83,7 @@
       ];
     }
     {
-      job_name = "mm-hosts-legacy";
+      job_name = "darwin-hosts-legacy";
       scrape_interval = "60s";
       metrics_path = "/monitorama/host";
       static_configs = [
@@ -92,7 +92,7 @@
       ];
     }
     {
-      job_name = "mm-hosts";
+      job_name = "darwin-hosts";
       scrape_interval = "60s";
       metrics_path = "/metrics";
       static_configs = [
@@ -103,7 +103,7 @@
       ];
     }
     {
-      job_name = "mm-ci-legacy";
+      job_name = "darwin-ci-legacy";
       scrape_interval = "60s";
       metrics_path = "/monitorama/ci";
       static_configs = [
@@ -112,7 +112,7 @@
       ];
     }
     {
-      job_name = "mm-ci";
+      job_name = "darwin-ci";
       scrape_interval = "60s";
       metrics_path = "/metrics";
       static_configs = [
@@ -123,7 +123,7 @@
       ];
     }
     {
-      job_name = "mm-signing-legacy";
+      job_name = "darwin-signing-legacy";
       scrape_interval = "60s";
       metrics_path = "/monitorama/signing";
       static_configs = [
@@ -132,11 +132,11 @@
       ];
     }
     {
-      job_name = "mm-signing";
+      job_name = "darwin-signing";
       scrape_interval = "60s";
       metrics_path = "/metrics";
       static_configs = [
-        # (mkTarget "10.10.0.103" 9101 "mm-intel3-signing") -- currently allocated as signer only due to RAM constraint
+        # (mkTarget "10.10.0.103" 9101 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
         (mkTarget "10.10.0.104" 9101 "mm-intel4-signing")
         (mkTarget "10.10.0.151" 9101 "ms-arm1-signing")
         (mkTarget "10.10.0.152" 9101 "ms-arm2-signing")

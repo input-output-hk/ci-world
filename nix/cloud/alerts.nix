@@ -92,7 +92,7 @@
       }
       {
         alert = "node_filesystem_full_90percent";
-        expr = ''sort(node_filesystem_free_bytes{device!="ramfs",fstype!="apfs"} < node_filesystem_size_bytes{device!="ramfs",fstype!="apfs"} * 0.1) / 1024^3'';
+        expr = ''sort(node_filesystem_free_bytes{device!~"ramfs|9pfs",fstype!="apfs"} < node_filesystem_size_bytes{device!="ramfs",fstype!="apfs"} * 0.1) / 1024^3'';
         for = "5m";
         labels.severity = "critical";
         annotations = {
@@ -102,7 +102,7 @@
       }
       {
         alert = "node_filesystem_full_in_4h";
-        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
+        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|9pfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
         for = "5m";
         labels.severity = "warning";
         annotations = {

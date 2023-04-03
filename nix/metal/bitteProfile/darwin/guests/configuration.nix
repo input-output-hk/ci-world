@@ -79,7 +79,7 @@ in {
       [ "$?" = "0" ] || { echo "$(/bin/date -u): Interface en0 is not yet ip allocated..."; exit 0; }
 
       # Ensure interface en0 is already UTM bridge allocated on subnet 192.168.64.0/24 before trying to take action
-      [[ $IP =~ ^192\.168\.64\..*$ ]] || { echo "$(/bin/date -u): Interface en0 is not yet a bridge allocated: $IP..."; exit 0; }
+      [[ $IP =~ ^192\.168\.64\..*$ ]] || { echo "$(/bin/date -u): Interface en0 is not yet bridge allocated: $IP..."; exit 0; }
 
       # Ensure the allocated bridge ip is correct
       if [ "$IP" != "$ASSIGNED_IP" ]; then

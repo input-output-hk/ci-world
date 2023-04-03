@@ -66,7 +66,7 @@ in {
     '';
   };
 
-  # Required rules for wireguard and ziti ip redirection from host to guest
+  # Required rules for wireguard and ziti ip redirection from host to guest, allowing host ssh to still be accessed
   system.activationScripts.postActivation.text = let
     appendLines = "$'\\n''rdr-anchor \"org.nixos.pfctl-vm-rdr\"'$'\\\n''load anchor \"org.nixos.pfctl-vm-rdr\" from \"/etc/pf.anchors/org.nixos.pfctl-vm-rdr\"'";
     anchorText = ''
@@ -74,7 +74,8 @@ in {
       # Host node exporter can still be requested at port 9100.
       # wg, ziti each use a tunnel in an undetermined order, and if one fails during initial startup, may use a third tunnel interface.
       rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port {22, 9101} -> 192.168.64.2/32
-      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32'';
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to {${wgAddresses.ci}, ${wgAddresses.signing}} port 2222 -> 127.0.0.1 port 22'';
   in ''
     # Ensure packet forwarding to vm guests is enabled
     printf "applying darwin guest packet redirection... "

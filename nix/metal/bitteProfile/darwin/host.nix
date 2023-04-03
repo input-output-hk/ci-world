@@ -8,7 +8,7 @@ darwinName: {
   config,
   ...
 }: let
-  inherit (bittePkgs.ssh-keys) ciInfra buildSlaveKeys;
+  inherit (bittePkgs.ssh-keys) ciInfra;
 
   nixPkg = inputs.nix.packages.${system}.nix;
   cachecache = inputs.cachecache.packages.${system}.cachecache;
@@ -99,12 +99,11 @@ in {
   nix = {
     package = nixPkg;
     gc.automatic = true;
-    gc.options = "--max-freed $((10 * 1024 * 1024))";
     gc.user = "root";
     settings = {
       cores = 0;
       max-jobs = "auto";
-      auto-optimise-store = true;
+      auto-optimise-store = false;
       substituters = ["https://cache.nixos.org" "https://cache.iog.io"];
 
       trusted-public-keys = [
