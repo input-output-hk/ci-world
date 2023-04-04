@@ -1,0 +1,17 @@
+token: ENC[AES256_GCM,data:YZF9YZ38Jz3dPnugHZn28+1ry5HobjSEYgOezB1zl7+U53+tW3PPXEe989QLed7oVbeoAgEiPs2og5AM/reEsT88c/gGOD5d1DLEVf12oGZiPBt1wCiyuZMWxOViSkqvZke0L0WqJu6RqTTUcN1be00fOj4IAGU+REI/NUIcBAVbKK/ZZUxHI+bNlQMWOoboDtuh/RfXDIAa6qcFi+k5yxsafws2xqaVn1oc7wqYZlMKVzXdZCyn3Zb1tXY=,iv:C64c/mzGpD36xUF6ddPI4z3XvDT4FzywnI7yPmlTEyE=,tag:kIba4JCVqO81hNl7uPpZ3w==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: ops
+          created_at: "2022-04-22T16:31:48Z"
+          enc: vault:v1:NKNt0+n8/ij6bjpHqxgMu+M4bsF+RasH1yzL2H7lBlnltXuQYFMPCvrfCsd/B+/LAw4Nc3N7sTHBlSlO
+    age: []
+    lastmodified: "2023-04-04T11:32:17Z"
+    mac: ENC[AES256_GCM,data:tJ73oyckeul0apS+u7Yh7/vZXuX3S8XaA3xej6ZZvCai4xAGXL/QFqJ6TL8lEKK5CAXaXdqNH6niZbCx0VluQ/OS27HXAbjcknMhj6nxMNtYvK/whmxD3K+61ZEt8nugmthmsAG6pG5KMEoxJT5ZQhwlIrGTd45PyjK075c7XII=,iv:XQYJ2PUwOzW+Mw46DaUOfHUBd+/6nbO4+gkQl5dwXRc=,tag:BtapEO9GMhNqXqBOpvBomA==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.3
