@@ -4,11 +4,10 @@
   pkgs,
   ...
 }: let
-  # To avoid multiple locks on /nix/var/nix/gc.lock and subsequent GC hang,
-  # minFreeMB should be significantly higher than nixAutoMinFreeMB.
-  # The closer those two numbers are, the more likely GC locking will occur.
-  nixAutoMaxFreedMB = 33000; # An absolute amount to free
-  nixAutoMinFreeMB = 4000;
+  nixAutoMaxFreedGB = 70; # An absolute amount to free
+  nixAutoMinFreeGB = 30;
+
+  # Parameters for the timed GC option
   maxFreedMB = 25000; # A relative amount to free
   minFreeMB = 15000;
 
@@ -16,26 +15,34 @@
 in
   with lib; {
     options = {
-      nix.builder-gc.enable = mkOption {
+      nix.builder-gc.enableAutoGc = mkOption {
         type = types.bool;
-        default = false;
+        default = true;
         description = ''
           Automatically run the garbage collector when free disk space
           falls below a certain level.
         '';
       };
 
+      nix.builder-gc.enableTimedGc = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Automatically run the garbage collector on a timed basis.
+        '';
+      };
+
       nix.builder-gc.interval = mkOption {
         type = types.listOf types.attrs;
         default = map (m: {Minute = m;}) [0 15 30 45];
-        description = "The time interval at which the garbage collector will run.";
+        description = "The time interval at which the timed garbage collector will run.";
       };
 
       nix.builder-gc.maxFreedMB = mkOption {
         type = types.int;
         default = maxFreedMB;
         description = ''
-          Approximate maximum amount in megabytes to delete.
+          Approximate maximum amount in megabytes to delete for the timed GC.
           This is given as the <filename>nix-collect-garbage --max-freed</filename>
           argument when the garbage collector is run automatically.
         '';
@@ -45,21 +52,21 @@ in
         type = types.int;
         default = minFreeMB;
         description = ''
-          Low disk level in megabytes which triggers garbage collection.
+          Low disk level in megabytes which triggers garbage collection for the timed GC.
         '';
       };
     };
 
     config = {
-      nix.extraOptions = ''
-        # Try to ensure between ${toString nixAutoMinFreeMB}M and ${toString nixAutoMaxFreedMB}M of free space by
+      nix.extraOptions = mkIf cfg.enableAutoGc ''
+        # Try to ensure between ${toString nixAutoMinFreeGB}GB and ${toString nixAutoMaxFreedGB}GB of free space by
         # automatically triggering a garbage collection if free
         # disk space drops below a certain level during a build.
-        min-free = ${toString (nixAutoMinFreeMB * 1048576)}
-        max-free = ${toString (nixAutoMaxFreedMB * 1048576)}
+        min-free = ${toString (nixAutoMinFreeGB * 1024 * 1024 * 1024)}
+        max-free = ${toString (nixAutoMaxFreedGB * 1024 * 1024 * 1024)}
       '';
 
-      launchd.daemons.nix-builder-gc = {
+      launchd.daemons.nix-builder-gc = mkIf cfg.enableTimedGc {
         script = ''
           free=$(${pkgs.coreutils}/bin/df --block-size=M --output=avail /nix/store | tail -n1 | sed s/M//)
           echo "Automatic GC: ''${free}M available"
