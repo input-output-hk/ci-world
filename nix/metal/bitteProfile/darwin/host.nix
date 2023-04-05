@@ -90,6 +90,7 @@ in {
     mkdir -p /etc/guests/ci/ssh /etc/guests/signing/{ssh,deps} /etc/guests/buildkite
     echo $(hostname -s) > /etc/guests/host-hostname
     cp -Rf ${self}/nix/metal/bitteProfile/darwin/guests/* /etc/guests/
+    cp -f /etc/ssh/ssh_host_ed25519_key.pub /etc/guests/host-key.pub
 
     [ -f /etc/decrypted/guests/netrc ] && cp -f /etc/decrypted/guests/netrc /etc/guests/ || echo "ERROR: Skipping guest netrc token setup: missing"
     [ -d /etc/decrypted/guests/buildkite ] && cp -f /etc/decrypted/guests/buildkite/* /etc/guests/buildkite/ || echo "ERROR: Skipping guest buildkite setup: missing"

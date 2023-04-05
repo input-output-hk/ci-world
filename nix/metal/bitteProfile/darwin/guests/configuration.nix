@@ -29,9 +29,10 @@ in {
   };
 
   system.activationScripts.postActivation.text = ''
-    printf "configuring ssh keys for hydra on the root account... "
+    printf "configuring ssh keys on the root account... "
     mkdir -p ~root/.ssh
     cp -f /etc/per-user/root/ssh/authorized_keys ~root/.ssh/authorized_keys
+    cat /etc/host-key.pub >> ~root/.ssh/authorized_keys
     chown root:wheel ~root ~root/.ssh ~root/.ssh/authorized_keys
     echo "ok"
   '';

@@ -85,15 +85,14 @@ function finish {
   fi
 
   set +e
-  cd /
+  cd
   sleep 1
   if [ "$ARCH" = "arm64" ]; then
-    umount -f /var/root/share
+    umount -f /var/root/share || true
   else
-    rm -rf /var/root/share
-    umount -f /Volumes/share
+    umount -f /Volumes/share || true
   fi
-  rm -rf /var/root/bootstrap
+  rm -rf /var/root/share /var/root/bootstrap
   exit "$RC"
 }
 trap finish EXIT
@@ -109,6 +108,7 @@ EOF
 launchctl stop com.openssh.sshd
 
 cp -rf /var/root/bootstrap/$ROLE/ssh/ssh_host_* /etc/ssh
+cp -f /var/root/bootstrap/host-key.pub /etc/
 chown root:wheel /etc/ssh/ssh_host_*
 chmod 0600 /etc/ssh/ssh_host_*_key
 launchctl start com.openssh.sshd
@@ -276,5 +276,8 @@ EOF
 (
   # Prevent another bootstrap cycle if the same guest is rebooted
   echo "Bootstrap finished successfully."
+  launchctl bootout system/org.nixos.bootup
+  rm -rf /Library/LaunchDaemons/org.nixos.bootup.plist /var/root/org.nixos.bootup.plist
   touch /etc/.bootstrap-done
+  echo "Done."
 )
