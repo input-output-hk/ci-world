@@ -108,7 +108,7 @@ in {
       };
 
       "${darwinName}.darwin.bitte-world.ziti.json" = {
-        encSrc = ../encrypted/darwin/zt/${darwinName}.darwin.bitte-world.ziti.json;
+        encSrc = ../encrypted/darwin/zt/${darwinName}.darwin.ci-world.ziti.enc.json;
         targetDir = "/var/root/ziti/identity";
         preScript = ''
           mkdir -p /var/root/ziti/identity
@@ -181,6 +181,19 @@ in {
         '';
       };
 
+      "guest-ci-ssh_host_ecdsa_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_ecdsa_key.enc;
+        filename = "ssh_host_ecdsa_key";
+        targetDir = "/etc/decrypted/guests/ci/ssh";
+        preScript = "mkdir -p /etc/decrypted/guests/ci/ssh";
+
+        postScript = ''
+          cd /etc/decrypted/guests/ci/ssh
+          ssh-keygen -y -f ssh_host_ecdsa_key > ssh_host_ecdsa_key.pub
+          chmod 0644 ssh_host_ecdsa_key
+        '';
+      };
+
       "guest-ci-ssh_host_rsa_key" = {
         encSrc = ../encrypted/darwin/hosts/${darwinName}/ci/ssh/ssh_host_rsa_key.enc;
         filename = "ssh_host_rsa_key";
@@ -204,6 +217,19 @@ in {
           cd /etc/decrypted/guests/signing/ssh
           ssh-keygen -y -f ssh_host_ed25519_key > ssh_host_ed25519_key.pub
           chmod 0644 ssh_host_ed25519_key
+        '';
+      };
+
+      "guest-signing-ssh_host_ecdsa_key" = {
+        encSrc = ../encrypted/darwin/hosts/${darwinName}/signing/ssh/ssh_host_ecdsa_key.enc;
+        filename = "ssh_host_ecdsa_key";
+        targetDir = "/etc/decrypted/guests/signing/ssh";
+        preScript = "mkdir -p /etc/decrypted/guests/signing/ssh";
+
+        postScript = ''
+          cd /etc/decrypted/guests/signing/ssh
+          ssh-keygen -y -f ssh_host_ecdsa_key > ssh_host_ecdsa_key.pub
+          chmod 0644 ssh_host_ecdsa_key
         '';
       };
 

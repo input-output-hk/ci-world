@@ -9,7 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     ops-lib = {
-      url = "github:input-output-hk/ops-lib";
+      url = "github:input-output-hk/ops-lib/buildfarm";
       flake = false;
     };
   };

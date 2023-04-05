@@ -109,15 +109,16 @@
     "ops-lib": {
       "flake": false,
       "locked": {
-        "lastModified": 1678916246,
-        "narHash": "sha256-sYbqntsjwIk/ogI0ZYfzs1nEIxVkVmYZf1Tm/V7a7iw=",
+        "lastModified": 1680651381,
+        "narHash": "sha256-16171n32ggeVOdNKTIphETLz8FcMQXRl+YqR6HWO0Gs=",
         "owner": "input-output-hk",
         "repo": "ops-lib",
-        "rev": "dfcd3b90a16cc2068114d85f740e46ce05946d07",
+        "rev": "1e2c1569acdf0b60253a39c36269406e8252c4a2",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
+        "ref": "buildfarm",
         "repo": "ops-lib",
         "type": "github"
       }

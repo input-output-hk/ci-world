@@ -5,19 +5,11 @@
   pkgs,
   ...
 }: let
-  inherit (sshKeyLib) allKeysFrom devOps csl-developers remoteBuilderKeys;
+  inherit (sshKeyLib) allKeysFrom devOps csl-developers;
 
   sshKeyLib = import (inputs.ops-lib + "/overlays/ssh-keys.nix") lib;
   sshKeys = allKeysFrom (devOps // {inherit (csl-developers) angerman;});
-  extraSshKeys = {
-    hydra-queue-runner = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCx2oZoaoHu8YjD94qNp8BfST12FDvgevWloTXqjPQD+diOL1I6nC+nDT2hroAOIkShlM4O2OgbUArmTWc8nPTBUvRClYgjd7jPpVhkyTm9tsHlAFTpgv1n2GPIOK9e97dgU3ZB5phx58WcLVtBeCChFce4EM7oLMKYeo/4pggtal8rtqFjyViPrXncZLtYkIcaKFGBTUMeHi/S3GUiLIlp5VF34L21lPZCy5oZKf70kWWkT52coE4EyEx9fipp2vybMdB/qT4r9pMqa3mmf9IXwfIhoKadpMhPfyaYm+oxmddrSv6aDMjs89fB6cJGpLA5gQFfISQUD1DB8ufjW43v hydra-queue-runner";
-  };
-
-  environment =
-    lib.concatStringsSep " "
-    ["NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
-
-  authorizedNixStoreKey = key: "command=\"${environment} ${config.nix.package}/bin/nix-store --serve --write\" ${key}";
+  environment = lib.concatStringsSep " " ["NIX_SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt"];
 in {
   imports = [
     ./roles/active-role.nix
@@ -32,13 +24,8 @@ in {
 
   # Guest root ssh keys
   environment.etc = {
-    "per-user/root/ssh/authorized_keys".text =
-      lib.concatStringsSep "\n"
-      (sshKeys ++ [(authorizedNixStoreKey extraSshKeys.hydra-queue-runner)])
-      + "\n";
-
-    "per-user/nixos/ssh/authorized_keys".text =
-      lib.concatStringsSep "\n" sshKeys + "\n";
+    "per-user/root/ssh/authorized_keys".text = lib.concatStringsSep "\n" sshKeys + "\n";
+    "per-user/nixos/ssh/authorized_keys".text = lib.concatStringsSep "\n" sshKeys + "\n";
   };
 
   system.activationScripts.postActivation.text = ''

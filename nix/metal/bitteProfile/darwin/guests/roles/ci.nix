@@ -6,7 +6,7 @@
 }: {
   imports = [
     ../modules/basics.nix
-    ../modules/hydra-builder.nix
+    ../modules/builder.nix
     ../modules/buildkite-agent.nix
   ];
 

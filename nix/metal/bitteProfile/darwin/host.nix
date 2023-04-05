@@ -15,6 +15,9 @@ darwinName: {
 
   guestApply = builtins.toFile "apply.sh" (builtins.readFile ./guests/apply.sh);
   guestConfig = builtins.toFile "darwin-configuration.nix" (builtins.readFile ./guests/darwin-configuration.nix);
+
+  # To facilitate builder usage to guests in certain edge cases
+  extraSshKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEcKT/3oBEvFs8oNbtriQv+cGR51gqdH2QwbogWWtcN9 buildfarm-host"];
 in {
   services.nix-daemon.enable = true;
 
@@ -47,7 +50,7 @@ in {
     zsh.enable = true;
   };
 
-  environment.etc."per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" ciInfra;
+  environment.etc."per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" (ciInfra ++ extraSshKeys);
 
   system.activationScripts.postActivation.text = ''
     # Create a ~/.bashrc containing `source /etc/profile`.

@@ -55,7 +55,6 @@ in {
 
       # Max of 8 hours for building any given derivation on macOS.
       # The long timeout should give enough time to build a cross GHC.
-      # See ../modules/hydra-builder.nix for Linux setting
       timeout = ${toString (3600 * 8)}
 
       # Quickly kill stuck builds

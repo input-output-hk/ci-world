@@ -64,8 +64,8 @@
         (mkTarget "10.10.0.104" 22 "mm-intel4-signing")
 
         # Arm signers (x86_64 and aarch64)
-        (mkTarget "10.10.0.151" 22 "mm1-signing")
-        (mkTarget "10.10.0.152" 22 "mm2-signing")
+        (mkTarget "10.10.0.151" 22 "ms-arm1-signing")
+        (mkTarget "10.10.0.152" 22 "ms-arm2-signing")
       ];
       relabel_configs = [
         {

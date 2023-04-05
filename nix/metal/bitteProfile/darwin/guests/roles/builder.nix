@@ -6,6 +6,6 @@
 }: {
   imports = [
     ../modules/basics.nix
-    ../modules/hydra-builder.nix
+    ../modules/builder.nix
   ];
 }
