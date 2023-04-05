@@ -37,6 +37,14 @@ in
     };
 
     config = {
+      # On intel, the nix volume appears to not mount quickly enough to not avoid launchdaemon failure.
+      # This modification to the default job ensures the job is retried until it succeeds.
+      launchd.daemons.buildkite-agent.serviceConfig = {
+        RunAtLoad = lib.mkForce null;
+        KeepAlive = lib.mkForce true;
+        WatchPaths = lib.mkForce null;
+      };
+
       services.buildkite-agent = {
         enable = true;
         package = pkgs.buildkite-agent;
@@ -82,6 +90,12 @@ in
 
           # For buildkite access to ioreg utility for unique machine id
           PATH=$PATH:/usr/sbin
+
+          # Ensure networking is available before trying to register as an agent
+          until ${pkgs.netcat}/bin/nc -w 1 8.8.8.8 53; do
+            echo "Sleeping 10s until internet connectivity is available..."
+            sleep 10
+          done
         '';
       };
 
