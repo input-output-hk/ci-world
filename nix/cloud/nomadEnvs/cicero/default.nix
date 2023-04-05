@@ -324,7 +324,11 @@
                   "issuer": "https://accounts.google.com",
                   "callback-url": "https://${subdomain}.${domain}/login/oidc/google/callback",
                   "client-id": "{{index . "client-id"}}",
-                  "client-secret": "{{index . "client-secret"}}"
+                  "client-secret": "{{index . "client-secret"}}",
+                  "auth-query-params": {
+                    "access_type": "offline",
+                    "prompt": "consent select_account"
+                  }
                   {{- end}}
                 }
               }
