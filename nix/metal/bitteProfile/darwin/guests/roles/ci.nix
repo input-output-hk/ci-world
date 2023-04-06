@@ -11,10 +11,7 @@
   ];
 
   services.buildkite-services-darwin = {
-    # When ready to switch to prod:
-    # metadata = ["queue=default" "queue=core-tech"];
-    metadata = ["queue=default-test" "queue=core-tech-test"];
-
+    metadata = ["queue=default" "queue=core-tech"];
     role = "ci";
   };
 }

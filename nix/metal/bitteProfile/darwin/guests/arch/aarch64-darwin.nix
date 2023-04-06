@@ -3,13 +3,7 @@
 in {
   services.buildkite-services-darwin = {
     arch = "aarch64-darwin";
-    metadata = [
-      "system=aarch64-darwin"
-      "system=x86_64-darwin"
-
-      # An extra queue to disambiguate during pre-prod testing
-      "queue=${cfg.role}-${cfg.arch}-test"
-    ];
+    metadata = ["system=aarch64-darwin"];
   };
 
   nix.extraOptions = ''
