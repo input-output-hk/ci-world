@@ -111,21 +111,9 @@
     command.text = ''
       set -x
 
-      ls -la /local/home/.config/nix || true
-      cat /local/home/.config/nix/machines || true
-
-      # NIX_SSHOPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/local/home/known_hosts"
-      # export NIX_SSHOPTS
-      # nix store ping --store ssh://builder@10.10.0.1?ssh-key=/secrets/id_buildfarm
-      # nix store ping --store ssh://builder@10.10.0.2?ssh-key=/secrets/id_buildfarm
-      # nix store ping --store ssh://builder@10.10.0.3?ssh-key=/secrets/id_buildfarm
-      # nix store ping --store ssh://builder@10.10.0.51?ssh-key=/secrets/id_buildfarm
-      # nix store ping --store ssh://builder@10.10.0.52?ssh-key=/secrets/id_buildfarm
-
-      nix show-config
-
+      # Forces a remote build failure due to no aarch64-linux builders which then outputs details of recognized valid remote build machines.
       # shellcheck disable=SC2016
-      nix build --expr 'let nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9; pkgs = nixpkgs.legacyPackages.aarch64-linux; in pkgs.runCommand "foo" {} "/bin/hostname > $out"' -vvvvv || true
+      nix build --expr 'let nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9; pkgs = nixpkgs.legacyPackages.aarch64-linux; in pkgs.runCommand "foo" {} "/bin/hostname > $out"' || true
 
       nix build --file /local/x86_64
       cat result
@@ -169,6 +157,14 @@
       ];
 
       driver = config.actionRun.facts.trigger.value."ci-world/test-darwin-nix-remote-builders";
+
+      constraints = [
+        {
+          attribute = "\${attr.unique.network.ip-address}";
+          operator = "=";
+          value = "10.24.39.149";
+        }
+      ];
     };
   };
 

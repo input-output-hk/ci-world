@@ -10,36 +10,39 @@
     supportedFeatures = ["big-parallel" "benchmark"];
   in {
     buildMachines = let
-      mkDarwinBuilder = name: mandatoryFeatures: {
-        inherit mandatoryFeatures;
+      mkDarwinBuilder = name: maxJobs: speedFactor: systems: mandatoryFeatures: extraConfig: {
+        inherit maxJobs speedFactor systems mandatoryFeatures;
         hostName = name;
-        maxJobs = 4;
-        speedFactor = 1;
-        sshKey = "/etc/nix/darwin-builder-key";
+        sshKey = "/etc/nix/darwin-builder-key-ng";
         sshUser = "builder";
-        systems = ["x86_64-darwin"];
         inherit supportedFeatures;
-      };
+      } // extraConfig;
     in [
-      (mkDarwinBuilder "mm1-builder" [])
-      (mkDarwinBuilder "mm2-builder" [])
-      (mkDarwinBuilder "mm1-signer" ["signer"])
-      (mkDarwinBuilder "mm2-signer" ["signer"])
+      # Builders
+      (mkDarwinBuilder "mm1-builder" 1 1 ["x86_64-darwin"] [] {})
+      (mkDarwinBuilder "mm2-builder" 1 1 ["x86_64-darwin"] [] {})
+      (mkDarwinBuilder "mm-intel3-builder" 4 4 ["x86_64-darwin"] [] {})
+      # (mkDarwinBuilder "mm-intel4-builder" 4 4 ["x86_64-darwin"] [] {})
+      (mkDarwinBuilder "ms-arm1-builder" 4 4 ["x86_64-darwin" "aarch64-darwin"] [] {})
+      (mkDarwinBuilder "ms-arm2-builder" 4 4 ["x86_64-darwin" "aarch64-darwin"] [] {})
+
+      # Signing
+      (mkDarwinBuilder "mm1-signing" 1 1 ["x86_64-darwin"] ["signing"] {})
+      (mkDarwinBuilder "mm2-signing" 1 1 ["x86_64-darwin"] ["signing"] {})
+      # (mkDarwinBuilder "mm-intel3-signing" 4 4 ["x86_64-darwin"] ["signing"] {})
+      (mkDarwinBuilder "mm-intel4-signing" 4 4 ["x86_64-darwin"] ["signing"] {})
+      (mkDarwinBuilder "ms-arm1-signing" 4 4 ["x86_64-darwin" "aarch64-darwin"] ["signing"] {})
+      (mkDarwinBuilder "ms-arm2-signing" 4 4 ["x86_64-darwin" "aarch64-darwin"] ["signing"] {})
     ];
 
     distributedBuilds = true;
 
     settings = {
-      system-features =
-        supportedFeatures
-        ++ [
-          "kvm" # even if KVM is not supported; better to run slow than to fail
-        ];
+      # Even if KVM is not supported; better to run slow than to fail
+      system-features = supportedFeatures ++ ["kvm"];
 
       experimental-features = ["ca-derivations"];
-
       trusted-users = ["root" "builder"];
-
       builders = "@/etc/nix/machines";
 
       # Constrain Linux builds to 4 hrs
@@ -63,19 +66,30 @@
     '';
   in
     builtins.concatStringsSep "\n" [
+      # Builders
       (mkDarwinBuilderSsh "mm1-builder" "10.10.0.1")
       (mkDarwinBuilderSsh "mm2-builder" "10.10.0.2")
-      (mkDarwinBuilderSsh "mm1-signer" "10.10.0.101")
-      (mkDarwinBuilderSsh "mm2-signer" "10.10.0.102")
+      (mkDarwinBuilderSsh "mm-intel3-builder" "10.10.0.3")
+      (mkDarwinBuilderSsh "mm-intel4-builder" "10.10.0.4")
+      (mkDarwinBuilderSsh "ms-arm1-builder" "10.10.0.51")
+      (mkDarwinBuilderSsh "ms-arm2-builder" "10.10.0.52")
+
+      # Signing
+      (mkDarwinBuilderSsh "mm1-signing" "10.10.0.101")
+      (mkDarwinBuilderSsh "mm2-signing" "10.10.0.102")
+      (mkDarwinBuilderSsh "mm-intel3-signing" "10.10.0.103")
+      (mkDarwinBuilderSsh "mm-intel4-signing" "10.10.0.104")
+      (mkDarwinBuilderSsh "ms-arm1-signing" "10.10.0.151")
+      (mkDarwinBuilderSsh "ms-arm2-signing" "10.10.0.152")
     ];
 
   secrets.install.darwin-secret-key = {
     inputType = "binary";
     outputType = "binary";
-    source = config.secrets.encryptedRoot + "/darwin-builder-key";
-    target = "/etc/nix/darwin-builder-key";
+    source = config.secrets.encryptedRoot + "/darwin-builder-key-ng";
+    target = "/etc/nix/darwin-builder-key-ng";
     script = ''
-      chmod 0600 /etc/nix/darwin-builder-key
+      chmod 0600 /etc/nix/darwin-builder-key-ng
     '';
   };
 }

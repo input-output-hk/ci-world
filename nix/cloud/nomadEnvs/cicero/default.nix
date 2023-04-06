@@ -107,6 +107,8 @@
       runtimeInputs = with nixpkgs; [jq];
       text = let
         templates = [
+          # These templates control remote build machines for cicero podman driver only.
+          # For cicero exec driver, see the hosts nix/metal/bitteProfile/local-builder.nix file.
           {
             DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
             Perms = "0400";
