@@ -124,7 +124,7 @@
             '';
           }
           {
-            DestPathInHome = ".config/nix/machines";
+            DestPath = "/local/home/.config/nix/machines";
 
             EmbeddedTmpl = ''
               {{ with secret "kv/data/cicero/darwin-ng" -}}

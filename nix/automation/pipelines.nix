@@ -110,14 +110,34 @@
 
     command.text = ''
       set -x
-      nix build --file /local
+
+      ls -la /local/home/.config/nix || true
+      cat /local/home/.config/nix/machines || true
+
+      # NIX_SSHOPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/local/home/known_hosts"
+      # export NIX_SSHOPTS
+      # nix store ping --store ssh://builder@10.10.0.1?ssh-key=/secrets/id_buildfarm
+      # nix store ping --store ssh://builder@10.10.0.2?ssh-key=/secrets/id_buildfarm
+      # nix store ping --store ssh://builder@10.10.0.3?ssh-key=/secrets/id_buildfarm
+      # nix store ping --store ssh://builder@10.10.0.51?ssh-key=/secrets/id_buildfarm
+      # nix store ping --store ssh://builder@10.10.0.52?ssh-key=/secrets/id_buildfarm
+
+      nix show-config
+
+      # shellcheck disable=SC2016
+      nix build --expr 'let nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9; pkgs = nixpkgs.legacyPackages.aarch64-linux; in pkgs.runCommand "foo" {} "/bin/hostname > $out"' -vvvvv || true
+
+      nix build --file /local/x86_64
+      cat result
+
+      nix build --file /local/aarch64
       cat result
     '';
 
     nomad = {
       templates = [
         {
-          destination = "/local/default.nix";
+          destination = "/local/x86_64/default.nix";
           data = ''
             let
               nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9;
@@ -131,9 +151,24 @@
               '''
           '';
         }
+        {
+          destination = "/local/aarch64/default.nix";
+          data = ''
+            let
+              nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9;
+              pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+            in
+              pkgs.runCommand "foo" {} '''
+                {
+                  echo '{{timestamp}}' # to force a new build
+                  uname
+                } > $out
+              '''
+          '';
+        }
       ];
 
-      driver = "exec";
+      driver = config.actionRun.facts.trigger.value."ci-world/test-darwin-nix-remote-builders";
     };
   };
 
