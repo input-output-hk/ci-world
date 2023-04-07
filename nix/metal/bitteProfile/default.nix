@@ -61,6 +61,9 @@ in {
               JobRunningTimeoutSec = "600s";
             };
 
+            # Use the ci-world pin for the nix version in asgs
+            nix.package = pkgs.nixPkg;
+
             # Remove once fixed: https://github.com/hashicorp/nomad/issues/12877
             systemd.enableUnifiedCgroupHierarchy = false;
 
@@ -467,6 +470,9 @@ in {
             config,
             ...
           }: {
+            # Use the ci-world pin for the nix version in equinix
+            nix.package = pkgs.nixPkg;
+
             services.ziti-edge-tunnel.enable = true;
 
             services.resolved = {

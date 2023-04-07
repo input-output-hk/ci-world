@@ -23,6 +23,7 @@ in {
     jq
     lsof
     ncdu
+    nixPkg
     sysstat
     sqlite-interactive
     tcpdump
@@ -62,6 +63,9 @@ in {
   };
 
   nix = lib.mkForce {
+    # Use the ci-world pin for the nix version in equinix
+    package = pkgs.nixPkg;
+
     # Use nix sandboxing for greater determinism
     settings = rec {
       sandbox = true;

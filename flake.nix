@@ -12,7 +12,7 @@
     # --------------------------------------------------------------
     # --- Auxiliary Nixpkgs ----------------------------------------
     nixpkgs.follows = "bitte/nixpkgs";
-    nix.follows = "bitte/nix";
+    nix.url = "github:NixOS/nix/2.13-maintenance";
     capsules = {
       # Until nixago is implemented, as HEAD currently removes fmt hooks
       url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
@@ -36,12 +36,14 @@
     deploy-rs.url = "github:serokell/deploy-rs";
     # --------------------------------------------------------------
     # --- Darwin Specific ------------------------------------------
+    # These pins control the darwin hosts
+    # For the darwin guests, see: nix/metal/bitteProfile/darwin/guests/flake.nix
     nixpkgs-darwin.url = "github:NixOS/nixpkgs/a3d745e701c337e65ef467d5a9400d9336a303a1";
     darwin = {
       url = "github:lnl7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
-    nix-darwin.url = "github:NixOS/nix/2.13-maintenance";
+    nix-darwin.follows = "nix";
     cachecache.url = "github:johnalotoski/cachecache";
     # --------------------------------------------------------------
   };

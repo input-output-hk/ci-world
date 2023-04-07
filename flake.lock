@@ -3566,27 +3566,6 @@
         "type": "github"
       }
     },
-    "nix-darwin": {
-      "inputs": {
-        "lowdown-src": "lowdown-src_5",
-        "nixpkgs": "nixpkgs_42",
-        "nixpkgs-regression": "nixpkgs-regression_5"
-      },
-      "locked": {
-        "lastModified": 1679005491,
-        "narHash": "sha256-fIx9ojZV7Nv6W4Irn29v5zSjfyQ5IElfyqiOhRCRdwE=",
-        "owner": "NixOS",
-        "repo": "nix",
-        "rev": "11f12253cee19e0af3793f0f57e2ffe77070d492",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "2.13-maintenance",
-        "repo": "nix",
-        "type": "github"
-      }
-    },
     "nix-inclusive": {
       "inputs": {
         "stdlib": "stdlib_8"
@@ -3886,6 +3865,27 @@
       "original": {
         "id": "nix",
         "type": "indirect"
+      }
+    },
+    "nix_5": {
+      "inputs": {
+        "lowdown-src": "lowdown-src_5",
+        "nixpkgs": "nixpkgs_42",
+        "nixpkgs-regression": "nixpkgs-regression_5"
+      },
+      "locked": {
+        "lastModified": 1679005491,
+        "narHash": "sha256-fIx9ojZV7Nv6W4Irn29v5zSjfyQ5IElfyqiOhRCRdwE=",
+        "owner": "NixOS",
+        "repo": "nix",
+        "rev": "11f12253cee19e0af3793f0f57e2ffe77070d492",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "2.13-maintenance",
+        "repo": "nix",
+        "type": "github"
       }
     },
     "nixago": {
@@ -5897,11 +5897,10 @@
           "std",
           "n2c"
         ],
-        "nix": [
-          "bitte",
+        "nix": "nix_5",
+        "nix-darwin": [
           "nix"
         ],
-        "nix-darwin": "nix-darwin",
         "nix-inclusive": "nix-inclusive",
         "nixpkgs": [
           "bitte",

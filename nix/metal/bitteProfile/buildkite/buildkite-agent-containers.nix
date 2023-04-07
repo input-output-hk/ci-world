@@ -183,7 +183,7 @@ in
                 xz
                 git
                 git-lfs
-                nix
+                nixPkg
               ];
 
               hooks = {
