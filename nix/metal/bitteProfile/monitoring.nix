@@ -58,8 +58,8 @@
         (mkTarget "10.10.0.52" 22 "ms-arm2-builder")
 
         # Intel signers
-        (mkTarget "10.10.0.101" 22 "mm1-signing") # legacy
-        (mkTarget "10.10.0.102" 22 "mm2-signing") # legacy
+        # (mkTarget "10.10.0.101" 22 "mm1-signing") # legacy
+        # (mkTarget "10.10.0.102" 22 "mm2-signing") # legacy
         # (mkTarget "10.10.0.103" 22 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
         (mkTarget "10.10.0.104" 22 "mm-intel4-signing")
 
@@ -122,15 +122,15 @@
         (mkTarget "10.10.0.52" 9101 "ms-arm2-builder")
       ];
     }
-    {
-      job_name = "darwin-signing-legacy";
-      scrape_interval = "60s";
-      metrics_path = "/monitorama/signing";
-      static_configs = [
-        (mkTarget "10.10.0.1" 9111 "mm1-signer")
-        (mkTarget "10.10.0.2" 9111 "mm2-signer")
-      ];
-    }
+    # {
+    #   job_name = "darwin-signing-legacy";
+    #   scrape_interval = "60s";
+    #   metrics_path = "/monitorama/signing";
+    #   static_configs = [
+    #     (mkTarget "10.10.0.1" 9111 "mm1-signing")
+    #     (mkTarget "10.10.0.2" 9111 "mm2-signing")
+    #   ];
+    # }
     {
       job_name = "darwin-signing";
       scrape_interval = "60s";
