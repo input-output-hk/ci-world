@@ -400,7 +400,7 @@ in {
           instanceType = "m5n.4xlarge";
           privateIP = "172.16.0.52";
           subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 4000;
+          volumeSize = 7000;
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
