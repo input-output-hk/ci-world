@@ -105,7 +105,7 @@ in {
         ziti edge create service-policy \
           mm1-builder-dial \
           Dial \
-          --identity-roles '#gw-zet,#devOps' \
+          --identity-roles '#gw-zet,#devOps,#darwinDial' \
           --service-roles '@mm1-builder' \
           --semantic "AnyOf"
 
@@ -137,7 +137,7 @@ in {
         ziti edge create service-policy \
           mm2-builder-dial \
           Dial \
-          --identity-roles '#gw-zet,#devOps' \
+          --identity-roles '#gw-zet,#devOps,#darwinDial' \
           --service-roles '@mm2-builder' \
           --semantic "AnyOf"
 
@@ -243,7 +243,7 @@ in {
         ziti edge create service-policy \
           darwin-dial \
           Dial \
-          --identity-roles '#devOps,#gw-zet' \
+          --identity-roles '#devOps,#gw-zet,#darwinDial' \
           --service-roles '@darwin' \
           --semantic "AnyOf"
 

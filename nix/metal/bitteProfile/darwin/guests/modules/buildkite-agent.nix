@@ -79,6 +79,26 @@ in
           # or any build which expects to have apple tools.
           export PATH="$PATH:/usr/bin:/usr/sbin"
         '';
+        hooks.pre-exit = ''
+          echo "Cleaning up the /tmp directory..."
+
+          # Some jobs leave /tmp directories which are not writeable, preventing direct deletion.
+          echo "Change moding buildkite agent owned /tmp/* files and directories recursively in preparation for cleanup..."
+          find /private/tmp/* -maxdepth 0 -type f,d -user buildkite-agent -print0 | xargs -0 -r chmod -R +w || true
+
+          # Use print0 to handle special filenames and rm -rf to also unlink live and broken symlinks and other special file types.
+          echo "Removing buildkite agent owned /tmp/* directories..."
+          find /private/tmp/* -maxdepth 0 -type d -user buildkite-agent -print0 | xargs -0 -r rm -rvf || true
+
+          echo "Removing buildkite agent owned /tmp top level files which are not buildkite agent job dependent..."
+          find /private/tmp/* -maxdepth 0 -type f \( ! -iname "buildkite-agent*" -and ! -iname "job-env-*" \) -user buildkite-agent -print0 | xargs -0 -r rm -vf || true
+
+          # Avoid prematurely deleting buildkite agent related job files and causing job failures.
+          echo "Removing buildkite agent owned /tmp top level files older than 1 day..."
+          find /tmp/* -maxdepth 0 -type f -mmin +1440 -user buildkite-agent -print0 | xargs -0 -r rm -vf || true
+
+          echo "Cleanup of /tmp complete."
+        '';
         extraConfig = ''
           no-pty=true
           # debug=true

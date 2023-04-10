@@ -158,13 +158,14 @@
 
       driver = config.actionRun.facts.trigger.value."ci-world/test-darwin-nix-remote-builders";
 
-      constraints = [
-        {
-          attribute = "\${attr.unique.network.ip-address}";
-          operator = "=";
-          value = "10.24.39.149";
-        }
-      ];
+      # For when host testing isolation is required:
+      # constraints = [
+      #   {
+      #     attribute = "\${attr.unique.network.ip-address}";
+      #     operator = "=";
+      #     value = "a.b.c.d";
+      #   }
+      # ];
     };
   };
 
