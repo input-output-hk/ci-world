@@ -29,6 +29,9 @@ in {
   };
 
   system.activationScripts.postActivation.text = ''
+    # Add a bash prompt to help distinguish host and guest ssh sessions
+    /usr/bin/grep -q PS1 /etc/profile || echo 'export PS1="[\\u@\\H \\W \\tZ]\\$ "' >> /etc/profile
+
     printf "configuring ssh keys on the root account... "
     mkdir -p ~root/.ssh
     cp -f /etc/per-user/root/ssh/authorized_keys ~root/.ssh/authorized_keys

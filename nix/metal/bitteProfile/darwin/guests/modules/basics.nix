@@ -75,7 +75,8 @@ in {
       cores = 0;
 
       # Match the number of logical cores in your system: sysctl -n hw.ncpu
-      max-jobs = 8;
+      # Also see the reduction in nixbld users in apply.sh to enforce this concurrency.
+      max-jobs = 4;
 
       sandbox = false;
       substituters = ["http://192.168.64.1:8081"];

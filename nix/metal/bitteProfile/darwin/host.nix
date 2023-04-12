@@ -53,6 +53,9 @@ in {
   environment.etc."per-user/root/ssh/authorized_keys".text = builtins.concatStringsSep "\n" (ciInfra ++ extraSshKeys);
 
   system.activationScripts.postActivation.text = ''
+    # Add a bash prompt to help distinguish host and guest ssh sessions
+    /usr/bin/grep -q PS1 /etc/profile || echo 'export PS1="[\\u@\\H \\W \\tZ]\\$ "' >> /etc/profile
+
     # Create a ~/.bashrc containing `source /etc/profile`.
     # Bash doesn't source the ones in /etc for non-interactive
     # shells and that breaks everything nix.

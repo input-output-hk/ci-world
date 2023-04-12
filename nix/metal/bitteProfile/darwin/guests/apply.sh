@@ -93,6 +93,12 @@ function finish {
     umount -f /Volumes/share || true
   fi
   rm -rf /var/root/share /var/root/bootstrap
+
+  # Ensure build concurrency is enforced at max-jobs
+  # (see modules/basics.nix).
+  for i in {5..32}; do dscl . -delete "/Users/_nixbld$i" || true; done
+  for i in {5..32}; do dscl . -delete /Groups/nixbld GroupMembership "_nixbld$i" || true; done
+
   exit "$RC"
 }
 trap finish EXIT
