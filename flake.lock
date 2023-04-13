@@ -288,11 +288,11 @@
         "std": "std_2"
       },
       "locked": {
-        "lastModified": 1670003309,
-        "narHash": "sha256-jIATRw5GadTD8b09H+tB8iN18luDCGkL2Vbf52uW6ic=",
+        "lastModified": 1681429162,
+        "narHash": "sha256-1iX6CiadMYYsgRZqClqHCt+UJqut7YEhrZ0AC6sqioo=",
         "owner": "input-output-hk",
         "repo": "bitte-cells",
-        "rev": "6f5d607b76d15238ae6729ebef8ff3fe6c0049d8",
+        "rev": "e330f3cb48d6c71a1886c15064a511866d303d5e",
         "type": "github"
       },
       "original": {
