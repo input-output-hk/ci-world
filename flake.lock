@@ -261,16 +261,15 @@
         "utils": "utils_4"
       },
       "locked": {
-        "lastModified": 1680801913,
+        "lastModified": 1681483020,
         "narHash": "sha256-Rj3+RVHUthVxCaz3rPrKFZvsrPuEh3zd1+E/Czun+tA=",
         "owner": "input-output-hk",
         "repo": "bitte",
-        "rev": "eb7cb8ba0e14adf9cf1076201317845929ac8828",
+        "rev": "e62bcf4b03164f5a7f8b10d19047beec68889420",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
-        "ref": "update-std",
         "repo": "bitte",
         "type": "github"
       }
@@ -569,15 +568,15 @@
         "utils": "utils_11"
       },
       "locked": {
-        "lastModified": 1677886597,
-        "narHash": "sha256-vLons+rXT0rKzn+6fu279XtCYMt2hX80rUFoMAXgEOo=",
-        "owner": "johnalotoski",
+        "lastModified": 1681439754,
+        "narHash": "sha256-Phm2rtjIl1AB/VvjUgK9z8gukP4sw5HSpO4soW0WxiI=",
+        "owner": "cleverca22",
         "repo": "cachecache",
-        "rev": "ae6cd14452db1fac31583a51d7111859117acfb2",
+        "rev": "2cb7c3fb55752cecc39751e0bfffdbe8c28db967",
         "type": "github"
       },
       "original": {
-        "owner": "johnalotoski",
+        "owner": "cleverca22",
         "repo": "cachecache",
         "type": "github"
       }
@@ -4977,11 +4976,11 @@
     },
     "nixpkgs_32": {
       "locked": {
-        "lastModified": 1677852945,
-        "narHash": "sha256-liiVJjkBTuBTAkRW3hrI8MbPD2ImYzwUpa7kvteiKhM=",
+        "lastModified": 1681358109,
+        "narHash": "sha256-eKyxW4OohHQx9Urxi7TQlFBTDWII+F+x2hklDOQPB50=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f5ffd5787786dde3a8bf648c7a1b5f78c4e01abb",
+        "rev": "96ba1c52e54e74c3197f4d43026b3f3d92e83ff9",
         "type": "github"
       },
       "original": {
