@@ -48,24 +48,24 @@
       params.module = ["ssh_banner"];
       static_configs = [
         # Intel builders
-        (mkTarget "10.10.0.1" 22 "mm1-builder") # legacy
-        (mkTarget "10.10.0.2" 22 "mm2-builder") # legacy
-        (mkTarget "10.10.0.3" 22 "mm-intel3-builder")
-        # (mkTarget "10.10.0.4" 22 "mm-intel4-builder") -- currently allocated as signer only due to RAM constraint
+        (mkTarget "10.10.0.1" 2201 "mm1-builder") # legacy
+        (mkTarget "10.10.0.2" 2201 "mm2-builder") # legacy
+        (mkTarget "10.10.0.3" 2201 "mm-intel3-builder")
+        # (mkTarget "10.10.0.4" 2201 "mm-intel4-builder") -- currently allocated as signer only due to RAM constraint
 
         # Arm builders (x86_64 and aarch64)
-        (mkTarget "10.10.0.51" 22 "ms-arm1-builder")
-        (mkTarget "10.10.0.52" 22 "ms-arm2-builder")
+        (mkTarget "10.10.0.51" 2201 "ms-arm1-builder")
+        (mkTarget "10.10.0.52" 2201 "ms-arm2-builder")
 
         # Intel signers
-        # (mkTarget "10.10.0.101" 22 "mm1-signing") # legacy
-        # (mkTarget "10.10.0.102" 22 "mm2-signing") # legacy
-        # (mkTarget "10.10.0.103" 22 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
-        (mkTarget "10.10.0.104" 22 "mm-intel4-signing")
+        # (mkTarget "10.10.0.1" 2202 "mm1-signing") # legacy
+        # (mkTarget "10.10.0.2" 2202 "mm2-signing") # legacy
+        # (mkTarget "10.10.0.3" 2202 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
+        (mkTarget "10.10.0.4" 2202 "mm-intel4-signing")
 
         # Arm signers (x86_64 and aarch64)
-        (mkTarget "10.10.0.151" 22 "ms-arm1-signing")
-        (mkTarget "10.10.0.152" 22 "ms-arm2-signing")
+        (mkTarget "10.10.0.51" 2202 "ms-arm1-signing")
+        (mkTarget "10.10.0.52" 2202 "ms-arm2-signing")
       ];
       relabel_configs = [
         {
@@ -136,10 +136,10 @@
       scrape_interval = "60s";
       metrics_path = "/metrics";
       static_configs = [
-        # (mkTarget "10.10.0.103" 9101 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
-        (mkTarget "10.10.0.104" 9101 "mm-intel4-signing")
-        (mkTarget "10.10.0.151" 9101 "ms-arm1-signing")
-        (mkTarget "10.10.0.152" 9101 "ms-arm2-signing")
+        # (mkTarget "10.10.0.3" 9102 "mm-intel3-signing") -- currently allocated as builder only due to RAM constraint
+        (mkTarget "10.10.0.4" 9102 "mm-intel4-signing")
+        (mkTarget "10.10.0.51" 9102 "ms-arm1-signing")
+        (mkTarget "10.10.0.52" 9102 "ms-arm2-signing")
       ];
     }
   ];

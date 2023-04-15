@@ -361,37 +361,37 @@ in {
                       # mm-intel1 (mac-mini-1, legacy)
                       {
                         publicKey = "nvKCarVUXdO0WtoDsEjTzU+bX0bwWYHJAM2Y3XhO0Ao=";
-                        allowedIPs = ["10.10.0.1/32" "10.10.0.101/32"];
+                        allowedIPs = ["10.10.0.1/32"];
                         persistentKeepalive = 30;
                       }
                       # mm-intel2 (mac-mini-2, legacy)
                       {
                         publicKey = "VcOEVp/0EG4luwL2bMmvGvlDNDbCzk7Vkazd3RRl51w=";
-                        allowedIPs = ["10.10.0.2/32" "10.10.0.102/32"];
+                        allowedIPs = ["10.10.0.2/32"];
                         persistentKeepalive = 30;
                       }
                       # mm-intel3
                       {
                         publicKey = "SCNSJqSbmNpJpucOdqCDabZy1+It/9yEpds50KEjRyc=";
-                        allowedIPs = ["10.10.0.3/32" "10.10.0.103/32"];
+                        allowedIPs = ["10.10.0.3/32"];
                         persistentKeepalive = 30;
                       }
                       # mm-intel4
                       {
                         publicKey = "v9tIACN9BsUzy5dx82EW0ruFJUHmyLyTzkxLA5dCbiI=";
-                        allowedIPs = ["10.10.0.4/32" "10.10.0.104/32"];
+                        allowedIPs = ["10.10.0.4/32"];
                         persistentKeepalive = 30;
                       }
                       # ms-arm1
                       {
                         publicKey = "ud4AYflwezVBoa/4t3OL/+VWB7J4LNbMn7vtMEsKXgU=";
-                        allowedIPs = ["10.10.0.51/32" "10.10.0.151/32"];
+                        allowedIPs = ["10.10.0.51/32"];
                         persistentKeepalive = 30;
                       }
                       # ms-arm2
                       {
                         publicKey = "u3pneYtAowgYoPESBO0OsjNfyb1nEl+r6CoODoc5jHE=";
-                        allowedIPs = ["10.10.0.52/32" "10.10.0.152/32"];
+                        allowedIPs = ["10.10.0.52/32"];
                         persistentKeepalive = 30;
                       }
                     ];

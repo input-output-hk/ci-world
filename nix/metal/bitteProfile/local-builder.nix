@@ -10,13 +10,15 @@
     supportedFeatures = ["big-parallel" "benchmark"];
   in {
     buildMachines = let
-      mkDarwinBuilder = name: maxJobs: speedFactor: systems: mandatoryFeatures: extraConfig: {
-        inherit maxJobs speedFactor systems mandatoryFeatures;
-        hostName = name;
-        sshKey = "/etc/nix/darwin-builder-key-ng";
-        sshUser = "builder";
-        inherit supportedFeatures;
-      } // extraConfig;
+      mkDarwinBuilder = name: maxJobs: speedFactor: systems: mandatoryFeatures: extraConfig:
+        {
+          inherit maxJobs speedFactor systems mandatoryFeatures;
+          hostName = name;
+          sshKey = "/etc/nix/darwin-builder-key-ng";
+          sshUser = "builder";
+          inherit supportedFeatures;
+        }
+        // extraConfig;
     in [
       # Builders
       (mkDarwinBuilder "mm1-builder" 1 1 ["x86_64-darwin"] [] {})
@@ -53,13 +55,14 @@
   };
 
   programs.ssh.extraConfig = let
-    mkDarwinBuilderSsh = name: ip: ''
+    mkDarwinBuilderSsh = name: ip: port: ''
       Host ${name}
         Hostname ${ip}
-        Port 22
+        Port ${toString port}
         PubkeyAcceptedKeyTypes ecdsa-sha2-nistp256,ssh-ed25519,ssh-rsa
         IdentityFile /etc/nix/darwin-builder-key
         StrictHostKeyChecking accept-new
+        ConnectTimeout 3
         ControlMaster auto
         ControlPath ~/.ssh/master-%r@%n:%p
         ControlPersist 1m
@@ -67,20 +70,20 @@
   in
     builtins.concatStringsSep "\n" [
       # Builders
-      (mkDarwinBuilderSsh "mm1-builder" "10.10.0.1")
-      (mkDarwinBuilderSsh "mm2-builder" "10.10.0.2")
-      (mkDarwinBuilderSsh "mm-intel3-builder" "10.10.0.3")
-      (mkDarwinBuilderSsh "mm-intel4-builder" "10.10.0.4")
-      (mkDarwinBuilderSsh "ms-arm1-builder" "10.10.0.51")
-      (mkDarwinBuilderSsh "ms-arm2-builder" "10.10.0.52")
+      (mkDarwinBuilderSsh "mm1-builder" "10.10.0.1" 2201)
+      (mkDarwinBuilderSsh "mm2-builder" "10.10.0.2" 2201)
+      (mkDarwinBuilderSsh "mm-intel3-builder" "10.10.0.3" 2201)
+      (mkDarwinBuilderSsh "mm-intel4-builder" "10.10.0.4" 2201)
+      (mkDarwinBuilderSsh "ms-arm1-builder" "10.10.0.51" 2201)
+      (mkDarwinBuilderSsh "ms-arm2-builder" "10.10.0.52" 2201)
 
       # Signing
-      (mkDarwinBuilderSsh "mm1-signing" "10.10.0.101")
-      (mkDarwinBuilderSsh "mm2-signing" "10.10.0.102")
-      (mkDarwinBuilderSsh "mm-intel3-signing" "10.10.0.103")
-      (mkDarwinBuilderSsh "mm-intel4-signing" "10.10.0.104")
-      (mkDarwinBuilderSsh "ms-arm1-signing" "10.10.0.151")
-      (mkDarwinBuilderSsh "ms-arm2-signing" "10.10.0.152")
+      (mkDarwinBuilderSsh "mm1-signing" "10.10.0.1" 2202)
+      (mkDarwinBuilderSsh "mm2-signing" "10.10.0.2" 2202)
+      (mkDarwinBuilderSsh "mm-intel3-signing" "10.10.0.3" 2202)
+      (mkDarwinBuilderSsh "mm-intel4-signing" "10.10.0.4" 2202)
+      (mkDarwinBuilderSsh "ms-arm1-signing" "10.10.0.51" 2202)
+      (mkDarwinBuilderSsh "ms-arm2-signing" "10.10.0.52" 2202)
     ];
 
   secrets.install.darwin-secret-key = {

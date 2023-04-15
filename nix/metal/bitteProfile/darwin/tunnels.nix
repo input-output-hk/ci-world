@@ -1,4 +1,4 @@
-wgAddresses: {
+wgHostAddress: {
   inputs,
   system,
   pkgs,
@@ -12,7 +12,7 @@ in {
   networking.wg-quick.interfaces.wg = {
     preUp = [''echo "Starting wireguard wg interface at $(date)"''];
     autostart = true;
-    address = [wgAddresses.ci wgAddresses.signing];
+    address = [wgHostAddress];
     listenPort = 51820;
     privateKeyFile = "/var/root/.keys/wireguard-private.key";
     peers = [
@@ -73,9 +73,15 @@ in {
       # Pass ssh and node exporter requests to the guests.
       # Host node exporter can still be requested at port 9100.
       # wg, ziti each use a tunnel in an undetermined order, and if one fails during initial startup, may use a third tunnel interface.
-      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.ci} port {22, 9101} -> 192.168.64.2/32
-      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgAddresses.signing} port {22, 9101} -> 192.168.64.3/32
-      rdr pass on { utun0, utun1, utun2 } inet proto tcp to {${wgAddresses.ci}, ${wgAddresses.signing}} port 2222 -> 127.0.0.1 port 22'';
+
+      # builder guest:
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgHostAddress} port 2201 -> 192.168.64.2/32 port 22
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgHostAddress} port 9101 -> 192.168.64.2/32 port 9100
+
+      # signing guest:
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgHostAddress} port 2202 -> 192.168.64.3/32 port 22
+      rdr pass on { utun0, utun1, utun2 } inet proto tcp to ${wgHostAddress} port 9102 -> 192.168.64.3/32 port 9100
+    '';
   in ''
     # Ensure packet forwarding to vm guests is enabled
     printf "applying darwin guest packet redirection... "

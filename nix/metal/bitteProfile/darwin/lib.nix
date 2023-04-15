@@ -10,7 +10,7 @@ inputs: let
       ];
     };
 in {
-  mkDarwinConfig = darwinName: system: wgAddresses: extraModules:
+  mkDarwinConfig = darwinName: system: wgHostAddress: extraModules:
     inputs.darwin.lib.darwinSystem {
       inputs = {
         inherit (inputs) darwin cachecache openziti;
@@ -28,7 +28,7 @@ in {
       modules =
         [
           (import ./host.nix darwinName)
-          (import ./tunnels.nix wgAddresses)
+          (import ./tunnels.nix wgHostAddress)
           (import ./send-keys.nix darwinName)
         ]
         ++ lib.optionals (system == "aarch64-darwin") [
