@@ -47,6 +47,8 @@ in {
   system.stateVersion = 4;
 
   nix = {
+    # Also see max-jobs below and nrBuildUsers in the apply.sh nix-darwin bootstrap config to enforce concurrency.
+    nrBuildUsers = 4;
     package = nixPkg;
 
     extraOptions = ''
@@ -74,8 +76,7 @@ in {
     settings = {
       cores = 0;
 
-      # Match the number of logical cores in your system: sysctl -n hw.ncpu
-      # Also see the reduction in nixbld users in apply.sh to enforce this concurrency.
+      # Also see nrBuildUsers above and in the apply.sh nix-darwin bootstrap config to enforce concurrency.
       max-jobs = 4;
 
       sandbox = false;

@@ -94,10 +94,9 @@ function finish {
   fi
   rm -rf /var/root/share /var/root/bootstrap
 
-  # Ensure build concurrency is enforced at max-jobs
-  # (see modules/basics.nix).
-  for i in {5..32}; do dscl . -delete "/Users/_nixbld$i" || true; done
-  for i in {5..32}; do dscl . -delete /Groups/nixbld GroupMembership "_nixbld$i" || true; done
+  # Check build concurrency is enforced at max-jobs (see modules/basics.nix).
+  dscl . -list /Users | grep _nixbld
+  dscl . -read /Groups/nixbld GroupMembership
 
   exit "$RC"
 }
@@ -135,7 +134,7 @@ echo "%admin ALL = NOPASSWD: ALL" >/etc/sudoers.d/passwordless
 
   # Installing nix will install a system profile nix of this version.
   curl https://releases.nixos.org/nix/nix-2.13.3/install >~nixos/install-nix
-  sudo -i -H -u nixos -- sh ~nixos/install-nix --daemon --darwin-use-unencrypted-nix-store-volume </dev/null
+  sudo -i -H -u nixos -- sh ~nixos/install-nix --daemon --daemon-user-count 1 </dev/null
 )
 (
   echo
@@ -164,6 +163,15 @@ EOF
   sudo -i -H -u nixos -- nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs-unstable
   sudo -i -H -u nixos -- nix-channel --add "$NIX_DARWIN_BOOTSTRAP_URL" darwin
   sudo -i -H -u nixos -- nix-channel --update
+
+  # Set nrBuildUsers in the initial nix-darwin install as subsequent changes in the flake config have no effect on OS users.
+  sudo -i -H -u nixos -- bash -c 'mkdir -p ~/.nixpkgs && cat >~/.nixpkgs/darwin-configuration.nix' <<EOF
+{
+  nix.nrBuildUsers = 4;
+  services.nix-daemon.enable = true;
+  system.stateVersion = 4;
+}
+EOF
 
   installer=$(nix-build "$NIX_DARWIN_BOOTSTRAP_URL" -A installer --no-out-link)
   set +e
