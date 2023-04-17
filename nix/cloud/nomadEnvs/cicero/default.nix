@@ -117,6 +117,47 @@
             '';
           }
           {
+            DestPathInHome = ".ssh/config";
+            Perms = "0600";
+            Uid = 0;
+            Gid = 0;
+
+            EmbeddedTmpl = ''
+              {{ with secret "kv/data/cicero/darwin-ng" -}}
+              {{ $ip := .Data.data.ip -}}
+              {{ $port := .Data.data.port -}}
+              {{ range $m := index .Data.data "activeDarwinMachines" -}}
+              Host {{ $m }}
+                Hostname {{ index $ip $m }}
+                Port {{ index $port $m }}
+                PubkeyAcceptedKeyTypes ssh-ed25519
+                IdentityFile /secrets/id_buildfarm
+                ConnectTimeout 3
+                ControlMaster auto
+                ControlPath ~/.ssh/master-%r@%n:%p
+                ControlPersist 1m
+
+              {{ end -}}
+              {{ end -}}
+            '';
+          }
+          {
+            DestPathInHome = ".ssh/known_hosts";
+            Uid = 0;
+            Gid = 0;
+
+            EmbeddedTmpl = ''
+              {{ with secret "kv/data/cicero/darwin-ng" -}}
+              {{ $ip := .Data.data.ip -}}
+              {{ $port := .Data.data.port -}}
+              {{ $publicKeys := .Data.data.publicKeys -}}
+              {{ range $m := index .Data.data "activeDarwinMachines" -}}
+              [{{ index $ip $m }}]:{{ index $port $m }} {{ index $publicKeys $m }}
+              {{ end -}}
+              {{ end -}}
+            '';
+          }
+          {
             DestPathInHome = ".config/nix/nix.conf";
             append = true;
 
@@ -131,9 +172,8 @@
             EmbeddedTmpl = ''
               {{ with secret "kv/data/cicero/darwin-ng" -}}
               {{ $darwinMachines := .Data.data.darwinMachines -}}
-              {{ $publicKeys := .Data.data.publicKeys -}}
               {{ range $m := index .Data.data "activeDarwinMachines" -}}
-              {{ index $darwinMachines $m }} {{ index $publicKeys $m | base64Encode }}
+              {{ index $darwinMachines $m }}
               {{ end -}}
               {{ end -}}
             '';

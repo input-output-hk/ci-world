@@ -111,13 +111,15 @@
     command.text = ''
       set -x
 
-      # Forces a remote build failure due to no aarch64-linux builders which then outputs details of recognized valid remote build machines.
+      echo "Forcing a remote build failure to outputs details of recognized valid remote build machines..."
       # shellcheck disable=SC2016
       nix build --expr 'let nixpkgs = __getFlake github:NixOS/nixpkgs/6107f97012a0c134c5848125b5aa1b149b76d2c9; pkgs = nixpkgs.legacyPackages.aarch64-linux; in pkgs.runCommand "foo" {} "/bin/hostname > $out"' || true
 
+      echo "Building an x86_64-darwin test..."
       nix build --file /local/x86_64
       cat result
 
+      echo "Building an aarch64-darwin test..."
       nix build --file /local/aarch64
       cat result
     '';
