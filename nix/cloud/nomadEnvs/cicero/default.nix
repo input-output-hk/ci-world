@@ -113,7 +113,7 @@
             DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
             Perms = "0400";
             EmbeddedTmpl = ''
-              {{with secret "kv/data/cicero/darwin-ng"}}{{index .Data.data "buildfarm" "private"}}{{end}}
+              {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm" "private"}}{{end}}
             '';
           }
           {
@@ -123,7 +123,7 @@
             Gid = 0;
 
             EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin-ng" -}}
+              {{ with secret "kv/data/cicero/darwin" -}}
               {{ $ip := .Data.data.ip -}}
               {{ $port := .Data.data.port -}}
               {{ range $m := index .Data.data "activeDarwinMachines" -}}
@@ -147,7 +147,7 @@
             Gid = 0;
 
             EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin-ng" -}}
+              {{ with secret "kv/data/cicero/darwin" -}}
               {{ $ip := .Data.data.ip -}}
               {{ $port := .Data.data.port -}}
               {{ $publicKeys := .Data.data.publicKeys -}}
@@ -167,10 +167,12 @@
             '';
           }
           {
+            # Not using `DestPathInHome` for this because `.config/nix/nix.conf` refers to this path in a hard-coded fashion.
+            # Adding extra code to replace the path in its template is not worth it.
             DestPath = "/local/home/.config/nix/machines";
 
             EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin-ng" -}}
+              {{ with secret "kv/data/cicero/darwin" -}}
               {{ $darwinMachines := .Data.data.darwinMachines -}}
               {{ range $m := index .Data.data "activeDarwinMachines" -}}
               {{ index $darwinMachines $m }}

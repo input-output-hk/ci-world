@@ -14,7 +14,7 @@
         {
           inherit maxJobs speedFactor systems mandatoryFeatures;
           hostName = name;
-          sshKey = "/etc/nix/darwin-builder-key-ng";
+          sshKey = "/etc/nix/darwin-builder-key";
           sshUser = "builder";
           inherit supportedFeatures;
         }
@@ -89,10 +89,10 @@
   secrets.install.darwin-secret-key = {
     inputType = "binary";
     outputType = "binary";
-    source = config.secrets.encryptedRoot + "/darwin-builder-key-ng";
-    target = "/etc/nix/darwin-builder-key-ng";
+    source = config.secrets.encryptedRoot + "/darwin-builder-key";
+    target = "/etc/nix/darwin-builder-key";
     script = ''
-      chmod 0600 /etc/nix/darwin-builder-key-ng
+      chmod 0600 /etc/nix/darwin-builder-key
     '';
   };
 }
