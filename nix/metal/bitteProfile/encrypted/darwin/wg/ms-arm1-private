@@ -1,0 +1,22 @@
+{
+	"data": "ENC[AES256_GCM,data:BInaUY251CHXOv0p5JRKQFzecE09ZFcB7KOOFE5NkrIcFNrRA0kuQ3g0jQQO,iv:h12b2h/l43UswA+pgBdBIOePLPK+A+0Pb6TR5F/+jsE=,tag:+Ve22bC1DMAauuJLitaGfQ==,type:str]",
+	"sops": {
+		"kms": [
+			{
+				"arn": "arn:aws:kms:eu-central-1:074718059002:key/5bb7cc1b-151c-4841-bcb3-622bc8df4b5a",
+				"created_at": "2023-02-27T18:31:48Z",
+				"enc": "AQICAHg3OCn+/PAIR22bdMZmmm7xlk3KpM4n+haJ8Ph2IaYRgwHTiS5jbII7V3mVIHUPNp7yAAAAfjB8BgkqhkiG9w0BBwagbzBtAgEAMGgGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMEZDPbqi2B+wtD+L2AgEQgDvs8Ht2zguPsf4K8FiJnYtSIU3cI2AUFJFwN2qVlfoe5eEToEWJbtJc9Bk7tDSYXdj99F0OIrDEJ3fbMw==",
+				"aws_profile": ""
+			}
+		],
+		"gcp_kms": null,
+		"azure_kv": null,
+		"hc_vault": null,
+		"age": null,
+		"lastmodified": "2023-02-27T18:31:49Z",
+		"mac": "ENC[AES256_GCM,data:kJAPIn6LTDA6mO3ZhuC9En/ZPkSl6HeBt+QCYieqP9e1w8gqA9UJhZ//WYsmz0FLdHhM2952wARx+HOLphp1CdRbbc4b0HWCGu5dfsjN/dEFXq+1w2ickNbOQUDVZo6zIeshdGF/vn3age0vSWZdvoLz8AcQcWEFBKNjJws6Va4=,iv:/Vk6VgfKnFa4o+WpRpekPhWg4OIR8KY9cIsye3iJkmM=,tag:F/pzp/lU7QzyXmiCom5nbg==,type:str]",
+		"pgp": null,
+		"unencrypted_suffix": "_unencrypted",
+		"version": "3.7.3"
+	}
+}

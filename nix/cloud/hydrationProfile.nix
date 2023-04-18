@@ -339,6 +339,7 @@ in {
             ci-world-darwin
             ci-world-loki
             ci-world-node-exporter
+            ci-world-nomad
             ci-world-nomad-follower
             ci-world-spongix
             bitte-system-modified

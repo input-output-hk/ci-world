@@ -61,6 +61,9 @@ in {
               JobRunningTimeoutSec = "600s";
             };
 
+            # Use the ci-world pin for the nix version in asgs
+            nix.package = pkgs.nixPkg;
+
             # Remove once fixed: https://github.com/hashicorp/nomad/issues/12877
             systemd.enableUnifiedCgroupHierarchy = false;
 
@@ -218,100 +221,7 @@ in {
 
           modules = [
             bitte.profiles.monitoring
-            ({lib, ...}: {
-              # If this is needed, check there isn't a rogue logger first
-              # services.loki.configuration.limits_config = {
-              #   per_stream_rate_limit = "10MB";
-              #   per_stream_rate_limit_burst = "30MB";
-              # };
-
-              # For API requests with huge responses, see:
-              # - https://github.com/grafana/loki/issues/2271
-              # - https://github.com/grafana/loki/issues/6568
-              services.loki.configuration.server.grpc_server_max_recv_msg_size = 1024 * 1024 * 8; # 8 MiB
-
-              services.prometheus.exporters.blackbox = lib.mkForce {
-                enable = true;
-                configFile = pkgs.toPrettyJSON "blackbox-exporter.yaml" {
-                  modules = {
-                    ssh_banner = {
-                      prober = "tcp";
-                      timeout = "10s";
-                      tcp = {
-                        preferred_ip_protocol = "ip4";
-                        query_response = [
-                          {
-                            expect = "^SSH-2.0-";
-                            send = "SSH-2.0-blackbox-ssh-check";
-                          }
-                        ];
-                      };
-                    };
-                  };
-                };
-              };
-
-              services.vmagent.promscrapeConfig = let
-                mkTarget = ip: port: machine: {
-                  targets = ["${ip}:${toString port}"];
-                  labels.alias = machine;
-                };
-              in [
-                {
-                  job_name = "blackbox-ssh-darwin";
-                  scrape_interval = "60s";
-                  metrics_path = "/probe";
-                  params.module = ["ssh_banner"];
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 22 "mm1-builder")
-                    (mkTarget "10.10.0.2" 22 "mm2-builder")
-                    (mkTarget "10.10.0.101" 22 "mm1-signer")
-                    (mkTarget "10.10.0.102" 22 "mm2-signer")
-                  ];
-                  relabel_configs = [
-                    {
-                      source_labels = ["__address__"];
-                      target_label = "__param_target";
-                    }
-                    {
-                      source_labels = ["__param_target"];
-                      target_label = "instance";
-                    }
-                    {
-                      replacement = "127.0.0.1:9115";
-                      target_label = "__address__";
-                    }
-                  ];
-                }
-                {
-                  job_name = "mm-hosts";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/host";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-host")
-                    (mkTarget "10.10.0.2" 9111 "mm2-host")
-                  ];
-                }
-                {
-                  job_name = "mm-ci";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/ci";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-builder")
-                    (mkTarget "10.10.0.2" 9111 "mm2-builder")
-                  ];
-                }
-                {
-                  job_name = "mm-signing";
-                  scrape_interval = "60s";
-                  metrics_path = "/monitorama/signing";
-                  static_configs = [
-                    (mkTarget "10.10.0.1" 9111 "mm1-signer")
-                    (mkTarget "10.10.0.2" 9111 "mm2-signer")
-                  ];
-                }
-              ];
-            })
+            ./monitoring.nix
           ];
 
           securityGroupRules = {
@@ -448,16 +358,40 @@ in {
                     ips = ["10.10.0.254/32"];
                     privateKeyFile = "/etc/wireguard/private.key";
                     peers = [
-                      # mm1
+                      # mm-intel1 (mac-mini-1, legacy)
                       {
                         publicKey = "nvKCarVUXdO0WtoDsEjTzU+bX0bwWYHJAM2Y3XhO0Ao=";
-                        allowedIPs = ["10.10.0.1/32" "10.10.0.101/32"];
+                        allowedIPs = ["10.10.0.1/32"];
                         persistentKeepalive = 30;
                       }
-                      # mm2
+                      # mm-intel2 (mac-mini-2, legacy)
                       {
                         publicKey = "VcOEVp/0EG4luwL2bMmvGvlDNDbCzk7Vkazd3RRl51w=";
-                        allowedIPs = ["10.10.0.2/32" "10.10.0.102/32"];
+                        allowedIPs = ["10.10.0.2/32"];
+                        persistentKeepalive = 30;
+                      }
+                      # mm-intel3
+                      {
+                        publicKey = "SCNSJqSbmNpJpucOdqCDabZy1+It/9yEpds50KEjRyc=";
+                        allowedIPs = ["10.10.0.3/32"];
+                        persistentKeepalive = 30;
+                      }
+                      # mm-intel4
+                      {
+                        publicKey = "v9tIACN9BsUzy5dx82EW0ruFJUHmyLyTzkxLA5dCbiI=";
+                        allowedIPs = ["10.10.0.4/32"];
+                        persistentKeepalive = 30;
+                      }
+                      # ms-arm1
+                      {
+                        publicKey = "ud4AYflwezVBoa/4t3OL/+VWB7J4LNbMn7vtMEsKXgU=";
+                        allowedIPs = ["10.10.0.51/32"];
+                        persistentKeepalive = 30;
+                      }
+                      # ms-arm2
+                      {
+                        publicKey = "u3pneYtAowgYoPESBO0OsjNfyb1nEl+r6CoODoc5jHE=";
+                        allowedIPs = ["10.10.0.52/32"];
                         persistentKeepalive = 30;
                       }
                     ];
@@ -536,6 +470,9 @@ in {
             config,
             ...
           }: {
+            # Use the ci-world pin for the nix version in equinix
+            nix.package = pkgs.nixPkg;
+
             services.ziti-edge-tunnel.enable = true;
 
             services.resolved = {

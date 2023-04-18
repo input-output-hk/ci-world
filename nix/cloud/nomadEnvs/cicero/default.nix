@@ -107,41 +107,77 @@
       runtimeInputs = with nixpkgs; [jq];
       text = let
         templates = [
-          {
-            DestPathInHome = ".ssh/known_hosts";
-            append = true;
-
-            EmbeddedTmpl = let
-              builder = i: ''
-                {{range (index .Data.data "darwin${toString i}-host" | split "\n") -}}
-                10.10.0.${toString i} {{.}}
-                {{end}}
-              '';
-            in ''
-              {{with secret "kv/data/cicero/darwin" -}}
-              ${builder 1}
-              ${builder 2}
-              {{end}}
-            '';
-          }
+          # These templates control remote build machines for cicero podman driver only.
+          # For cicero exec driver, see the hosts nix/metal/bitteProfile/local-builder.nix file.
           {
             DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
             Perms = "0400";
             EmbeddedTmpl = ''
-              {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm-private"}}{{end}}
+              {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm" "private"}}{{end}}
+            '';
+          }
+          {
+            DestPathInHome = ".ssh/config";
+            Perms = "0600";
+            Uid = 0;
+            Gid = 0;
+
+            EmbeddedTmpl = ''
+              {{ with secret "kv/data/cicero/darwin" -}}
+              {{ $ip := .Data.data.ip -}}
+              {{ $port := .Data.data.port -}}
+              {{ range $m := index .Data.data "activeDarwinMachines" -}}
+              Host {{ $m }}
+                Hostname {{ index $ip $m }}
+                Port {{ index $port $m }}
+                PubkeyAcceptedKeyTypes ssh-ed25519
+                IdentityFile /secrets/id_buildfarm
+                ConnectTimeout 3
+                ControlMaster auto
+                ControlPath ~/.ssh/master-%r@%n:%p
+                ControlPersist 1m
+
+              {{ end -}}
+              {{ end -}}
+            '';
+          }
+          {
+            DestPathInHome = ".ssh/known_hosts";
+            Uid = 0;
+            Gid = 0;
+
+            EmbeddedTmpl = ''
+              {{ with secret "kv/data/cicero/darwin" -}}
+              {{ $ip := .Data.data.ip -}}
+              {{ $port := .Data.data.port -}}
+              {{ $publicKeys := .Data.data.publicKeys -}}
+              {{ range $m := index .Data.data "activeDarwinMachines" -}}
+              [{{ index $ip $m }}]:{{ index $port $m }} {{ index $publicKeys $m }}
+              {{ end -}}
+              {{ end -}}
             '';
           }
           {
             DestPathInHome = ".config/nix/nix.conf";
             append = true;
 
-            EmbeddedTmpl = let
-              builder = i: ''ssh://builder@10.10.0.${toString i} x86_64-darwin /secrets/id_buildfarm 4 2 big-parallel - {{index .Data.data "darwin${toString i}-public" | base64Encode}}'';
-            in ''
-              {{with secret "kv/data/cicero/darwin"}}
-              builders = ${builder 1} ; ${builder 2}
+            EmbeddedTmpl = ''
+              builders = @/local/home/.config/nix/machines
               builders-use-substitutes = true
-              {{end}}
+            '';
+          }
+          {
+            # Not using `DestPathInHome` for this because `.config/nix/nix.conf` refers to this path in a hard-coded fashion.
+            # Adding extra code to replace the path in its template is not worth it.
+            DestPath = "/local/home/.config/nix/machines";
+
+            EmbeddedTmpl = ''
+              {{ with secret "kv/data/cicero/darwin" -}}
+              {{ $darwinMachines := .Data.data.darwinMachines -}}
+              {{ range $m := index .Data.data "activeDarwinMachines" -}}
+              {{ index $darwinMachines $m }}
+              {{ end -}}
+              {{ end -}}
             '';
           }
         ];

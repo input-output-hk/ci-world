@@ -36,6 +36,26 @@
           summary = "Connectivity to Darwin builder {{ $labels.alias }} is down";
         };
       }
+      {
+        alert = "DarwinHostDiskUsedAlert";
+        expr = ''100 - ((node_filesystem_avail_bytes{alias=~".*host.*",mountpoint="/",job=~"darwin.*",fstype=~"apfs|zfs"} * 100) / node_filesystem_size_bytes{alias=~".*host.*",mountpoint="/",job=~"darwin.*",fstype=~"apfs|zfs"}) > 85'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Disk used on darwin host {{ $labels.alias }} on mount / has been above 85% for more than 5 minutes.";
+          summary = "[System] Darwin host disk used on / alert on {{ $labels.alias }}";
+        };
+      }
+      {
+        alert = "DarwinGuestDiskUsedAlert";
+        expr = ''100 - ((node_filesystem_avail_bytes{alias!~".*host.*",mountpoint="/",job=~"darwin.*",fstype=~"apfs|zfs"} * 100) / node_filesystem_size_bytes{alias!~".*host.*",mountpoint="/",job=~"darwin.*",fstype=~"apfs|zfs"}) > 95'';
+        for = "60m";
+        labels.severity = "critical";
+        annotations = {
+          description = "Disk used on darwin guest {{ $labels.alias }} on mount / has been above 95% for more than 1 hour.";
+          summary = "[System] Darwin guest disk used on / alert on {{ $labels.alias }}";
+        };
+      }
     ];
   };
 
@@ -50,6 +70,22 @@
         annotations = {
           description = "Spongix service on {{ $labels.hostname }} has had {{ $value }} remote cache failure(s) in the past 1 hour.";
           summary = "Spongix service on {{ $labels.hostname }} had a remote cache failure";
+        };
+      }
+    ];
+  };
+
+  ci-world-nomad = {
+    datasource = "vm";
+    rules = [
+      {
+        alert = "NomadJobsPendingHigh";
+        expr = ''nomad_nomad_job_status_pending_value > 20'';
+        for = "5m";
+        labels.severity = "critical";
+        annotations = {
+          description = ''Nomad jobs in pending state has exceeded 20 for the past 5 minutes.  Investigate and resolve root cause or consider scaling.'';
+          summary = "Nomad jobs pending is high";
         };
       }
     ];
@@ -92,7 +128,7 @@
       }
       {
         alert = "node_filesystem_full_90percent";
-        expr = ''sort(node_filesystem_free_bytes{device!="ramfs",fstype!="apfs"} < node_filesystem_size_bytes{device!="ramfs",fstype!="apfs"} * 0.1) / 1024^3'';
+        expr = ''sort(node_filesystem_free_bytes{device!~"ramfs|9pfs",fstype!="apfs"} < node_filesystem_size_bytes{device!="ramfs",fstype!="apfs"} * 0.1) / 1024^3'';
         for = "5m";
         labels.severity = "critical";
         annotations = {
@@ -102,7 +138,7 @@
       }
       {
         alert = "node_filesystem_full_in_4h";
-        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
+        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|9pfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
         for = "5m";
         labels.severity = "warning";
         annotations = {
@@ -198,7 +234,6 @@
           summary = "[System] Disk used / alert on {{ $labels.host }}";
         };
       }
-
       {
         alert = "SystemDiskUsedSlashPredictedAlert";
         expr = ''predict_linear(disk_used_percent{path="/"}[1h], 12 * 3600) > 90 and on(host) disk_used_percent{path="/"} > 20'';
