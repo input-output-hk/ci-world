@@ -94,6 +94,7 @@
           }
       )
       {
+        infra = bitte.lib.mkNomadJobs "infra" nomadEnvs;
         prod = bitte.lib.mkNomadJobs "prod" nomadEnvs;
         perf = bitte.lib.mkNomadJobs "perf" nomadEnvs;
       }

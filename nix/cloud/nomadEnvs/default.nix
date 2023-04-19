@@ -8,6 +8,30 @@
   inherit (constants) args;
   inherit (cell.library) pp;
 in {
+  infra = let
+    inherit
+      (constants.infra)
+      # App constants
+      
+      WALG_S3_PREFIX
+      # Job mod constants
+      
+      patroniMods
+      ;
+  in {
+    database = merge (patroni.nomadCharts.default (args.infra // {inherit (patroniMods) scaling;})) {
+      job.database.constraint = append [
+        {
+          operator = "distinct_property";
+          attribute = "\${attr.platform.aws.placement.availability-zone}";
+        }
+      ];
+      job.database.group.database.task.patroni.resources = {inherit (patroniMods.resources) cpu memory;};
+      job.database.group.database.task.patroni.env = {inherit WALG_S3_PREFIX;};
+      job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};
+    };
+  };
+
   prod = let
     inherit
       (constants.prod)
