@@ -264,6 +264,7 @@
           ["--web-cookie-auth" "/secrets/cookie/authentication"]
           ["--web-cookie-enc" "/secrets/cookie/encryption"]
           ["--web-oidc-providers" "/secrets/oidc-providers"]
+          ["--web-static-bearer-tokens" "/secrets/static-bearer-tokens"]
           ["--transform" (map lib.getExe transformers)]
         ];
       };
@@ -368,6 +369,14 @@
                   {{- end}}
                 }
               }
+            '';
+          }
+          {
+            destination = "/secrets/static-bearer-tokens";
+            data = ''
+              {{range $key := (secret "kv/data/cicero/sessions/_static").Data.data.keys -}}
+              {{(secret (print "kv/data/cicero/sessions/" $key)).Data.data.token}}
+              {{- end}}
             '';
           }
 
