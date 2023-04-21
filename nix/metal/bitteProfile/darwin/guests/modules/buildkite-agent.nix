@@ -1,9 +1,12 @@
 {
+  inputs,
+  system,
   config,
   lib,
   pkgs,
   ...
 }: let
+  nixPkg = inputs.nix.packages.${system}.nix;
   keys = "/Users/nixos/buildkite";
   cfg = config.services.buildkite-services-darwin;
 in
@@ -56,7 +59,7 @@ in
           xz
           git
           git-lfs
-          nix
+          nixPkg
         ];
         meta-data = lib.concatStringsSep "," cfg.metadata;
         tokenPath = "${keys}/buildkite_token";
