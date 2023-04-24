@@ -5,8 +5,6 @@
   namespace,
   datacenters ? ["eu-central-1"],
 }: let
-  inherit (cell.library) ociNamer;
-  inherit (cell) oci-images;
   inherit (inputs.nixpkgs) lib;
 in {
   job.webhooks = {
@@ -27,7 +25,7 @@ in {
         unlimited = true;
       };
 
-      network.port.http.to = "8080";
+      network.port.http = {};
 
       service = [
         {
@@ -55,14 +53,15 @@ in {
       ];
 
       task.webhooks = {
-        driver = "podman";
+        driver = "exec";
 
-        config = {
-          image = ociNamer oci-images.webhook-trigger;
-          ports = ["http"];
-          command = "${inputs.cicero.packages.webhook-trigger}/bin/trigger";
+        config = let
+          inherit (inputs.cicero.packages) webhook-trigger;
+        in {
+          nix_installables = [webhook-trigger];
+          command = "${webhook-trigger}/bin/trigger";
           args = lib.flatten [
-            ["--port" "8080"]
+            ["--port" "\${NOMAD_PORT_http}"]
             ["--secret-file" "/secrets/webhook"]
           ];
         };
