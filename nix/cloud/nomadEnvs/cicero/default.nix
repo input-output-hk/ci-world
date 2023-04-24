@@ -22,13 +22,15 @@
   postBuildHook = nixpkgs.writeShellApplication {
     name = "upload-to-cache";
     text = ''
+      set -o errexit
+      set -o nounset
       set -o noglob
       IFS=' '
-      if [[ -v OUT_PATHS ]]; then
-        echo "Uploading to cache: $OUT_PATHS"
-        #shellcheck disable=SC2086
-        exec nix copy --to 'http://spongix.service.consul:7745?compression=none' $OUT_PATHS
-      fi
+      echo "Uploading to cache: $DRV_PATH $OUT_PATHS"
+      #shellcheck disable=SC2086
+      nix copy --to 'http://spongix.service.consul:7745?compression=none' --derivation $DRV_PATH
+      #shellcheck disable=SC2086
+      nix copy --to 'http://spongix.service.consul:7745?compression=none' $OUT_PATHS
     '';
   };
 

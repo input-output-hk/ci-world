@@ -7,9 +7,10 @@
   nix.settings = let
     post-build-hook = pkgs.writeShellScript "spongix" ''
       set -euf
-      export IFS=' '
-      echo "Uploading to cache: $OUT_PATHS"
-      exec nix copy --to 'http://${config.cluster.builder}:7745' $OUT_PATHS
+      IFS=' '
+      echo "Uploading to cache: $DRV_PATH $OUT_PATHS"
+      nix copy --to 'http://${config.cluster.builder}:7745' --derivation $DRV_PATH
+      nix copy --to 'http://${config.cluster.builder}:7745' $OUT_PATHS
     '';
   in {
     substituters = lib.mkForce ["http://cache:7745"];
