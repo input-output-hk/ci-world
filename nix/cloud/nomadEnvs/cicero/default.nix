@@ -341,7 +341,7 @@
             data = let
               pass = ''{{with secret "kv/data/cicero/db"}}{{.Data.data.value}}{{end}}'';
             in ''
-              DATABASE_URL=postgres://cicero:${pass}@master.${namespace}-database.service.consul/${ciceroName}?target_session_attrs=read-write
+              DATABASE_URL=postgres://cicero:${pass}@master.infra-database.service.consul/${ciceroName}?target_session_attrs=read-write
             '';
             env = true;
           }
