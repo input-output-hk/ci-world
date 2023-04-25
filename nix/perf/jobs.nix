@@ -79,7 +79,7 @@ in {
               change_mode = "restart";
               data = let
                 getSecret = secret: ''{{ with secret "${secrets}" }}{{${secret}}}{{end}}'';
-                address = "_prod-database._master.service.eu-central-1.consul";
+                address = "_infra-database._master.service.eu-central-1.consul";
                 db = "perf";
                 user = getSecret secrets.postgrestDbUser;
                 pass = getSecret secrets.postgrestDbPass;
