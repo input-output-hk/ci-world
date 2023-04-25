@@ -848,11 +848,11 @@
         "tullia": "tullia_2"
       },
       "locked": {
-        "lastModified": 1682374124,
-        "narHash": "sha256-BnR8Lh1d9tHlBsFhyv24pxerzrdg5g7aSZOW7+5sqDQ=",
+        "lastModified": 1682412680,
+        "narHash": "sha256-Cwb5oPZkyfxeOjx1PFImoqi9t/7enqwwSVLBDFgi5rY=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "adffb9070a0c61ddf707a1b8042703ab385ea5c7",
+        "rev": "c6c187665d2c4fa06ad79a6977ed59e4b8cff394",
         "type": "github"
       },
       "original": {
