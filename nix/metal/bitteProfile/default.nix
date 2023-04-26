@@ -131,7 +131,7 @@ in {
         #   client-$REGION-$INSTANCE_TYPE-$ASG_SUFFIX
       in
         lib.listToAttrs (lib.forEach [
-            (mkAsgs "eu-central-1" 10 "m5.8xlarge" 1000 "prod" "prod" {withPatroni = true;} {})
+            (mkAsgs "eu-central-1" 10 "m5.8xlarge" 1000 "prod" "prod" {} {})
             (mkAsgs "eu-central-1" 3 "t3.xlarge" 200 "infra" "infra" {withPatroni = true;} {volumeType = "gp3";})
             (mkAsgs "eu-central-1" 0 "m5.metal" 1000 "baremetal" "baremetal" {} {primaryInterface = "enp125s0";})
             (mkAsgs "eu-central-1" 1 "t3a.medium" 100 "test" "test" {} {})

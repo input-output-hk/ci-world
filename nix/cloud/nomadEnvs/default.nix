@@ -35,27 +35,11 @@ in {
   prod = let
     inherit
       (constants.prod)
-      # App constants
-      
-      WALG_S3_PREFIX
       # Job mod constants
       
-      patroniMods
       tempoMods
       ;
   in {
-    database = merge (patroni.nomadCharts.default (args.prod // {inherit (patroniMods) scaling;})) {
-      job.database.constraint = append [
-        {
-          operator = "distinct_property";
-          attribute = "\${attr.platform.aws.placement.availability-zone}";
-        }
-      ];
-      job.database.group.database.task.patroni.resources = {inherit (patroniMods.resources) cpu memory;};
-      job.database.group.database.task.patroni.env = {inherit WALG_S3_PREFIX;};
-      job.database.group.database.task.backup-walg.env = {inherit WALG_S3_PREFIX;};
-    };
-
     tempo = merge (tempo.nomadCharts.default (args.prod
       // {
         inherit (tempoMods) scaling;
@@ -90,16 +74,7 @@ in {
     postgrest = inputs.cells.perf.jobs.default;
   };
 
-  perf = let
-    # inherit
-    #   (constants.perf)
-    #   # App constants
-    #   WALG_S3_PREFIX
-    #   # Job mod constants
-    #   patroniMods
-    #   tempoMods
-    #   ;
-  in {
+  perf = {
     postgrest = inputs.cells.perf.jobs.default inputs.cells.perf.constants.args.perf;
   };
 }

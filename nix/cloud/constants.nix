@@ -43,9 +43,6 @@ in rec {
     WALG_S3_PREFIX = "s3://iohk-ci-bitte/backups/${namespace}/walg";
 
     # Job mod constants
-    patroniMods.scaling = 3;
-    patroniMods.resources.cpu = 12000;
-    patroniMods.resources.memory = 16 * 1024;
     tempoMods.scaling = 1;
     tempoMods.resources.cpu = 3000;
     tempoMods.resources.memory = 3 * 1024;

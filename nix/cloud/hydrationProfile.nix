@@ -13,7 +13,7 @@ in {
     ...
   }: {
     imports = [
-      (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["prod" "infra"])
+      (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["infra"])
       (bitte-cells.tempo.hydrationProfiles.hydrate-cluster ["prod"])
       (cells.perf.hydrationProfile.workload-policies-postgrest)
     ];
