@@ -59,13 +59,9 @@
       Host ${name}
         Hostname ${ip}
         Port ${toString port}
-        PubkeyAcceptedKeyTypes ecdsa-sha2-nistp256,ssh-ed25519,ssh-rsa
+        PubkeyAcceptedKeyTypes ssh-ed25519
         IdentityFile /etc/nix/darwin-builder-key
         StrictHostKeyChecking accept-new
-        ConnectTimeout 3
-        ControlMaster auto
-        ControlPath ~/.ssh/master-%r@%n:%p
-        ControlPersist 1m
     '';
   in
     builtins.concatStringsSep "\n" [
