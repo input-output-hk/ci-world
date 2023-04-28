@@ -13,7 +13,7 @@ in {
     ...
   }: {
     imports = [
-      (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["prod"])
+      (bitte-cells.patroni.hydrationProfiles.hydrate-cluster ["infra"])
       (bitte-cells.tempo.hydrationProfiles.hydrate-cluster ["prod"])
       (cells.perf.hydrationProfile.workload-policies-postgrest)
     ];
@@ -36,6 +36,7 @@ in {
 
     services = {
       nomad.namespaces = {
+        infra = {description = "CI Infra";};
         prod = {description = "CI Prod";};
         baremetal = {description = "CI Baremetal Builders";};
         perf = {description = "CI Performance Benchmarking";};

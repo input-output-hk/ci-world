@@ -48,7 +48,7 @@ in {
 
   nix = {
     # Also see max-jobs below and nrBuildUsers in the apply.sh nix-darwin bootstrap config to enforce concurrency.
-    nrBuildUsers = 4;
+    nrBuildUsers = 2;
     package = nixPkg;
 
     extraOptions = ''
@@ -77,7 +77,7 @@ in {
       cores = 0;
 
       # Also see nrBuildUsers above and in the apply.sh nix-darwin bootstrap config to enforce concurrency.
-      max-jobs = 4;
+      max-jobs = 2;
 
       sandbox = false;
       substituters = ["http://192.168.64.1:8081"];
