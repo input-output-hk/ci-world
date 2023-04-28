@@ -28,9 +28,7 @@
       IFS=' '
       echo "Uploading to cache: $DRV_PATH $OUT_PATHS"
       #shellcheck disable=SC2086
-      nix copy --to 'http://spongix.service.consul:7745' --derivation $DRV_PATH
-      #shellcheck disable=SC2086
-      nix copy --to 'http://spongix.service.consul:7745' $OUT_PATHS
+      exec nix copy --to 'http://spongix.service.consul:7745' $DRV_PATH $OUT_PATHS
     '';
   };
 
