@@ -426,6 +426,8 @@ in {
   job.${ciceroName} = {
     inherit datacenters namespace;
 
+    priority = 90;
+
     group.cicero = merge commonGroup {
       service = [
         {
