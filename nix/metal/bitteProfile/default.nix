@@ -450,6 +450,14 @@ in {
         primaryInterface = "bond0";
         role = "client";
 
+        equinixTags = name: [
+          "Cluster:${config.cluster.name}"
+          "Name:${name}"
+          "UID:${config.cluster.name}-${name}"
+          "Consul:client"
+          "Vault:client"
+        ];
+
         # Equinix TF specific attrs
         project = config.cluster.name;
         plan = "m3.small.x86";
@@ -501,7 +509,7 @@ in {
           })
         ];
 
-        buildkiteOnly = hostIdSuffix: tags: count: [
+        buildkiteOnly = hostIdSuffix: bkTags: count: [
           ({
             lib,
             config,
@@ -536,7 +544,8 @@ in {
                 mkContainer = n: prio: {
                   containerName = "ci${cfg.hostIdSuffix}-${toString n}";
                   guestIp = "10.254.1.1${toString n}";
-                  inherit prio tags;
+                  inherit prio;
+                  tags = bkTags;
                 };
               in
                 map (n: mkContainer n (toString (10 - n))) (lib.range 1 count);
@@ -544,25 +553,30 @@ in {
           })
         ];
 
-        mkEquinixBuildkite = name: hostIdSuffix: privateIP: tags: count: extra:
+        mkEquinixBuildkite = name: hostIdSuffix: privateIP: bkTags: eTags: count: extra:
           lib.mkMerge [
             {
               inherit deployType node_class primaryInterface role privateIP;
-              equinix = {inherit plan project;};
+              equinix = {
+                inherit plan project;
+                tags = (equinixTags name) ++ eTags;
+              };
 
               modules =
                 baseEquinixModuleConfig
                 ++ (baseEquinixMachineConfig name)
-                ++ (buildkiteOnly hostIdSuffix tags count)
+                ++ (buildkiteOnly hostIdSuffix bkTags count)
                 ++ [./buildkite/buildkite-agent-containers.nix];
             }
             extra
           ];
       in {
-        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {system = "x86_64-linux"; queue = ["default" "core-tech"];} 5 {};
-        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {system = "x86_64-linux"; queue = ["default" "core-tech"];} 5 {};
-        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {system = "x86_64-linux"; queue = ["benchmark" "core-tech-bench"];} 1 {};
-        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" {system = "x86_64-linux"; queue = ["benchmark" "core-tech-bench"];} 1 {};
+        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {system = "x86_64-linux"; queue = ["core-tech"];} ["Billing:team-core"] 5 {};
+        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {system = "x86_64-linux"; queue = ["core-tech"];} ["Billing:team-core"] 5 {};
+        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {system = "x86_64-linux"; queue = ["core-tech-bench"];} ["Billing:team-core"] 1 {};
+        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" {system = "x86_64-linux"; queue = ["core-tech-bench"];} ["Billing:team-core"] 1 {};
+        equinix-5 = mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {system = "x86_64-linux"; queue = ["default"];} ["Billing:team-adrestia"] 5 {};
+        equinix-6 = mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {system = "x86_64-linux"; queue = ["benchmark"];} ["Billing:team-adrestia"] 1 {};
       };
     };
   };
