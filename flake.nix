@@ -33,6 +33,7 @@
     openziti.url = "github:johnalotoski/openziti-bins";
     openziti.inputs.nixpkgs.follows = "nixpkgs";
     deploy-rs.url = "github:serokell/deploy-rs";
+    auth-keys-hub.url = "github:input-output-hk/auth-keys-hub";
     # --------------------------------------------------------------
     # --- Darwin Specific ------------------------------------------
     # These pins control the darwin hosts

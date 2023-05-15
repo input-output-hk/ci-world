@@ -49,6 +49,7 @@ in {
           "${self.inputs.nixpkgs}/nixos/modules/profiles/headless.nix"
           ./spongix-user.nix
           ./podman.nix
+          ./auth-keys-hub.nix
           ({lib, ...}: {
             services.glusterfs.enable = lib.mkForce false;
 
@@ -176,6 +177,7 @@ in {
           modules = [
             bitte.profiles.core
             bitte.profiles.bootstrapper
+            ./auth-keys-hub.nix
           ];
 
           securityGroupRules = {
@@ -191,6 +193,7 @@ in {
 
           modules = [
             bitte.profiles.core
+            ./auth-keys-hub.nix
           ];
 
           securityGroupRules = {
@@ -206,6 +209,7 @@ in {
 
           modules = [
             bitte.profiles.core
+            ./auth-keys-hub.nix
           ];
 
           securityGroupRules = {
@@ -223,6 +227,7 @@ in {
           modules = [
             bitte.profiles.monitoring
             ./monitoring.nix
+            ./auth-keys-hub.nix
           ];
 
           securityGroupRules = {
@@ -246,6 +251,7 @@ in {
 
           modules = [
             bitte.profiles.routing
+            ./auth-keys-hub.nix
 
             # Required temporarily because bitte-cells.tempo.hydrationProfile qualifies
             # routing machine nixosProfile inclusion on infraType = "aws", and this is
@@ -311,16 +317,16 @@ in {
           instanceType = "m5n.4xlarge";
           privateIP = "172.16.0.52";
           subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 9000;
+          volumeSize = 11000;
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
             (bitte + /modules/docker-registry.nix)
             ./cache.nix
             ./spongix-user.nix
+            ./auth-keys-hub.nix
             {services.docker-registry.enable = true;}
           ];
-
           securityGroupRules = {
             inherit (securityGroupRules) internet internal ssh;
           };
@@ -345,6 +351,7 @@ in {
             openziti.nixosModules.ziti-edge-tunnel
             ./ziti.nix
             ./ziti-register.nix
+            ./auth-keys-hub.nix
             ({etcEncrypted, ...}: {
               # Substitute wg tunnel as temp drop in for zt
               # The AWS CIDR ranges could be source NATed here, but for debug purposes
@@ -571,12 +578,42 @@ in {
             extra
           ];
       in {
-        equinix-1 = mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {system = "x86_64-linux"; queue = ["core-tech"];} ["Billing:team-core"] 5 {};
-        equinix-2 = mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {system = "x86_64-linux"; queue = ["core-tech"];} ["Billing:team-core"] 5 {};
-        equinix-3 = mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {system = "x86_64-linux"; queue = ["core-tech-bench"];} ["Billing:team-core"] 1 {};
-        equinix-4 = mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" {system = "x86_64-linux"; queue = ["core-tech-bench"];} ["Billing:team-core"] 1 {};
-        equinix-5 = mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {system = "x86_64-linux"; queue = ["default"];} ["Billing:team-adrestia"] 5 {};
-        equinix-6 = mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {system = "x86_64-linux"; queue = ["benchmark"];} ["Billing:team-adrestia"] 1 {};
+        equinix-1 =
+          mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {
+            system = "x86_64-linux";
+            queue = ["core-tech"];
+          } ["Billing:team-core"]
+          5 {};
+        equinix-2 =
+          mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {
+            system = "x86_64-linux";
+            queue = ["core-tech"];
+          } ["Billing:team-core"]
+          5 {};
+        equinix-3 =
+          mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {
+            system = "x86_64-linux";
+            queue = ["core-tech-bench"];
+          } ["Billing:team-core"]
+          1 {};
+        equinix-4 =
+          mkEquinixBuildkite "equinix-4" "4" "10.12.10.7" {
+            system = "x86_64-linux";
+            queue = ["core-tech-bench"];
+          } ["Billing:team-core"]
+          1 {};
+        equinix-5 =
+          mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {
+            system = "x86_64-linux";
+            queue = ["default"];
+          } ["Billing:team-adrestia"]
+          5 {};
+        equinix-6 =
+          mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {
+            system = "x86_64-linux";
+            queue = ["benchmark"];
+          } ["Billing:team-adrestia"]
+          1 {};
       };
     };
   };

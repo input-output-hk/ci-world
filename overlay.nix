@@ -7,4 +7,5 @@ in {
 
   spongix = inputs.spongix.defaultPackage.${system};
   utm = darwinPkgs.callPackage ./nix/metal/packages/utm {};
+  auth-keys-hub = inputs.auth-keys-hub.packages.${system}.auth-keys-hub;
 }
