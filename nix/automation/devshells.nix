@@ -66,7 +66,6 @@ in {
       capsules.metal
       capsules.integrations
       capsules.tools
-      bitte-cells.patroni.devshellProfiles.default
     ];
     commands = let
       withCategory = category: attrset: attrset // {inherit category;};
