@@ -484,6 +484,8 @@ in {
 
             services.ziti-edge-tunnel.enable = true;
 
+            services.glusterfs.enable = lib.mkForce false;
+
             services.resolved = {
               # Vault agent does not seem to recognize successful lookups while resolved is in dnssec allow-downgrade mode
               dnssec = "false";
