@@ -17,7 +17,11 @@ darwinName: {
   guestConfig = builtins.toFile "darwin-configuration.nix" (builtins.readFile ./guests/darwin-configuration.nix);
 
   # To facilitate builder usage to guests in certain edge cases
-  extraSshKeys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEcKT/3oBEvFs8oNbtriQv+cGR51gqdH2QwbogWWtcN9 buildfarm-host"];
+  # devX
+  extraSshKeys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEcKT/3oBEvFs8oNbtriQv+cGR51gqdH2QwbogWWtcN9 buildfarm-host"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILIkkzkzCsIB5mz0ev1USWW6YNo97wQYVJc0n4MCxiFs hamish@Hamishs-MBP.hub"
+  ];
 in {
   services.nix-daemon.enable = true;
 

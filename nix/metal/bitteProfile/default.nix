@@ -517,6 +517,11 @@ in {
           }: let
             cfg = config.services.buildkite-containers;
           in {
+            # devX
+            users.extraUsers.root.openssh.authorizedKeys.keys = lib.mkForce [
+              "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILIkkzkzCsIB5mz0ev1USWW6YNo97wQYVJc0n4MCxiFs hamish@Hamishs-MBP.hub"
+            ];
+
             # Temporarily disable nomad to avoid conflict with buildkite resource consumption.
             services.nomad.enable = lib.mkForce false;
 
