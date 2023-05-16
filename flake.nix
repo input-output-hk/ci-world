@@ -14,8 +14,7 @@
     nixpkgs.follows = "bitte/nixpkgs";
     nix.url = "github:NixOS/nix/2.15-maintenance";
     capsules = {
-      # Until nixago is implemented, as HEAD currently removes fmt hooks
-      url = "github:input-output-hk/devshell-capsules/8dcf0e917848abbe58c58fc5d49069c32cd2f585";
+      url = "github:input-output-hk/devshell-capsules";
 
       # To obtain latest available bitte-cli
       inputs.bitte.follows = "bitte";

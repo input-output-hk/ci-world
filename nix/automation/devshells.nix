@@ -62,7 +62,6 @@ in {
       ciWorld
       capsules.base
       capsules.cloud
-      capsules.hooks
       capsules.metal
       capsules.integrations
       capsules.tools

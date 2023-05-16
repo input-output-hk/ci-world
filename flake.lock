@@ -592,17 +592,16 @@
         "ragenix": "ragenix_2"
       },
       "locked": {
-        "lastModified": 1658898561,
-        "narHash": "sha256-RXGc1aBt3fLP1UIMBCDsY0CKhRFdGuj/j6JMnfaXBwc=",
+        "lastModified": 1684253938,
+        "narHash": "sha256-ZZX6pFl9OzL57W7UvlzCJbmKO/aI7RoCbvCOBDXhQVg=",
         "owner": "input-output-hk",
         "repo": "devshell-capsules",
-        "rev": "8dcf0e917848abbe58c58fc5d49069c32cd2f585",
+        "rev": "62757e9d3d03acf4b141d044e916cd2e2d8f3227",
         "type": "github"
       },
       "original": {
         "owner": "input-output-hk",
         "repo": "devshell-capsules",
-        "rev": "8dcf0e917848abbe58c58fc5d49069c32cd2f585",
         "type": "github"
       }
     },
@@ -5027,11 +5026,11 @@
     },
     "nixpkgs_34": {
       "locked": {
-        "lastModified": 1658119717,
-        "narHash": "sha256-4upOZIQQ7Bc4CprqnHsKnqYfw+arJeAuU+QcpjYBXW0=",
+        "lastModified": 1684212024,
+        "narHash": "sha256-/3ZvkPuIXdyZqPR53qC7aaV5wiwMOY+ddbESOykZ9Vo=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "9eb60f25aff0d2218c848dd4574a0ab5e296cabe",
+        "rev": "d4825e5e4ac1de7d5bb99381534fd0af3875a26d",
         "type": "github"
       },
       "original": {
