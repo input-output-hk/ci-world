@@ -605,13 +605,13 @@ in {
         equinix-5 =
           mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {
             system = "x86_64-linux";
-            queue = ["default"];
+            queue = ["adrestia"];
           } ["Billing:team-adrestia"]
           5 {};
         equinix-6 =
           mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {
             system = "x86_64-linux";
-            queue = ["benchmark"];
+            queue = ["adrestia-bench"];
           } ["Billing:team-adrestia"]
           1 {};
       };
