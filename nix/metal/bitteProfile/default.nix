@@ -317,7 +317,7 @@ in {
           instanceType = "m5n.4xlarge";
           privateIP = "172.16.0.52";
           subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 11000;
+          volumeSize = 13000;
 
           modules = [
             (bitte + /profiles/auxiliaries/telegraf.nix)
