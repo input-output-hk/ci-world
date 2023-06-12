@@ -20,6 +20,14 @@ in {
   in {
     secrets.encryptedRoot = ./encrypted;
 
+    tf.core.configuration.resource.aws_route53_record.hydra_ci_iog_io = {
+      zone_id = terralib.id "data.aws_route53_zone.selected";
+      name = "ci.iog.io";
+      type = "A";
+      ttl = "60";
+      records = ["65.109.100.223"];
+    };
+
     cluster = {
       infraType = "awsExt";
       s3CachePubKey = lib.fileContents ./encrypted/nix-public-key-file;
