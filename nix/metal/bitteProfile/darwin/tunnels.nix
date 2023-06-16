@@ -15,7 +15,7 @@ in {
     address = [wgHostAddress];
     listenPort = 51820;
     privateKeyFile = "/var/root/.keys/wireguard-private.key";
-    peers = [
+    peers = map (peer: {persistentKeepalive = 30;} // peer) [
       {
         endpoint = "zt.ci.iog.io:51820";
         allowedIPs = [
@@ -29,7 +29,49 @@ in {
           "172.16.0.0/16"
         ];
         publicKey = "ET2Hbi1sywNSCWhGYGqBham7ZhNdMYyuhUNRiOqILlQ=";
-        persistentKeepalive = 30;
+      }
+
+      ## new devx-ci cluster
+
+      {
+        endpoint = "65.109.100.223:51820"; # ci.iog.io
+        allowedIPs = ["10.100.0.1/32"];
+        publicKey = "52aw4lh3H+x4fXdry2vzZ0yQ/TzmHmG5JTc61/Fu/mM=";
+      }
+      {
+        endpoint = "65.109.100.224:51820";
+        allowedIPs = ["10.100.0.2/32"];
+        publicKey = "XF90HyfTTlDJ+8V+L0vRpD/mLYal/6vWUdjXXhauUxQ=";
+      }
+      {
+        endpoint = "65.109.100.225:51820";
+        allowedIPs = ["10.100.0.3/32"];
+        publicKey = "SLFctAtZXGCQ8BPfy1aivR7IHXwypjJgTvIXIwKxamY=";
+      }
+      {
+        endpoint = "65.109.100.226:51820";
+        allowedIPs = ["10.100.0.4/32"];
+        publicKey = "5B981U7qiMXtuoCfyzY9vyhR953cwcLl6Onx21qPrVo=";
+      }
+      {
+        endpoint = "65.109.100.227:51820";
+        allowedIPs = ["10.100.0.5/32"];
+        publicKey = "+ek1olvdILegvVCDCmmUJk+f0N0VQu48Ha4XTyw3Wz0=";
+      }
+      {
+        endpoint = "65.109.100.228:51820";
+        allowedIPs = ["10.100.0.6/32"];
+        publicKey = "tSWXADCEKG2yz2Cm4OB6AQRPW22ofuywOYFjfYZt328=";
+      }
+      {
+        endpoint = "65.109.100.229:51820";
+        allowedIPs = ["10.100.0.7/32"];
+        publicKey = "0BMk9CC/fp4Jr0y84BenfaZgwTtLPBR7kX/dRBusiBU=";
+      }
+      {
+        endpoint = "65.109.100.230:51820";
+        allowedIPs = ["10.100.0.8/32"];
+        publicKey = "hf7PW+dZzFVowvIGyMO4hm6/UapKVZkTJokjaQLCRjU=";
       }
     ];
   };
