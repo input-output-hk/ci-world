@@ -47,6 +47,11 @@ in {
             gatewayCoreNodeName = "zt";
             cidrRange = "10.12.10.0/24";
           }
+          # Hetzner, devx-ci
+          {
+            gatewayCoreNodeName = "zt";
+            cidrRange = "10.100.0.0/24";
+          }
         ];
       };
 
@@ -367,6 +372,7 @@ in {
               # of the mac peers as they are unused ranges on the macs and make packet debugging easier.
               networking = {
                 firewall.allowedUDPPorts = [51820];
+                firewall.allowedTCPPorts = [9598]; # vector
                 wireguard = {
                   enable = true;
                   interfaces.wg-zt = {
@@ -409,6 +415,62 @@ in {
                         publicKey = "u3pneYtAowgYoPESBO0OsjNfyb1nEl+r6CoODoc5jHE=";
                         allowedIPs = ["10.10.0.52/32"];
                         persistentKeepalive = 30;
+                      }
+                      {
+                        # name = "ci1";
+                        allowedIPs = ["10.100.0.1/32"];
+                        endpoint = "65.109.100.223:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "52aw4lh3H+x4fXdry2vzZ0yQ/TzmHmG5JTc61/Fu/mM=";
+                      }
+                      {
+                        # name = "ci2";
+                        allowedIPs = ["10.100.0.2/32"];
+                        endpoint = "65.109.100.224:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "XF90HyfTTlDJ+8V+L0vRpD/mLYal/6vWUdjXXhauUxQ=";
+                      }
+                      {
+                        # name = "ci3";
+                        allowedIPs = ["10.100.0.3/32"];
+                        endpoint = "65.109.100.225:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "SLFctAtZXGCQ8BPfy1aivR7IHXwypjJgTvIXIwKxamY=";
+                      }
+                      {
+                        # name = "ci4";
+                        allowedIPs = ["10.100.0.4/32"];
+                        endpoint = "65.109.100.226:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "5B981U7qiMXtuoCfyzY9vyhR953cwcLl6Onx21qPrVo=";
+                      }
+                      {
+                        # name = "ci5";
+                        allowedIPs = ["10.100.0.5/32"];
+                        endpoint = "65.109.100.227:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "+ek1olvdILegvVCDCmmUJk+f0N0VQu48Ha4XTyw3Wz0=";
+                      }
+                      {
+                        # name = "ci6";
+                        allowedIPs = ["10.100.0.6/32"];
+                        endpoint = "65.109.100.228:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "tSWXADCEKG2yz2Cm4OB6AQRPW22ofuywOYFjfYZt328=";
+                      }
+                      {
+                        # name = "ci7";
+                        allowedIPs = ["10.100.0.7/32"];
+                        endpoint = "65.109.100.229:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "0BMk9CC/fp4Jr0y84BenfaZgwTtLPBR7kX/dRBusiBU=";
+                      }
+                      {
+                        # name = "ci8";
+                        allowedIPs = ["10.100.0.8/32"];
+                        endpoint = "65.109.100.230:51820";
+                        persistentKeepalive = 25;
+                        publicKey = "hf7PW+dZzFVowvIGyMO4hm6/UapKVZkTJokjaQLCRjU=";
                       }
                     ];
                   };

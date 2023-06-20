@@ -142,5 +142,21 @@
         (mkTarget "10.10.0.52" 9102 "ms-arm2-signing")
       ];
     }
+
+    {
+      job_name = "devx-ci-linux";
+      scrape_interval = "60s";
+      metrics_path = "/metrics";
+      static_configs = [
+        (mkTarget "10.100.0.1" 9598 "ci1")
+        (mkTarget "10.100.0.2" 9598 "ci2")
+        (mkTarget "10.100.0.3" 9598 "ci3")
+        (mkTarget "10.100.0.4" 9598 "ci4")
+        (mkTarget "10.100.0.5" 9598 "ci5")
+        (mkTarget "10.100.0.6" 9598 "ci6")
+        (mkTarget "10.100.0.7" 9598 "ci7")
+        (mkTarget "10.100.0.8" 9598 "ci8")
+      ];
+    }
   ];
 }
