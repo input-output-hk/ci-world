@@ -256,7 +256,7 @@ in {
         };
 
         routing = {
-          instanceType = "m5n.large";
+          instanceType = "m5n.4xlarge";
           privateIP = "172.16.1.20";
           subnet = cluster.vpc.subnets.core-2;
           volumeSize = 100;
