@@ -158,5 +158,16 @@
         (mkTarget "10.100.0.8" 9598 "ci8")
       ];
     }
+
+    {
+      job_name = "queue-runner";
+      scrape_interval = "10s";
+      metrics_path = "/hydra-stats";
+      scheme = "https";
+      tls_config.insecure_skip_verify = true;
+      static_configs = [
+        (mkTarget "10.100.0.1" 443 "ci1")
+      ];
+    }
   ];
 }
