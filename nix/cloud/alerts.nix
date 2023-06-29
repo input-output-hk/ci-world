@@ -138,7 +138,7 @@
       }
       {
         alert = "node_filesystem_full_in_4h";
-        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|9pfs|none",fstype!~"apfs|autofs|ramfs|cd9660"}[4h], 4*3600) <= 0'';
+        expr = ''predict_linear(node_filesystem_free_bytes{device!~"ramfs|tmpfs|9pfs|none",fstype!~"apfs|autofs|ramfs|cd9660",mountpoint!~"^/Volumes/Lace.*"}[4h], 4*3600) <= 0'';
         for = "5m";
         labels.severity = "warning";
         annotations = {
