@@ -167,7 +167,7 @@ EOF
   # Set nrBuildUsers in the initial nix-darwin install as subsequent changes in the flake config have no effect on OS users.
   sudo -i -H -u nixos -- bash -c 'mkdir -p ~/.nixpkgs && cat >~/.nixpkgs/darwin-configuration.nix' <<EOF
 {
-  nix.nrBuildUsers = 2;
+  nix.nrBuildUsers = 4;
   services.nix-daemon.enable = true;
   system.stateVersion = 4;
 }

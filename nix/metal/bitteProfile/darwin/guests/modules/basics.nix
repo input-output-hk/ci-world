@@ -48,7 +48,7 @@ in {
 
   nix = {
     # Also see max-jobs below and nrBuildUsers in the apply.sh nix-darwin bootstrap config to enforce concurrency.
-    nrBuildUsers = 2;
+    nrBuildUsers = 4;
     package = nixPkg;
 
     extraOptions = ''
@@ -65,6 +65,7 @@ in {
       extra-sandbox-paths = /System/Library/Frameworks /usr/lib /System/Library/PrivateFrameworks
       experimental-features = nix-command flakes
       accept-flake-config = true
+      connect-timeout = 30
     '';
 
     nixPath = [
@@ -77,7 +78,7 @@ in {
       cores = 0;
 
       # Also see nrBuildUsers above and in the apply.sh nix-darwin bootstrap config to enforce concurrency.
-      max-jobs = 2;
+      max-jobs = 4;
 
       sandbox = false;
       substituters = ["http://192.168.64.1:8081"];
