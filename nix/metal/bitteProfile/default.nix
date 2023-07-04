@@ -305,18 +305,47 @@ in {
                     };
                   };
                 };
+
+                dynamicConfigOptions.http = builtins.mapAttrs (_: lib.mkDefault) {
+                  routers.loki = {
+                    inherit (config.services.traefik.dynamicConfigOptions.http.routers.grafana) entrypoints tls;
+                    rule = "Host(`monitoring.${cluster.domain}`) && PathPrefix(`/loki/api/`)";
+                    middlewares = ["loki-auth"];
+                    service = "loki";
+                  };
+
+                  middlewares.loki-auth.basicAuth = {
+                    removeHeader = true;
+                    usersFile = "/var/lib/traefik/basic-auth-loki";
+                  };
+
+                  services.loki.loadBalancer.servers = [{url = "http://monitoring:3100";}];
+                };
               };
 
               # For spongix basic auth
-              secrets.install.basicAuth = {
-                inputType = "binary";
-                outputType = "binary";
-                source = "${etcEncrypted}/basic-auth";
-                target = /var/lib/traefik/basic-auth;
-                script = ''
-                  chown traefik:traefik /var/lib/traefik/basic-auth
-                  chmod 0600 /var/lib/traefik/basic-auth
-                '';
+              secrets.install = {
+                basicAuth = {
+                  inputType = "binary";
+                  outputType = "binary";
+                  source = "${etcEncrypted}/basic-auth";
+                  target = /var/lib/traefik/basic-auth;
+                  script = ''
+                    chown traefik:traefik /var/lib/traefik/basic-auth
+                    chmod 0600 /var/lib/traefik/basic-auth
+                  '';
+                };
+
+                basicAuthLoki = {
+                  inputType = "binary";
+                  outputType = "binary";
+                  source = "${etcEncrypted}/basic-auth-loki";
+                  target = /var/lib/traefik/basic-auth-loki;
+                  script = ''
+                    chown traefik:traefik /var/lib/traefik/basic-auth-loki
+                    chmod 0600 /var/lib/traefik/basic-auth-loki
+                  '';
+                };
               };
             })
           ];
