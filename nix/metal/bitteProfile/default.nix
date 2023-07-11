@@ -241,6 +241,11 @@ in {
             bitte.profiles.monitoring
             ./monitoring.nix
             ./auth-keys-hub.nix
+            {
+              # Temporarily disabled as we are not running tempo
+              # because we shut down its client to reduce costs.
+              services.monitoring.useTempo = false;
+            }
           ];
 
           securityGroupRules = {
