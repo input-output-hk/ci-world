@@ -60,7 +60,7 @@ in {
           bitte.profiles.client
           bitte.profiles.nomad-follower
           "${self.inputs.nixpkgs}/nixos/modules/profiles/headless.nix"
-          ./spongix-user.nix
+          ./r2-user.nix
           ./podman.nix
           ./auth-keys-hub.nix
           ({lib, ...}: {
