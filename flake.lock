@@ -921,11 +921,11 @@
         "tullia": "tullia_3"
       },
       "locked": {
-        "lastModified": 1682412680,
-        "narHash": "sha256-Cwb5oPZkyfxeOjx1PFImoqi9t/7enqwwSVLBDFgi5rY=",
+        "lastModified": 1684172275,
+        "narHash": "sha256-qeKIKL470goWNq0LP5Bb5PfCcgnwpeO4P+K+hTtuJLU=",
         "owner": "input-output-hk",
         "repo": "cicero",
-        "rev": "c6c187665d2c4fa06ad79a6977ed59e4b8cff394",
+        "rev": "705f7fad9b816789a07d937341fab595ddc6abf1",
         "type": "github"
       },
       "original": {
