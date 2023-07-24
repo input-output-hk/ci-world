@@ -1,0 +1,19 @@
+nixCacheKey: ENC[AES256_GCM,data:++hpOn5VuOI9kXATdIlh13kxqLzWJqZJlvE7h8s9PIejSAcU96GjEb/yca0CCw0TKZHOYBLhDYxkknTPijXWzYm19Vf6781tgsl5/sNyl30cbaC1JhUHXuAJxYoRDdEDUdBd7b74,iv:h4qwkG9AHjpTFTmK+Eo+dtGLAfEOHKrlKNQs+BZYC1g=,tag:pHrlxBLVGJJHMGpeSte4zQ==,type:str]
+awsAccessKeyId: ENC[AES256_GCM,data:FMZcVYh5llwbKxryus1JnNlHgIfuN80zk+4L9pYJB3g=,iv:3mXn2XMGJ9ZCQleQXUd3b7WnC+sNj5HRo9UMwNvqlIs=,tag:HAXd+yUr+BgMpQrm5eKKBg==,type:str]
+awsSecretAccessKey: ENC[AES256_GCM,data:mzJoHCROTF1W3ko81WeWzvXuAqDfiYMVsxn9zQP4IB1JSS7kO/iq0tO48K69Gj7ZKFQb475Xevs8Bmu4aMryaA==,iv:VNE50z02+BAdANWICCo3RsqrpBD6IWzyB607ko3/80g=,tag:3mYGtuAwB4MjGgRALI5I3Q==,type:str]
+sops:
+    kms: []
+    gcp_kms: []
+    azure_kv: []
+    hc_vault:
+        - vault_address: https://vault.ci.iog.io
+          engine_path: sops
+          key_name: ops
+          created_at: "2022-04-22T16:31:48Z"
+          enc: vault:v1:NKNt0+n8/ij6bjpHqxgMu+M4bsF+RasH1yzL2H7lBlnltXuQYFMPCvrfCsd/B+/LAw4Nc3N7sTHBlSlO
+    age: []
+    lastmodified: "2023-07-24T10:34:39Z"
+    mac: ENC[AES256_GCM,data:9nggN6edJMOKxI4hX8Hn2TwOZQqOITrmKMOmPwP83wpj2v0iRg03yM0Rtl4bcNfpif5XJbc2FUyn3a7Wwu0swyik6yc3rV8io4McJh0ZAXJIkbmu6r50hwMc+MZlDJbCMdqhLiRpgO3tUy85Y/SA/Jjt4ohPHvbo9JVzjSoKogA=,iv:LRlbNOQdSY7kLwiGbK6Vk+x4HNwE2Rocz8761MCTNhw=,tag:uhZnkFQhD0DWXIncgG5dOg==,type:str]
+    pgp: []
+    unencrypted_suffix: _unencrypted
+    version: 3.7.3

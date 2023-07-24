@@ -19,6 +19,9 @@
     "cicero"
     + lib.optionalString (branch != default_branch) "-${branch}";
 
+  r2Cache = "s3://devx?endpoint=fc0e8a9d61fc1f44f378bdc5fdc0f638.r2.cloudflarestorage.com&region=auto";
+  r2CacheWritable = "${r2Cache}&secret-key=/secrets/nix-cache-key&compression=zstd";
+
   postBuildHook = nixpkgs.writeShellApplication {
     name = "upload-to-cache";
     text = ''
@@ -28,17 +31,70 @@
       IFS=' '
       echo "Uploading to cache: $DRV_PATH $OUT_PATHS"
       #shellcheck disable=SC2086
-      exec nix copy --to 'http://spongix.service.consul:7745' $DRV_PATH $OUT_PATHS
+      exec nix copy --to ${lib.escapeShellArg r2CacheWritable} $DRV_PATH $OUT_PATHS
     '';
   };
 
-  # This does not include cache.iog.io because what URL it is available at depends on the environment.
   # This does not include the post-build-hook because its executable path depends on the environment.
   nixConfig = ''
+    extra-substituters = ${r2Cache}
     extra-trusted-public-keys = hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
   '';
 
-  transformers = [
+  transformers = let
+    addTemplates = name: templates: let
+      templatesJsonBase64 = runCommand "templates.json.base64" {} ''
+        printf '%s' ${lib.escapeShellArg (builtins.toJSON templates)} | base64 --wrap 0 - > $out
+      '';
+      filter = builtins.toFile "filter.jq" ''
+        .job.TaskGroups[]?.Tasks[]? |=
+          .Env.HOME as $home |
+          if $home == null
+          then [
+            ("transform-${name}: warning: not adding templates: `.job.TaskGroups[].Tasks[].Env.HOME` must be set\n" | stderr),
+            .
+          ][1]
+          else .Templates |= (
+            . + (
+              $templates | @base64d | fromjson |
+              map(
+                if has("DestPathInHome")
+                then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
+                else .
+                end
+              )
+            ) |
+            group_by(.DestPath) |
+            map(
+              sort_by(.append) |
+              if .[length - 1].append | not
+              then .
+              else [reduce .[range(1; length)] as $tmpl (
+                .[0];
+                if $tmpl | .append | not
+                then error("Multiple templates that are not meant to be appended have the same destination")
+                else . + {EmbeddedTmpl: (.EmbeddedTmpl + "\n" + $tmpl.EmbeddedTmpl)}
+                end
+              )]
+              end |
+              .[] |
+              del(.append)
+            ) |
+            unique
+          )
+          end
+      '';
+    in
+      nixpkgs.writeShellApplication {
+        name = "transform-${name}";
+        runtimeInputs = with nixpkgs; [jq];
+        text = ''
+          jq --compact-output \
+            --from-file ${lib.escapeShellArg filter} \
+            --arg templates ${lib.escapeShellArg (lib.fileContents templatesJsonBase64)}
+        '';
+      };
+  in [
     (nixpkgs.writeShellApplication {
       name = "transform-prod";
       runtimeInputs = with nixpkgs; [jq];
@@ -79,19 +135,7 @@
                     EmbeddedTmpl: $args.postBuildHookText,
                   }] |
                   .Env.NIX_CONFIG += "\npost-build-hook = /local/post-build-hook"
-                end |
-
-                # Add cache.iog.io as the URL it is available at
-                # in the respective environment depending on driver settings.
-                .Env.NIX_CONFIG += "\n" +
-                  if .Driver == "exec" and .Config.nix_host then
-                    # The host's Nix daemon only permits the caches it itself trusts.
-                    # Make sure the Nix client requests it so that it won't be dropped.
-                    "substituters = http://cache:7745"
-                  else
-                    # The container does not talk to the host's Nix daemon.
-                    "substituters = http://spongix.service.consul:7745?compression=none"
-                  end
+                end
               else . end
             )
           )
@@ -102,132 +146,101 @@
           --argjson args ${lib.escapeShellArg (builtins.toJSON args)}
       '';
     })
-    (nixpkgs.writeShellApplication {
-      name = "transform-darwin-nix-remote-builders";
-      runtimeInputs = with nixpkgs; [jq];
-      text = let
-        templates = [
-          # These templates control remote build machines for cicero podman driver only.
-          # For cicero exec driver, see the hosts nix/metal/bitteProfile/local-builder.nix file.
-          {
-            DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
-            Perms = "0400";
-            EmbeddedTmpl = ''
-              {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm" "private"}}{{end}}
-            '';
-          }
-          {
-            DestPathInHome = ".ssh/config";
-            Perms = "0600";
-            Uid = 0;
-            Gid = 0;
-
-            EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin" -}}
-              {{ $ip := .Data.data.ip -}}
-              {{ $port := .Data.data.port -}}
-              {{ range $m := index .Data.data "activeDarwinMachines" -}}
-              Host {{ $m }}
-                Hostname {{ index $ip $m }}
-                Port {{ index $port $m }}
-                PubkeyAcceptedKeyTypes ssh-ed25519
-                IdentityFile /secrets/id_buildfarm
-                ConnectTimeout 3
-                ControlMaster auto
-                ControlPath ~/.ssh/master-%r@%n:%p
-                ControlPersist 1m
-
-              {{ end -}}
-              {{ end -}}
-            '';
-          }
-          {
-            DestPathInHome = ".ssh/known_hosts";
-            Uid = 0;
-            Gid = 0;
-
-            EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin" -}}
-              {{ $ip := .Data.data.ip -}}
-              {{ $port := .Data.data.port -}}
-              {{ $publicKeys := .Data.data.publicKeys -}}
-              {{ range $m := index .Data.data "activeDarwinMachines" -}}
-              [{{ index $ip $m }}]:{{ index $port $m }} {{ index $publicKeys $m }}
-              {{ end -}}
-              {{ end -}}
-            '';
-          }
-          {
-            DestPathInHome = ".config/nix/nix.conf";
-            append = true;
-
-            EmbeddedTmpl = ''
-              builders = @/local/home/.config/nix/machines
-              builders-use-substitutes = true
-            '';
-          }
-          {
-            # Not using `DestPathInHome` for this because `.config/nix/nix.conf` refers to this path in a hard-coded fashion.
-            # Adding extra code to replace the path in its template is not worth it.
-            DestPath = "/local/home/.config/nix/machines";
-
-            EmbeddedTmpl = ''
-              {{ with secret "kv/data/cicero/darwin" -}}
-              {{ $darwinMachines := .Data.data.darwinMachines -}}
-              {{ range $m := index .Data.data "activeDarwinMachines" -}}
-              {{ index $darwinMachines $m }}
-              {{ end -}}
-              {{ end -}}
-            '';
-          }
-        ];
-        templatesJsonBase64 = runCommand "templates.json.base64" {} ''
-          printf '%s' ${lib.escapeShellArg (builtins.toJSON templates)} | base64 --wrap 0 - > $out
+    (addTemplates "r2" [
+      {
+        DestPathInHome = ".aws/credentials";
+        Perms = "0400";
+        EmbeddedTmpl = ''
+          {{with secret "kv/data/cicero/r2" -}}
+          [default]
+          aws_access_key_id = {{.Data.data.awsAccessKeyId}}
+          aws_secret_access_key = {{.Data.data.awsSecretAccessKey}}
+          {{- end}}
         '';
-        filter = builtins.toFile "filter.jq" ''
-          .job.TaskGroups[]?.Tasks[]? |=
-            .Env.HOME as $home |
-            if $home == null
-            then [
-              ("darwin-nix-remote-builders: warning: not adding remote darwin nix builders: `.job.TaskGroups[].Tasks[].Env.HOME` must be set\n" | stderr),
-              .
-            ][1]
-            else .Templates |= (
-              . + (
-                $templates | @base64d | fromjson |
-                map(
-                  if has("DestPathInHome")
-                  then del(.DestPathInHome) + {DestPath: ($home + "/" + .DestPathInHome)}
-                  else .
-                  end
-                )
-              ) |
-              group_by(.DestPath) |
-              map(
-                sort_by(.append) |
-                if .[length - 1].append | not
-                then .
-                else [reduce .[range(1; length)] as $tmpl (
-                  .[0];
-                  if $tmpl | .append | not
-                  then error("Multiple templates that are not meant to be appended have the same destination")
-                  else . + {EmbeddedTmpl: (.EmbeddedTmpl + "\n" + $tmpl.EmbeddedTmpl)}
-                  end
-                )]
-                end |
-                .[] |
-                del(.append)
-              ) |
-              unique
-            )
-            end
+      }
+      {
+        DestPath = "\${NOMAD_SECRETS_DIR}/nix-cache-key";
+        Perms = "0400";
+        EmbeddedTmpl = ''
+          {{with secret "kv/data/cicero/r2"}}{{.Data.data.nixCacheKey}}{{end}}
         '';
-      in ''
-        jq --compact-output \
-          --from-file ${lib.escapeShellArg filter} \
-          --arg templates ${lib.escapeShellArg (lib.fileContents templatesJsonBase64)}
-      '';
-    })
+      }
+    ])
+    (addTemplates "darwin-nix-remote-builders" [
+      # These templates control remote build machines for cicero podman driver only.
+      # For cicero exec driver, see the hosts nix/metal/bitteProfile/local-builder.nix file.
+      {
+        DestPath = "\${NOMAD_SECRETS_DIR}/id_buildfarm";
+        Perms = "0400";
+        EmbeddedTmpl = ''
+          {{with secret "kv/data/cicero/darwin"}}{{index .Data.data "buildfarm" "private"}}{{end}}
+        '';
+      }
+      {
+        DestPathInHome = ".ssh/config";
+        Perms = "0600";
+        Uid = 0;
+        Gid = 0;
+
+        EmbeddedTmpl = ''
+          {{ with secret "kv/data/cicero/darwin" -}}
+          {{ $ip := .Data.data.ip -}}
+          {{ $port := .Data.data.port -}}
+          {{ range $m := index .Data.data "activeDarwinMachines" -}}
+          Host {{ $m }}
+            Hostname {{ index $ip $m }}
+            Port {{ index $port $m }}
+            PubkeyAcceptedKeyTypes ssh-ed25519
+            IdentityFile /secrets/id_buildfarm
+            ConnectTimeout 3
+            ControlMaster auto
+            ControlPath ~/.ssh/master-%r@%n:%p
+            ControlPersist 1m
+
+          {{ end -}}
+          {{ end -}}
+        '';
+      }
+      {
+        DestPathInHome = ".ssh/known_hosts";
+        Uid = 0;
+        Gid = 0;
+
+        EmbeddedTmpl = ''
+          {{ with secret "kv/data/cicero/darwin" -}}
+          {{ $ip := .Data.data.ip -}}
+          {{ $port := .Data.data.port -}}
+          {{ $publicKeys := .Data.data.publicKeys -}}
+          {{ range $m := index .Data.data "activeDarwinMachines" -}}
+          [{{ index $ip $m }}]:{{ index $port $m }} {{ index $publicKeys $m }}
+          {{ end -}}
+          {{ end -}}
+        '';
+      }
+      {
+        DestPathInHome = ".config/nix/nix.conf";
+        append = true;
+
+        EmbeddedTmpl = ''
+          builders = @/local/home/.config/nix/machines
+          builders-use-substitutes = true
+        '';
+      }
+      {
+        # Not using `DestPathInHome` for this because `.config/nix/nix.conf` refers to this path in a hard-coded fashion.
+        # Adding extra code to replace the path in its template is not worth it.
+        DestPath = "/local/home/.config/nix/machines";
+
+        EmbeddedTmpl = ''
+          {{ with secret "kv/data/cicero/darwin" -}}
+          {{ $darwinMachines := .Data.data.darwinMachines -}}
+          {{ range $m := index .Data.data "activeDarwinMachines" -}}
+          {{ index $darwinMachines $m }}
+          {{ end -}}
+          {{ end -}}
+        '';
+      }
+    ])
   ];
 
   commonGroup = {
@@ -286,7 +299,6 @@
         NIX_CONFIG = ''
           netrc-file = /secrets/netrc
           ${nixConfig}
-          substituters = http://cache:7745
           post-build-hook = ${lib.getExe postBuildHook}
         '';
 
@@ -295,7 +307,7 @@
         NETRC = "/secrets/netrc";
 
         CICERO_EVALUATOR_NIX_OCI_REGISTRY = "docker://registry.${domain}";
-        CICERO_EVALUATOR_NIX_BINARY_CACHE = "http://spongix.service.consul:7745?compression=none";
+        CICERO_EVALUATOR_NIX_BINARY_CACHE = r2CacheWritable;
         REGISTRY_AUTH_FILE = "/secrets/docker";
 
         # Required for the transformer that adds darwin nix remote builders.
