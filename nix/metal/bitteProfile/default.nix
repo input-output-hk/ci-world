@@ -328,29 +328,15 @@ in {
                 };
               };
 
-              # For spongix basic auth
-              secrets.install = {
-                basicAuth = {
-                  inputType = "binary";
-                  outputType = "binary";
-                  source = "${etcEncrypted}/basic-auth";
-                  target = /var/lib/traefik/basic-auth;
-                  script = ''
-                    chown traefik:traefik /var/lib/traefik/basic-auth
-                    chmod 0600 /var/lib/traefik/basic-auth
-                  '';
-                };
-
-                basicAuthLoki = {
-                  inputType = "binary";
-                  outputType = "binary";
-                  source = "${etcEncrypted}/basic-auth-loki";
-                  target = /var/lib/traefik/basic-auth-loki;
-                  script = ''
-                    chown traefik:traefik /var/lib/traefik/basic-auth-loki
-                    chmod 0600 /var/lib/traefik/basic-auth-loki
-                  '';
-                };
+              secrets.install.basicAuthLoki = {
+                inputType = "binary";
+                outputType = "binary";
+                source = "${etcEncrypted}/basic-auth-loki";
+                target = /var/lib/traefik/basic-auth-loki;
+                script = ''
+                  chown traefik:traefik /var/lib/traefik/basic-auth-loki
+                  chmod 0600 /var/lib/traefik/basic-auth-loki
+                '';
               };
             })
           ];
@@ -370,7 +356,7 @@ in {
             (bitte + /profiles/auxiliaries/telegraf.nix)
             (bitte + /modules/docker-registry.nix)
             ./cache.nix
-            ./spongix-user.nix
+            ./r2-user.nix
             ./auth-keys-hub.nix
             {services.docker-registry.enable = true;}
           ];
