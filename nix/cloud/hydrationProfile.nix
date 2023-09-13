@@ -25,6 +25,7 @@ in {
       name = "ci-world";
 
       adminNames = ["john.lotoski"];
+      adminGithubTeamNames = ["devops" "iog-sre"];
       developerGithubNames = [];
       developerGithubTeamNames = [];
       domain = "ci.iog.io";
