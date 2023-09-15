@@ -692,18 +692,18 @@ in {
             queue = ["core-tech-bench"];
           } ["Billing:team-core"]
           1 {};
-        equinix-5 =
-          mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {
-            system = "x86_64-linux";
-            queue = ["adrestia"];
-          } ["Billing:team-adrestia"]
-          5 {};
-        equinix-6 =
-          mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {
-            system = "x86_64-linux";
-            queue = ["adrestia-bench"];
-          } ["Billing:team-adrestia"]
-          1 {};
+        # equinix-5 =
+        #   mkEquinixBuildkite "equinix-5" "5" "10.12.10.9" {
+        #     system = "x86_64-linux";
+        #     queue = ["adrestia"];
+        #   } ["Billing:team-adrestia"]
+        #   5 {};
+        # equinix-6 =
+        #   mkEquinixBuildkite "equinix-6" "6" "10.12.10.11" {
+        #     system = "x86_64-linux";
+        #     queue = ["adrestia-bench"];
+        #   } ["Billing:team-adrestia"]
+        #   1 {};
         equinix-7 =
           mkEquinixBuildkite "equinix-7" "7" "10.12.10.13" {
             system = "x86_64-linux";
