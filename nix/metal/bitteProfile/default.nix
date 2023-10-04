@@ -668,18 +668,18 @@ in {
             extra
           ];
       in {
-        equinix-1 =
-          mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {
-            system = "x86_64-linux";
-            queue = ["core-tech"];
-          } ["Billing:team-core"]
-          5 {};
-        equinix-2 =
-          mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {
-            system = "x86_64-linux";
-            queue = ["core-tech"];
-          } ["Billing:team-core"]
-          5 {};
+        # equinix-1 =
+        #   mkEquinixBuildkite "equinix-1" "1" "10.12.10.1" {
+        #     system = "x86_64-linux";
+        #     queue = ["core-tech"];
+        #   } ["Billing:team-core"]
+        #   5 {};
+        # equinix-2 =
+        #   mkEquinixBuildkite "equinix-2" "2" "10.12.10.3" {
+        #     system = "x86_64-linux";
+        #     queue = ["core-tech"];
+        #   } ["Billing:team-core"]
+        #   5 {};
         equinix-3 =
           mkEquinixBuildkite "equinix-3" "3" "10.12.10.5" {
             system = "x86_64-linux";
