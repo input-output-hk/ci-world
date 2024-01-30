@@ -145,8 +145,8 @@ in {
         #   client-$REGION-$INSTANCE_TYPE-$ASG_SUFFIX
       in
         lib.listToAttrs (lib.forEach [
-            (mkAsgs "eu-central-1" 1 "m5.8xlarge" 1000 "prod" "prod" {} {})
-            (mkAsgs "eu-central-1" 3 "t3.xlarge" 200 "infra" "infra" {withPatroni = true;} {volumeType = "gp3";})
+            (mkAsgs "eu-central-1" 0 "m5.8xlarge" 1000 "prod" "prod" {} {})
+            (mkAsgs "eu-central-1" 0 "t3.xlarge" 200 "infra" "infra" {withPatroni = true;} {volumeType = "gp3";})
             (mkAsgs "eu-central-1" 0 "m5.metal" 1000 "baremetal" "baremetal" {} {primaryInterface = "enp125s0";})
             (mkAsgs "eu-central-1" 0 "t3a.medium" 100 "test" "test" {} {})
             (mkAsgs "eu-central-1" 0 "t3a.medium" 100 "perf" "perf" {} {})
@@ -261,7 +261,7 @@ in {
         };
 
         routing = {
-          instanceType = "m5n.4xlarge";
+          instanceType = "t3a.large";
           privateIP = "172.16.1.20";
           subnet = cluster.vpc.subnets.core-2;
           volumeSize = 100;
@@ -346,24 +346,25 @@ in {
           };
         };
 
-        cache = {
-          instanceType = "m5n.4xlarge";
-          privateIP = "172.16.0.52";
-          subnet = cluster.vpc.subnets.core-1;
-          volumeSize = 13000;
+        # Cache server and docker registry no longer in use
+        # cache = {
+        #   instanceType = "m5n.4xlarge";
+        #   privateIP = "172.16.0.52";
+        #   subnet = cluster.vpc.subnets.core-1;
+        #   volumeSize = 13000;
 
-          modules = [
-            (bitte + /profiles/auxiliaries/telegraf.nix)
-            (bitte + /modules/docker-registry.nix)
-            ./cache.nix
-            ./r2-user.nix
-            ./auth-keys-hub.nix
-            {services.docker-registry.enable = true;}
-          ];
-          securityGroupRules = {
-            inherit (securityGroupRules) internet internal ssh;
-          };
-        };
+        #   modules = [
+        #     (bitte + /profiles/auxiliaries/telegraf.nix)
+        #     (bitte + /modules/docker-registry.nix)
+        #     ./cache.nix
+        #     ./r2-user.nix
+        #     ./auth-keys-hub.nix
+        #     {services.docker-registry.enable = true;}
+        #   ];
+        #   securityGroupRules = {
+        #     inherit (securityGroupRules) internet internal ssh;
+        #   };
+        # };
 
         zt = {
           # https://support.netfoundry.io/hc/en-us/articles/360025875331-Edge-Router-VM-Sizing-Guide
