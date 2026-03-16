@@ -705,12 +705,12 @@ in {
         #     queue = ["adrestia-bench"];
         #   } ["Billing:team-adrestia"]
         #   1 {};
-        equinix-7 =
-          mkEquinixBuildkite "equinix-7" "7" "10.12.10.13" {
-            system = "x86_64-linux";
-            queue = ["catalyst"];
-          } ["Billing:team-catalyst"]
-          5 {};
+        # equinix-7 =
+        #   mkEquinixBuildkite "equinix-7" "7" "10.12.10.13" {
+        #     system = "x86_64-linux";
+        #     queue = ["catalyst"];
+        #   } ["Billing:team-catalyst"]
+        #   5 {};
       };
     };
   };
